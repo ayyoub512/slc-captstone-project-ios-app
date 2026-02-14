@@ -13,7 +13,7 @@ struct LoginView: View {
 
     var body: some View {
         Form {
-            TextField("Email", text: $loginViewModel.username)
+            TextField("Email", text: $loginViewModel.email)
                 .autocapitalization(.none)
             SecureField("Password", text: $loginViewModel.password)
 

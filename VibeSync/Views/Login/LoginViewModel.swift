@@ -10,11 +10,11 @@ import Combine
 import KeychainSwift
 
 class LoginViewModel: ObservableObject {
-    var username: String = ""
-    var password: String = ""
+    var email: String = "hi@ayyoub.io"
+    var password: String = "123"
     
     func login(authentication: AuthService){
-        AuthService().login(username: username, password: password) { result in
+        AuthService().login(email: email, password: password) { result in
             switch result{
             case .success:
                 authentication.updateAuthStatus(isAuthenticated: true)
@@ -24,8 +24,5 @@ class LoginViewModel: ObservableObject {
             }
         }
     }
-    
-    func logout(authentication: AuthService){
-        authentication.logout()
-    }
+
 }

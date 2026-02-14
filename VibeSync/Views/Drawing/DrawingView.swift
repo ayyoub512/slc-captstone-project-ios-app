@@ -37,7 +37,7 @@ struct DrawingView: View {
         VStack {
             HStack {
                 Button("Logout", systemImage: "person.crop.circle.badge.minus") {
-                    loginViewModel.logout(authentication: authService)
+                    authService.logout()
                 }.buttonStyle(.glass)
                     .frame(alignment: .trailing)
                 

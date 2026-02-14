@@ -9,6 +9,10 @@ import Combine
 import Foundation
 import KeychainSwift
 
+
+typealias authCompletionHandlerAlias = (Result<String, AuthenticationError>) -> Void
+
+
 enum AuthenticationError: Error {
     case invalideCredentials
     case custom(errorMessage: String)
@@ -17,6 +21,18 @@ enum AuthenticationError: Error {
 struct LoginRequestBody: Codable {
     let email: String
     let password: String
+}
+
+struct User: Codable {
+    let email: String
+    let password: String
+    let name: String? // optional since this will be used for login/register
+}
+
+struct RegisterResponse: Codable {
+    let token: String?
+    let message: String?
+    let success: Bool?
 }
 
 struct LoginResponse: Codable {
@@ -28,15 +44,13 @@ struct LoginResponse: Codable {
 class AuthService: ObservableObject {
     @Published var isAuthenticated = false
     private let keyChain = KeychainSwift()
-    private let userTokenkey = "userToken"
-    private let api_uri = "http://localhost:5001/api"
     
     init() {
        loadToken()
     }
     
     func loadToken(){
-        updateAuthStatus(isAuthenticated: keyChain.get(userTokenkey) != nil)
+        updateAuthStatus(isAuthenticated: keyChain.get(K.shared.userTokenkey) != nil)
     }
     
     func updateAuthStatus(isAuthenticated: Bool) {
@@ -46,30 +60,29 @@ class AuthService: ObservableObject {
     }
     
     func saveToken(_ token: String) {
-        keyChain.set(token, forKey: userTokenkey)
+        keyChain.set(token, forKey: K.shared.userTokenkey)
         keyChain.synchronizable = true
         self.updateAuthStatus(isAuthenticated: true)
     }
     
     func logout() {
-        keyChain.delete(userTokenkey)
+        keyChain.delete(K.shared.userTokenkey)
         self.updateAuthStatus(isAuthenticated: false)
     }
 
     
-    // Login function
     func login(
-        username: String,
+        email: String,
         password: String,
-        completion: @escaping (Result<String, AuthenticationError>) -> Void
+        completion: @escaping authCompletionHandlerAlias
     ) {
-        guard let url = URL(string: "\(api_uri)/auth/login")
+        guard let url = URL(string: K.shared.loginUri)
         else {
             completion(.failure(.custom(errorMessage: "Invalid URL")))
             return
         }
 
-        let body = LoginRequestBody(email: username, password: password)
+        let body = LoginRequestBody(email: email, password: password)
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -97,4 +110,44 @@ class AuthService: ObservableObject {
             completion(.success(token))
         }.resume()
     }
+    
+    
+    
+    func register(name: String, email: String, password: String, completion: @escaping authCompletionHandlerAlias) {
+        guard let url = URL(string: (K.shared.registerUri))
+        else {
+            completion(.failure(.custom(errorMessage: "Invalid URL")))
+            return
+        }
+
+        let body = User(email: email, password: password, name: name)
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try? JSONEncoder().encode(body)
+
+        URLSession.shared.dataTask(with: request) { (data, response, error) in
+            guard let data = data, error == nil else{
+                completion(.failure(.custom(errorMessage: "No data")))
+                return
+            }
+            
+            guard let registerResponse = try? JSONDecoder().decode(RegisterResponse.self,  from: data) else{
+                completion(.failure(.invalideCredentials))
+                return
+            }
+            
+            guard let token = registerResponse.token else {
+                completion(.failure(.invalideCredentials))
+                return
+            }
+            
+            self.saveToken(token)
+            
+            completion(.success(token))
+        }.resume()
+    }
 }
+
+
