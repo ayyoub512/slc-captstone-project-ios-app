@@ -13,13 +13,12 @@ enum NavigationPage {
     case drawPage
 }
 
-
 class NavigationManager {
     static let shared = NavigationManager()
     var path = NavigationPath()
-    
-    private init(){}
-    
+
+    private init() {}
+
 }
 
 struct DrawingView: View {
@@ -27,53 +26,68 @@ struct DrawingView: View {
     @State private var canvasView = PKCanvasView()
     @State private var showSendMessageSheet = false
     @State private var navManager = NavigationManager.shared
+    
 
+    // Logout functionality, will later move this out of here into profile view
+    @StateObject var loginViewModel = LoginViewModel()
+    @EnvironmentObject var authService: AuthService
+    
+    
     var body: some View {
-            VStack {
+        VStack {
+            HStack {
+                Button("Logout", systemImage: "person.crop.circle.badge.minus") {
+                    loginViewModel.logout(authentication: authService)
+                }.buttonStyle(.glass)
+                    .frame(alignment: .trailing)
+                
                 Button("Save", systemImage: "square.and.arrow.down") {
                     saveImage()
                 }.buttonStyle(.glass)
                     .frame(alignment: .trailing)
-
-                CanvasView(canvasView: $canvasView)
-                    .frame(height: 400)
-                    .aspectRatio(1, contentMode: .fit, )
-                    .border(.gray)
-        
-
-                HStack {
-                    
-                    Button("Undo", systemImage: "arrow.uturn.backward") {
-                        canvasView.undoManager?.undo()
-                    }.buttonStyle(.glass)
-
-                    Spacer()
-
-                    Button("Send", systemImage: "paperplane.fill") {
-                        canvasView.resignFirstResponder()
-                        showSendMessageSheet = true
-                    }.labelStyle(.titleAndIcon)
-                        .buttonStyle(.glassProminent)
-                }.padding()
-
             }
 
-            .sheet(isPresented: $showSendMessageSheet, onDismiss: {
+            CanvasView(canvasView: $canvasView)
+                .frame(height: 400)
+                .aspectRatio(1, contentMode: .fit, )
+                .border(.gray)
+
+            HStack {
+
+                Button("Undo", systemImage: "arrow.uturn.backward") {
+                    canvasView.undoManager?.undo()
+                }.buttonStyle(.glass)
+
+                Spacer()
+
+                Button("Send", systemImage: "paperplane.fill") {
+                    canvasView.resignFirstResponder()
+                    showSendMessageSheet = true
+                }.labelStyle(.titleAndIcon)
+                    .buttonStyle(.glassProminent)
+            }.padding()
+
+        }
+
+        .sheet(
+            isPresented: $showSendMessageSheet,
+            onDismiss: {
                 canvasView.becomeFirstResponder()
-            }) {
-                VStack {
-                    Text("Send the note")
-                        .font(.headline)
-                        .padding()
-
-                    Button("Dismiss") {
-                        showSendMessageSheet = false
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .padding()
-                }
-                .presentationDetents([.medium])
             }
+        ) {
+            VStack {
+                Text("Send the note")
+                    .font(.headline)
+                    .padding()
+
+                Button("Dismiss") {
+                    showSendMessageSheet = false
+                }
+                .buttonStyle(.borderedProminent)
+                .padding()
+            }
+            .presentationDetents([.medium])
+        }
 
     }
 

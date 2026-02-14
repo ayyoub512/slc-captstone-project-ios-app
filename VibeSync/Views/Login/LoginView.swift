@@ -10,19 +10,20 @@ import SwiftUI
 struct LoginView: View {
     @StateObject private var loginViewModel = LoginViewModel()
     @EnvironmentObject var authentication: AuthService
-    
+
     var body: some View {
-        Form{
+        Form {
             TextField("Email", text: $loginViewModel.username)
                 .autocapitalization(.none)
             SecureField("Password", text: $loginViewModel.password)
-            
-            HStack{
+
+            HStack {
                 Spacer()
-                Button("Login"){
+                Button("Login") {
                     loginViewModel.login(authentication: authentication)
+
                 }.buttonStyle(.glassProminent)
-                
+
                 Spacer()
             }
         }

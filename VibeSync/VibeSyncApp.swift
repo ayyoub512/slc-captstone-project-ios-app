@@ -20,6 +20,7 @@ struct VibeSyncApp: App {
             }else{
                 LoginView()
                     .environmentObject(authentication)
+                
             }
         }
     }

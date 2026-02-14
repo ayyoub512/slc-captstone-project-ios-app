@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		04AC2E952F40204B00793986 /* KeychainSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 04AC2E942F40204B00793986 /* KeychainSwift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		042C41E12F3D1D3300496787 /* VibeSync.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VibeSync.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				04AC2E952F40204B00793986 /* KeychainSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = VibeSync;
 			packageProductDependencies = (
+				04AC2E942F40204B00793986 /* KeychainSwift */,
 			);
 			productName = VibeSync;
 			productReference = 042C41E12F3D1D3300496787 /* VibeSync.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = 042C41D82F3D1D3300496787;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				04AC2E932F40204B00793986 /* XCRemoteSwiftPackageReference "keychain-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 042C41E22F3D1D3300496787 /* Products */;
 			projectDirPath = "";
@@ -334,6 +343,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		04AC2E932F40204B00793986 /* XCRemoteSwiftPackageReference "keychain-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/evgenyneu/keychain-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 24.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		04AC2E942F40204B00793986 /* KeychainSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 04AC2E932F40204B00793986 /* XCRemoteSwiftPackageReference "keychain-swift" */;
+			productName = KeychainSwift;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 042C41D92F3D1D3300496787 /* Project object */;
 }

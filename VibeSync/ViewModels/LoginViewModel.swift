@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import KeychainSwift
 
 class LoginViewModel: ObservableObject {
     var username: String = ""
@@ -15,12 +16,16 @@ class LoginViewModel: ObservableObject {
     func login(authentication: AuthService){
         AuthService().login(username: username, password: password) { result in
             switch result{
-            case .success(let token):
-                authentication.updateStatus(success: true)
+            case .success:
+                authentication.updateAuthStatus(isAuthenticated: true)
                 
             case .failure(let error):
                 print("Error login \(error.localizedDescription)")
             }
         }
+    }
+    
+    func logout(authentication: AuthService){
+        authentication.logout()
     }
 }

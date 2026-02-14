@@ -14,8 +14,8 @@
             filePath = "VibeSync/Services/AuthService.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "37"
-            endingLineNumber = "37"
+            startingLineNumber = "61"
+            endingLineNumber = "61"
             landmarkName = "login(username:password:completion:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -30,9 +30,9 @@
             filePath = "VibeSync/Services/AuthService.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "34"
-            endingLineNumber = "34"
-            landmarkName = "updateStatus(success:)"
+            startingLineNumber = "46"
+            endingLineNumber = "46"
+            landmarkName = "updateAuthStatus(isAuthenticated:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

@@ -7,6 +7,7 @@
 
 import Combine
 import Foundation
+import KeychainSwift
 
 enum AuthenticationError: Error {
     case invalideCredentials
@@ -26,20 +27,43 @@ struct LoginResponse: Codable {
 
 class AuthService: ObservableObject {
     @Published var isAuthenticated = false
-
-    func updateStatus(success: Bool) {
+    private let keyChain = KeychainSwift()
+    private let userTokenkey = "userToken"
+    private let api_uri = "http://localhost:5001/api"
+    
+    init() {
+       loadToken()
+    }
+    
+    func loadToken(){
+        updateAuthStatus(isAuthenticated: keyChain.get(userTokenkey) != nil)
+    }
+    
+    func updateAuthStatus(isAuthenticated: Bool) {
         DispatchQueue.main.async {
-            self.isAuthenticated = success
+            self.isAuthenticated = isAuthenticated
         }
     }
+    
+    func saveToken(_ token: String) {
+        keyChain.set(token, forKey: userTokenkey)
+        keyChain.synchronizable = true
+        self.updateAuthStatus(isAuthenticated: true)
+    }
+    
+    func logout() {
+        keyChain.delete(userTokenkey)
+        self.updateAuthStatus(isAuthenticated: false)
+    }
 
+    
     // Login function
     func login(
         username: String,
         password: String,
         completion: @escaping (Result<String, AuthenticationError>) -> Void
     ) {
-        guard let url = URL(string: "http://localhost:5001/api/auth/login")
+        guard let url = URL(string: "\(api_uri)/auth/login")
         else {
             completion(.failure(.custom(errorMessage: "Invalid URL")))
             return
@@ -67,6 +91,8 @@ class AuthService: ObservableObject {
                 completion(.failure(.invalideCredentials))
                 return
             }
+            
+            self.saveToken(token)
             
             completion(.success(token))
         }.resume()
