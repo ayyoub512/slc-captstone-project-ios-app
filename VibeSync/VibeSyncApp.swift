@@ -7,11 +7,20 @@
 
 import SwiftUI
 
+
 @main
 struct VibeSyncApp: App {
+    @StateObject var authentication = AuthService()
+    
     var body: some Scene {
         WindowGroup {
-            DrawingView()
+            if authentication.isAuthenticated{
+                DrawingView()
+                    .environmentObject(authentication)
+            }else{
+                LoginView()
+                    .environmentObject(authentication)
+            }
         }
     }
 }
