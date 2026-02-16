@@ -1,0 +1,28 @@
+# macOS
+.DS_Store
+
+# Xcode build
+build/
+DerivedData/
+
+# User-specific Xcode data
+*.xcuserdata
+*.xcuserstate
+*.xccheckout
+*.xcscmblueprint
+
+# Swift Package Manager
+.build/
+Packages/
+
+# CocoaPods 
+Pods/
+
+# Fastlane 
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# Environment files
+.env
