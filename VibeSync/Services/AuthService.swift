@@ -9,9 +9,8 @@ import Combine
 import Foundation
 import KeychainSwift
 
-
-typealias authCompletionHandlerAlias = (Result<String, AuthenticationError>) -> Void
-
+typealias authCompletionHandlerAlias = (Result<String, AuthenticationError>) ->
+    Void
 
 enum AuthenticationError: Error {
     case invalideCredentials
@@ -26,7 +25,7 @@ struct LoginRequestBody: Codable {
 struct User: Codable {
     let email: String
     let password: String
-    let name: String? // optional since this will be used for login/register
+    let name: String?  // optional since this will be used for login/register
 }
 
 struct RegisterResponse: Codable {
@@ -44,39 +43,44 @@ struct LoginResponse: Codable {
 class AuthService: ObservableObject {
     @Published var isAuthenticated = false
     private let keyChain = KeychainSwift()
-    
+
     init() {
-       loadToken()
+        loadToken()
     }
-    
-    func loadToken(){
-        updateAuthStatus(isAuthenticated: keyChain.get(K.shared.userTokenkey) != nil)
+
+    func loadToken() {
+        updateAuthStatus(
+            isAuthenticated: keyChain.get(K.shared.keyChainUserTokenKey) != nil
+        )
     }
-    
+
+    func getToken() -> String? {
+        keyChain.get(K.shared.keyChainUserTokenKey)
+    }
+
     func updateAuthStatus(isAuthenticated: Bool) {
         DispatchQueue.main.async {
             self.isAuthenticated = isAuthenticated
         }
     }
-    
+
     func saveToken(_ token: String) {
-        keyChain.set(token, forKey: K.shared.userTokenkey)
+        keyChain.set(token, forKey: K.shared.keyChainUserTokenKey)
         keyChain.synchronizable = true
         self.updateAuthStatus(isAuthenticated: true)
     }
-    
+
     func logout() {
-        keyChain.delete(K.shared.userTokenkey)
+        keyChain.delete(K.shared.keyChainUserTokenKey)
         self.updateAuthStatus(isAuthenticated: false)
     }
 
-    
     func login(
         email: String,
         password: String,
         completion: @escaping authCompletionHandlerAlias
     ) {
-        guard let url = URL(string: K.shared.loginUri)
+        guard let url = URL(string: K.shared.logingURL)
         else {
             completion(.failure(.custom(errorMessage: "Invalid URL")))
             return
@@ -90,31 +94,39 @@ class AuthService: ObservableObject {
         request.httpBody = try? JSONEncoder().encode(body)
 
         URLSession.shared.dataTask(with: request) { (data, response, error) in
-            guard let data = data, error == nil else{
+            guard let data = data, error == nil else {
                 completion(.failure(.custom(errorMessage: "No data")))
                 return
             }
-            
-            guard let loginResponse = try? JSONDecoder().decode(LoginResponse.self,  from: data) else{
+
+            guard
+                let loginResponse = try? JSONDecoder().decode(
+                    LoginResponse.self,
+                    from: data
+                )
+            else {
                 completion(.failure(.invalideCredentials))
                 return
             }
-            
+
             guard let token = loginResponse.token else {
                 completion(.failure(.invalideCredentials))
                 return
             }
-            
+
             self.saveToken(token)
-            
+
             completion(.success(token))
         }.resume()
     }
-    
-    
-    
-    func register(name: String, email: String, password: String, completion: @escaping authCompletionHandlerAlias) {
-        guard let url = URL(string: (K.shared.registerUri))
+
+    func register(
+        name: String,
+        email: String,
+        password: String,
+        completion: @escaping authCompletionHandlerAlias
+    ) {
+        guard let url = URL(string: (K.shared.registerURL))
         else {
             completion(.failure(.custom(errorMessage: "Invalid URL")))
             return
@@ -128,26 +140,31 @@ class AuthService: ObservableObject {
         request.httpBody = try? JSONEncoder().encode(body)
 
         URLSession.shared.dataTask(with: request) { (data, response, error) in
-            guard let data = data, error == nil else{
+            guard let data = data, error == nil else {
                 completion(.failure(.custom(errorMessage: "No data")))
                 return
             }
-            
-            guard let registerResponse = try? JSONDecoder().decode(RegisterResponse.self,  from: data) else{
+
+            guard
+                let registerResponse = try? JSONDecoder().decode(
+                    RegisterResponse.self,
+                    from: data
+                )
+            else {
                 completion(.failure(.invalideCredentials))
                 return
             }
-            
+
             guard let token = registerResponse.token else {
                 completion(.failure(.invalideCredentials))
                 return
             }
-            
+
             self.saveToken(token)
-            
+
             completion(.success(token))
         }.resume()
     }
+
+    
 }
-
-
