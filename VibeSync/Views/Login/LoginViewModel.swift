@@ -10,8 +10,8 @@ import Combine
 import KeychainSwift
 
 class LoginViewModel: ObservableObject {
-    var email: String = "hi@ayyoub.io"
-    var password: String = "123"
+    var email: String = ""
+    var password: String = ""
     
     func login(authentication: AuthService){
         AuthService().login(email: email, password: password) { result in

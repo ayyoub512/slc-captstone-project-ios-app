@@ -8,16 +8,76 @@
 
 /* Begin PBXBuildFile section */
 		04AC2E952F40204B00793986 /* KeychainSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 04AC2E942F40204B00793986 /* KeychainSwift */; };
+		04AC2FB72F43838800793986 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04AC2FB62F43838800793986 /* WidgetKit.framework */; };
+		04AC2FB92F43838800793986 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04AC2FB82F43838800793986 /* SwiftUI.framework */; };
+		04AC2FCA2F43838900793986 /* widgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 04AC2FB42F43838800793986 /* widgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		04D3ADE72F4E40B400AC3BE5 /* KeychainSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 04D3ADE62F4E40B400AC3BE5 /* KeychainSwift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		04AC2FC82F43838900793986 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 042C41D92F3D1D3300496787 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 04AC2FB32F43838800793986;
+			remoteInfo = widgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		04AC2FCB2F43838900793986 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				04AC2FCA2F43838900793986 /* widgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		042C41E12F3D1D3300496787 /* VibeSync.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VibeSync.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		04AC2FB42F43838800793986 /* widgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = widgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		04AC2FB62F43838800793986 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		04AC2FB82F43838800793986 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		04AC2FD02F44DAC500793986 /* widgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = widgetExtension.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		04AC2FCE2F43838900793986 /* Exceptions for "widget" folder in "widgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 04AC2FB32F43838800793986 /* widgetExtension */;
+		};
+		04D3ADE52F4E3F5100AC3BE5 /* Exceptions for "VibeSync" folder in "widgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Helpers/Constants.swift,
+			);
+			target = 04AC2FB32F43838800793986 /* widgetExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		042C41E32F3D1D3300496787 /* VibeSync */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				04D3ADE52F4E3F5100AC3BE5 /* Exceptions for "VibeSync" folder in "widgetExtension" target */,
+			);
 			path = VibeSync;
+			sourceTree = "<group>";
+		};
+		04AC2FBA2F43838800793986 /* widget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				04AC2FCE2F43838900793986 /* Exceptions for "widget" folder in "widgetExtension" target */,
+			);
+			path = widget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -31,13 +91,26 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		04AC2FB12F43838800793986 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				04D3ADE72F4E40B400AC3BE5 /* KeychainSwift in Frameworks */,
+				04AC2FB92F43838800793986 /* SwiftUI.framework in Frameworks */,
+				04AC2FB72F43838800793986 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		042C41D82F3D1D3300496787 = {
 			isa = PBXGroup;
 			children = (
+				04AC2FD02F44DAC500793986 /* widgetExtension.entitlements */,
 				042C41E32F3D1D3300496787 /* VibeSync */,
+				04AC2FBA2F43838800793986 /* widget */,
+				04AC2FB52F43838800793986 /* Frameworks */,
 				042C41E22F3D1D3300496787 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -46,8 +119,18 @@
 			isa = PBXGroup;
 			children = (
 				042C41E12F3D1D3300496787 /* VibeSync.app */,
+				04AC2FB42F43838800793986 /* widgetExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		04AC2FB52F43838800793986 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				04AC2FB62F43838800793986 /* WidgetKit.framework */,
+				04AC2FB82F43838800793986 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -60,10 +143,12 @@
 				042C41DD2F3D1D3300496787 /* Sources */,
 				042C41DE2F3D1D3300496787 /* Frameworks */,
 				042C41DF2F3D1D3300496787 /* Resources */,
+				04AC2FCB2F43838900793986 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				04AC2FC92F43838900793986 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				042C41E32F3D1D3300496787 /* VibeSync */,
@@ -76,6 +161,29 @@
 			productReference = 042C41E12F3D1D3300496787 /* VibeSync.app */;
 			productType = "com.apple.product-type.application";
 		};
+		04AC2FB32F43838800793986 /* widgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 04AC2FCF2F43838900793986 /* Build configuration list for PBXNativeTarget "widgetExtension" */;
+			buildPhases = (
+				04AC2FB02F43838800793986 /* Sources */,
+				04AC2FB12F43838800793986 /* Frameworks */,
+				04AC2FB22F43838800793986 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				04AC2FBA2F43838800793986 /* widget */,
+			);
+			name = widgetExtension;
+			packageProductDependencies = (
+				04D3ADE62F4E40B400AC3BE5 /* KeychainSwift */,
+			);
+			productName = widgetExtension;
+			productReference = 04AC2FB42F43838800793986 /* widgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -87,6 +195,9 @@
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					042C41E02F3D1D3300496787 = {
+						CreatedOnToolsVersion = 26.2;
+					};
+					04AC2FB32F43838800793986 = {
 						CreatedOnToolsVersion = 26.2;
 					};
 				};
@@ -109,12 +220,20 @@
 			projectRoot = "";
 			targets = (
 				042C41E02F3D1D3300496787 /* VibeSync */,
+				04AC2FB32F43838800793986 /* widgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		042C41DF2F3D1D3300496787 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		04AC2FB22F43838800793986 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -131,7 +250,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		04AC2FB02F43838800793986 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		04AC2FC92F43838900793986 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 04AC2FB32F43838800793986 /* widgetExtension */;
+			targetProxy = 04AC2FC82F43838900793986 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		042C41EA2F3D1D3500496787 /* Debug */ = {
@@ -323,6 +457,68 @@
 			};
 			name = Release;
 		};
+		04AC2FCC2F43838900793986 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = widgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = DMADXVV944;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = widget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = widget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "io.ayyoub.vibe-sync.widget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		04AC2FCD2F43838900793986 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = widgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = DMADXVV944;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = widget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = widget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "io.ayyoub.vibe-sync.widget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -344,6 +540,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		04AC2FCF2F43838900793986 /* Build configuration list for PBXNativeTarget "widgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				04AC2FCC2F43838900793986 /* Debug */,
+				04AC2FCD2F43838900793986 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
@@ -359,6 +564,11 @@
 
 /* Begin XCSwiftPackageProductDependency section */
 		04AC2E942F40204B00793986 /* KeychainSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 04AC2E932F40204B00793986 /* XCRemoteSwiftPackageReference "keychain-swift" */;
+			productName = KeychainSwift;
+		};
+		04D3ADE62F4E40B400AC3BE5 /* KeychainSwift */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 04AC2E932F40204B00793986 /* XCRemoteSwiftPackageReference "keychain-swift" */;
 			productName = KeychainSwift;

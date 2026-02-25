@@ -45,16 +45,17 @@ class NotificationsManager: ObservableObject {
     // Where it says its saved but db doesnt have it for new users
     func saveAPN(with apn: String) {
         self.sendDeviceTokenToServer(with: apn)
-
-        if hasAPNsChanged(with: apn) {
-            // Either first app run, or APNs has indeed changed.
-            print("New APN! Lets save it")
-            keyChain.set(apn, forKey: K.shared.keychainAPNKey)
+        keyChain.set(apn, forKey: K.shared.keychainAPNKey)
+        
+//        if hasAPNsChanged(with: apn) {
+//            // Either first app run, or APNs has indeed changed.
+//            print("New APN! Lets save it")
+//            keyChain.set(apn, forKey: K.shared.keychainAPNKey)
 //            self.sendDeviceTokenToServer(with: apn)
-            
-        } else {
-            print("APN hasn't changed since last time it was saved")
-        }
+//            
+//        } else {
+//            print("APN hasn't changed since last time it was saved")
+//        }
 
     }
 
@@ -65,6 +66,7 @@ class NotificationsManager: ObservableObject {
     
     func sendDeviceTokenToServer(with token: String) {
         // Let's make sure it hasn't change yet
+        print("Saving app push notification token to server")
 
         guard let url = URL(string: K.shared.registerDeviceURL)
         else { return }
@@ -84,7 +86,11 @@ class NotificationsManager: ObservableObject {
             forHTTPHeaderField: "Authorization"
         )
 
-        let body = ["apnsToken": token]
+        let body: [String: Any] = [
+            "deviceToken": token,
+            "isWidget": false
+        ]
+        
         request.httpBody = try? JSONSerialization.data(
             withJSONObject: body,
             options: []

@@ -42,7 +42,11 @@ struct LoginResponse: Codable {
 
 class AuthService: ObservableObject {
     @Published var isAuthenticated = false
-    private let keyChain = KeychainSwift()
+    private let keyChain: KeychainSwift =  {
+        let kc = KeychainSwift()
+        kc.accessGroup = K.shared.keyChainSharedAccessGroup
+        return kc
+    }()
 
     init() {
         loadToken()

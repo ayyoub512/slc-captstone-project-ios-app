@@ -9,9 +9,16 @@ import Foundation
 
 struct K{
     static let shared = K()
+    let teamId = "DMADXVV944"
+    let bundleIdentifier = "io.ayyoub.vibe-sync"
+
+    var keyChainSharedAccessGroup: String {
+        return "\(teamId).\(bundleIdentifier).shared"
+    }
+    
     let keyChainUserTokenKey = "userToken"
     let keychainAPNKey = "deviceAPNToken"
-    let apiURL =   "https://5e10-2001-1970-4c69-b400-8d92-fa37-da-ad76.ngrok-free.app/api" // "http://localhost:5001/api"
+    let apiURL = "https://08ef-72-38-32-73.ngrok-free.app/api" // "http://localhost:5001/api"
     
     var logingURL: String { apiURL + "/auth/login"}
     var registerURL: String { apiURL + "/auth/register" }

@@ -75,7 +75,8 @@ struct DrawingView: View {
                     Task {
                         await notificationManager.request()
                     }
-                }.disabled(notificationManager.hasPermission)
+                }
+                //.disabled(notificationManager.hasPermission)
                 
             }.buttonStyle(.glass)
                 .frame(alignment: .trailing)
@@ -105,12 +106,12 @@ struct DrawingView: View {
 
     var sheetView: some View {
         VStack {
-            Text("Send a message to user #11")
+            Text("Send a message to user #12")
                 .font(.headline)
                 .padding()
 
             Button("Send Test Notification") {
-                notificationManager.sendTestNotification(to: 11)
+                notificationManager.sendTestNotification(to: 12)
             }
             .buttonStyle(.borderedProminent)
             .padding()

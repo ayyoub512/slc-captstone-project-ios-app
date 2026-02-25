@@ -17,7 +17,6 @@ class VibeSyncDelegate: NSObject, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication
             .LaunchOptionsKey: Any]? = nil
     ) -> Bool {
-        print("Inside didFinishLaunchingWithOptions")
         UNUserNotificationCenter.current().delegate = self
 
         // TODO: I must ensure that I get the authorization to send notification from user FIRST before doing this
@@ -30,12 +29,11 @@ class VibeSyncDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
     ) {
-        print("Inside didRegisterForRemoteNotificationsWithDeviceToken")
         let tokenParts = deviceToken.map { data in
             String(format: "%02.2hhx", data)
         }
         let token = tokenParts.joined()
-        print("APNs Device Token: \(token)")
+        print("App didRegisterForRemoteNotificationsWithDeviceToken: \(token)")
         
         notificationManager.saveAPN(with: token)
     }
@@ -54,7 +52,6 @@ extension VibeSyncDelegate: UNUserNotificationCenterDelegate {
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse
     ) async {
-        print("Inside userNotificationCenter didReceive")
         print(response.notification.request.content)
     }
 
@@ -62,7 +59,6 @@ extension VibeSyncDelegate: UNUserNotificationCenterDelegate {
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
-        print("Inside userNotificationCenter willPresent")
         return [.banner, .sound, .badge]
     }
 }

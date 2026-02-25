@@ -10,9 +10,9 @@ import Foundation
 import KeychainSwift
 
 class RegisterViewModel: ObservableObject {
-    var name: String = "Ayyoub Ouakkaha"
-    var email: String = "hi@ayyoub.io"
-    var password: String = "123"
+    var name: String = ""
+    var email: String = ""
+    var password: String = ""
 
     func register(authentication: AuthService) {
         AuthService().register(name: name, email: email, password: password){ result in
