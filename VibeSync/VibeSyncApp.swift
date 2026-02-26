@@ -7,7 +7,7 @@
 
 import SwiftUI
 import UserNotifications
-
+        
 @Observable
 class VibeSyncDelegate: NSObject, UIApplicationDelegate {
     var notificationManager = NotificationsManager()
@@ -65,23 +65,40 @@ extension VibeSyncDelegate: UNUserNotificationCenterDelegate {
 
 @main
 struct VibeSyncApp: App {
-    @StateObject var authentication = AuthService()
-    
     // Notification
     @UIApplicationDelegateAdaptor private var vibeSyncDelegate: VibeSyncDelegate
 
+    @StateObject var authentication = AuthService()
+    @State private var navManager = NavigationManager()
+    
     var body: some Scene {
         WindowGroup {
-            if authentication.isAuthenticated {
-                DrawingView()
-                    .environmentObject(authentication)
-            } else {
-                LoginView()
-                    .environmentObject(authentication)
-
-                RegisterView()
-                    .environmentObject(authentication)
-
+            Group {
+                if authentication.isAuthenticated {
+                    TabView(selection: $navManager.selectedTab) {
+                        // page 1
+                        DrawingView()
+                            .tag(0)
+                        
+                        // page 2
+                        NavigationStack(path: $navManager.inboxPath){
+                            InboxView()
+                        }
+                        .tag(1)
+                    }
+                    .tabViewStyle(.page(indexDisplayMode: .never))
+                    .ignoresSafeArea()
+                    
+                } else {
+                    LoginView()
+                        .environmentObject(authentication)
+                }
+            }
+            .environment(navManager)
+            .environmentObject(authentication)
+            .onOpenURL { url in
+                // TODO: Handle deep link
+                print("Opened a new url \(url.absoluteString) ")
             }
         }
     }

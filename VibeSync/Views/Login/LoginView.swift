@@ -13,19 +13,16 @@ struct LoginView: View {
 
     var body: some View {
         Form {
-            TextField("Email", text: $loginViewModel.email)
+            TextField("Enter your email", text: $loginViewModel.email)
                 .autocapitalization(.none)
-            SecureField("Password", text: $loginViewModel.password)
+            SecureField("Enter your password", text: $loginViewModel.password)
+                
+            Button("Login") {
+                loginViewModel.login(authentication: authentication)
 
-            HStack {
-                Spacer()
-                Button("Login") {
-                    loginViewModel.login(authentication: authentication)
-
-                }.buttonStyle(.glassProminent)
-
-                Spacer()
             }
+            .buttonStyle(.glassProminent)
+
         }
     }
 }

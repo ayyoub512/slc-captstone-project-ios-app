@@ -7,23 +7,30 @@
 
 import Foundation
 
-struct K{
+enum NavigationPage {
+    case inbox, camera, drawing, account
+}
+
+struct K {
     static let shared = K()
     let teamId = "DMADXVV944"
     let bundleIdentifier = "io.ayyoub.vibe-sync"
-
+    
+    // Key Chain
     var keyChainSharedAccessGroup: String {
         return "\(teamId).\(bundleIdentifier).shared"
     }
-    
     let keyChainUserTokenKey = "userToken"
     let keychainAPNKey = "deviceAPNToken"
-    let apiURL = "https://08ef-72-38-32-73.ngrok-free.app/api" // "http://localhost:5001/api"
     
-    var logingURL: String { apiURL + "/auth/login"}
+    
+    // API END POINTS
+    let apiURL = "https://2da2-2001-1970-4c69-b400-2dec-738b-36ec-fac.ngrok-free.app/api"
+    var logingURL: String { apiURL + "/auth/login" }
     var registerURL: String { apiURL + "/auth/register" }
-    var registerDeviceURL : String { apiURL + "/register-device" }
-    var sendNotificatioURL : String { apiURL + "/send-notification" }
-    
-    
+    var registerDeviceURL: String { apiURL + "/register-device" }
+    var sendNotificatioURL: String { apiURL + "/send-notification" }
+    var friendsListURL: String { apiURL + "/getFriendList" }
+    var getMessagesURL: String { apiURL + "/getMessagesByFriend" }
+
 }

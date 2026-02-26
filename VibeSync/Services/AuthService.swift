@@ -53,9 +53,7 @@ class AuthService: ObservableObject {
     }
 
     func loadToken() {
-        updateAuthStatus(
-            isAuthenticated: keyChain.get(K.shared.keyChainUserTokenKey) != nil
-        )
+        self.isAuthenticated = keyChain.get(K.shared.keyChainUserTokenKey) != nil
     }
 
     func getToken() -> String? {

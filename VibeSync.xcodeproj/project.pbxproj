@@ -61,12 +61,20 @@
 			);
 			target = 04AC2FB32F43838800793986 /* widgetExtension */;
 		};
+		04D3AE192F4F7FA500AC3BE5 /* Exceptions for "VibeSync" folder in "VibeSync" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 042C41E02F3D1D3300496787 /* VibeSync */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		042C41E32F3D1D3300496787 /* VibeSync */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
+				04D3AE192F4F7FA500AC3BE5 /* Exceptions for "VibeSync" folder in "VibeSync" target */,
 				04D3ADE52F4E3F5100AC3BE5 /* Exceptions for "VibeSync" folder in "widgetExtension" target */,
 			);
 			path = VibeSync;
@@ -400,6 +408,7 @@
 				DEVELOPMENT_TEAM = DMADXVV944;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = VibeSync/Info.plist;
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Save drawings to your photo library";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -434,6 +443,7 @@
 				DEVELOPMENT_TEAM = DMADXVV944;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = VibeSync/Info.plist;
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Save drawings to your photo library";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
