@@ -77,7 +77,9 @@ struct VibeSyncApp: App {
                 if authentication.isAuthenticated {
                     TabView(selection: $navManager.selectedTab) {
                         // page 1
-                        DrawingView()
+//                        DrawingView()
+//                            .tag(0)
+                        CameraView()
                             .tag(0)
                         
                         // page 2

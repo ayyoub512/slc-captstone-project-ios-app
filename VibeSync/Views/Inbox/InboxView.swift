@@ -8,24 +8,25 @@
 import SwiftUI
 
 struct InboxView: View {
-    @StateObject private var viewModel = InboxViewModel()
+    @StateObject private var networkManager = NetworkManager()
     @EnvironmentObject var auth: AuthService
     @Environment(NavigationManager.self) var navManager
 
     var body: some View {
         List {
-            if viewModel.isLoading {
+            if networkManager.isLoading {
                 ProgressView("Fetching your squad...")
-            } else if let error = viewModel.errorMessage {
+            } else if let error = networkManager.errorMessage {
                 Text(error).foregroundColor(.red)
             } else {
-                ForEach(viewModel.friends) { friend in
+                ForEach(networkManager.friends) { friend in
                     NavigationLink(value: friend) {
                         FriendRow(friend: friend)
                     }
                 }
             }
         }
+        .padding(.horizontal, 10)
         .navigationTitle("Inbox")
         .navigationDestination(for: Friend.self, destination: { friend in
             ChatView(friend: friend)
@@ -37,7 +38,7 @@ struct InboxView: View {
         }
         .task {
             if let token = auth.getToken() {
-                await viewModel.fetchFriends(token: token)
+                await networkManager.fetchFriends(token: token)
             }
         }
     }
