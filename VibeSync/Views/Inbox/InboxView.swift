@@ -11,6 +11,7 @@ struct InboxView: View {
     @StateObject private var networkManager = NetworkManager()
     @EnvironmentObject var auth: AuthService
     @Environment(NavigationManager.self) var navManager
+    @State private var showAddFriendSheet = false
 
     var body: some View {
         List {
@@ -35,7 +36,7 @@ struct InboxView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: {
-                    withAnimation{
+                    withAnimation {
                         navManager.selectedTab = 0
                     }
                 }) {
@@ -51,8 +52,31 @@ struct InboxView: View {
             }
 
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: { /* Add friend logic */  }) {
-                    Image(systemName: "person.badge.plus")
+                Menu {
+                    Button(action: { showAddFriendSheet = true }) {
+                        Label("Add Friend", systemImage: "person.badge.plus")
+                    }
+
+                    Button(action: {
+                        // Future: navigate to profile
+                    }) {
+                        Label("Profile", systemImage: "person.crop.circle")
+                    }
+
+                    Button(
+                        role: .destructive,
+                        action: {
+                            // Logout logic
+                            auth.logout()
+                        }
+                    ) {
+                        Label("Logout", systemImage: "power")
+                    }
+
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .font(.title2)
+                    //                            .foregroundStyle(.primary)
                 }
             }
         }
@@ -60,6 +84,11 @@ struct InboxView: View {
             if let token = auth.getToken() {
                 await networkManager.fetchFriends(token: token)
             }
+        }
+        .sheet(isPresented: $showAddFriendSheet) {
+            AddFriendView()
+                .padding(.top, 10)
+                .presentationDetents([.medium])
         }
     }
 }

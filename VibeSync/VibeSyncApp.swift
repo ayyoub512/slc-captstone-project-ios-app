@@ -92,8 +92,10 @@ struct VibeSyncApp: App {
                     .ignoresSafeArea()
                     
                 } else {
-                    LoginView()
-                        .environmentObject(authentication)
+                    NavigationStack {
+                        AuthContainerView()
+                            .environmentObject(authentication)
+                    }
                 }
             }
             .environment(navManager)

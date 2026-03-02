@@ -32,12 +32,14 @@ struct RegisterResponse: Codable {
     let token: String?
     let message: String?
     let success: Bool?
+    let inviteCode: String?
 }
 
 struct LoginResponse: Codable {
     let token: String?
     let message: String?
     let success: Bool?
+    let inviteCode: String?
 }
 
 class AuthService: ObservableObject {
@@ -66,9 +68,13 @@ class AuthService: ObservableObject {
         }
     }
 
+    func saveToKeyChain(key: String, value: String, synchronizable: Bool = false){
+        keyChain.set(value, forKey: key)
+        keyChain.synchronizable = synchronizable
+    }
+
     func saveToken(_ token: String) {
-        keyChain.set(token, forKey: K.shared.keyChainUserTokenKey)
-        keyChain.synchronizable = true
+        saveToKeyChain(key: K.shared.keyChainUserTokenKey, value: token, synchronizable: true)
         self.updateAuthStatus(isAuthenticated: true)
     }
 
@@ -115,8 +121,13 @@ class AuthService: ObservableObject {
                 completion(.failure(.invalideCredentials))
                 return
             }
-
             self.saveToken(token)
+            
+            guard let inviteCode = loginResponse.inviteCode else {
+                completion(.failure(.invalideCredentials))
+                return
+            }
+            self.saveToKeyChain(key: K.shared.keychainInviteCode, value: inviteCode )
 
             completion(.success(token))
         }.resume()
@@ -163,6 +174,13 @@ class AuthService: ObservableObject {
             }
 
             self.saveToken(token)
+            
+            guard let inviteCode = registerResponse.inviteCode else {
+                completion(.failure(.invalideCredentials))
+                return
+            }
+            self.saveToKeyChain(key: K.shared.keychainInviteCode, value: inviteCode )
+
 
             completion(.success(token))
         }.resume()

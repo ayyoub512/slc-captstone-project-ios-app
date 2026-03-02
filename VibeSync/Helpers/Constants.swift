@@ -22,6 +22,7 @@ struct K {
     }
     let keyChainUserTokenKey = "userToken"
     let keychainAPNKey = "deviceAPNToken"
+    let keychainInviteCode = "inviteCode"
     
     
     // API END POINTS
