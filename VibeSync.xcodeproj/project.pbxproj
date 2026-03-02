@@ -57,6 +57,7 @@
 		04D3ADE52F4E3F5100AC3BE5 /* Exceptions for "VibeSync" folder in "widgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Helpers/AppLogger.swift,
 				Helpers/Constants.swift,
 			);
 			target = 04AC2FB32F43838800793986 /* widgetExtension */;

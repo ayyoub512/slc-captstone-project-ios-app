@@ -69,7 +69,7 @@ struct CopyableText: View {
         .background(
             RoundedRectangle(cornerRadius: 14)
                 .fill(Color(.secondarySystemBackground))
-                .opacity(0.8)
+                .opacity(0.1)
         )
         .contentShape(RoundedRectangle(cornerRadius: 14)) // makes full area tappable
         .onTapGesture {

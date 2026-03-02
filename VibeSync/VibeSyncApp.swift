@@ -7,6 +7,7 @@
 
 import SwiftUI
 import UserNotifications
+import OSLog
         
 @Observable
 class VibeSyncDelegate: NSObject, UIApplicationDelegate {
@@ -17,6 +18,7 @@ class VibeSyncDelegate: NSObject, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication
             .LaunchOptionsKey: Any]? = nil
     ) -> Bool {
+        Log.shared.info("didFinishLaunchingWithOptions")
         UNUserNotificationCenter.current().delegate = self
 
         // TODO: I must ensure that I get the authorization to send notification from user FIRST before doing this
@@ -33,7 +35,7 @@ class VibeSyncDelegate: NSObject, UIApplicationDelegate {
             String(format: "%02.2hhx", data)
         }
         let token = tokenParts.joined()
-        print("App didRegisterForRemoteNotificationsWithDeviceToken: \(token)")
+        Log.shared.info("App didRegisterForRemoteNotificationsWithDeviceToken: \(token)")
         
         notificationManager.saveAPN(with: token)
     }
@@ -42,8 +44,8 @@ class VibeSyncDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         didFailToRegisterForRemoteNotificationsWithError error: any Error
     ) {
-        print("Error didFailToRegisterForRemoteNotificationsWithError : \(error)")
-        print(error)
+        Log.shared.info("Error didFailToRegisterForRemoteNotificationsWithError : \(error)")
+        Log.shared.info("Error: \(error)")
     }
 }
 
@@ -52,13 +54,15 @@ extension VibeSyncDelegate: UNUserNotificationCenterDelegate {
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse
     ) async {
-        print(response.notification.request.content)
+        Log.shared.info("UNUserNotificationCenterDelegate didReceive")
+        Log.shared.info("\(response.notification.request.content)")
     }
 
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
+        Log.shared.info("UNUserNotificationCenterDelegate userNotificationCenter")
         return [.banner, .sound, .badge]
     }
 }
@@ -76,13 +80,9 @@ struct VibeSyncApp: App {
             Group {
                 if authentication.isAuthenticated {
                     TabView(selection: $navManager.selectedTab) {
-                        // page 1
-//                        DrawingView()
-//                            .tag(0)
                         CameraView()
                             .tag(0)
                         
-                        // page 2
                         NavigationStack(path: $navManager.inboxPath){
                             InboxView()
                         }
@@ -102,7 +102,7 @@ struct VibeSyncApp: App {
             .environmentObject(authentication)
             .onOpenURL { url in
                 // TODO: Handle deep link
-                print("Opened a new url \(url.absoluteString) ")
+                Log.shared.info("Opened a new url \(url.absoluteString) ")
             }
         }
     }

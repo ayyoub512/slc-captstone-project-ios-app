@@ -9,42 +9,9 @@ import Combine
 import Foundation
 import KeychainSwift
 
-typealias authCompletionHandlerAlias = (Result<String, AuthenticationError>) ->
-    Void
-
-enum AuthenticationError: Error {
-    case invalideCredentials
-    case custom(errorMessage: String)
-}
-
-struct LoginRequestBody: Codable {
-    let email: String
-    let password: String
-}
-
-struct User: Codable {
-    let email: String
-    let password: String
-    let name: String?  // optional since this will be used for login/register
-}
-
-struct RegisterResponse: Codable {
-    let token: String?
-    let message: String?
-    let success: Bool?
-    let inviteCode: String?
-}
-
-struct LoginResponse: Codable {
-    let token: String?
-    let message: String?
-    let success: Bool?
-    let inviteCode: String?
-}
-
 class AuthService: ObservableObject {
     @Published var isAuthenticated = false
-    private let keyChain: KeychainSwift =  {
+    private let keyChain: KeychainSwift = {
         let kc = KeychainSwift()
         kc.accessGroup = K.shared.keyChainSharedAccessGroup
         return kc
@@ -55,7 +22,8 @@ class AuthService: ObservableObject {
     }
 
     func loadToken() {
-        self.isAuthenticated = keyChain.get(K.shared.keyChainUserTokenKey) != nil
+        self.isAuthenticated =
+            keyChain.get(K.shared.keyChainUserTokenKey) != nil
     }
 
     func getToken() -> String? {
@@ -68,21 +36,33 @@ class AuthService: ObservableObject {
         }
     }
 
-    func saveToKeyChain(key: String, value: String, synchronizable: Bool = false){
+    func saveToKeyChain(
+        key: String,
+        value: String,
+        synchronizable: Bool = false
+    ) {
         keyChain.set(value, forKey: key)
         keyChain.synchronizable = synchronizable
     }
 
     func saveToken(_ token: String) {
-        saveToKeyChain(key: K.shared.keyChainUserTokenKey, value: token, synchronizable: true)
+        saveToKeyChain(
+            key: K.shared.keyChainUserTokenKey,
+            value: token,
+            synchronizable: true
+        )
         self.updateAuthStatus(isAuthenticated: true)
     }
 
     func logout() {
         keyChain.delete(K.shared.keyChainUserTokenKey)
+        keyChain.delete(K.shared.keychainInviteCode)
         self.updateAuthStatus(isAuthenticated: false)
     }
+}
 
+
+extension AuthService {
     func login(
         email: String,
         password: String,
@@ -122,17 +102,22 @@ class AuthService: ObservableObject {
                 return
             }
             self.saveToken(token)
-            
+
             guard let inviteCode = loginResponse.inviteCode else {
                 completion(.failure(.invalideCredentials))
                 return
             }
-            self.saveToKeyChain(key: K.shared.keychainInviteCode, value: inviteCode )
+            self.saveToKeyChain(
+                key: K.shared.keychainInviteCode,
+                value: inviteCode
+            )
 
             completion(.success(token))
         }.resume()
     }
+}
 
+extension AuthService {
     func register(
         name: String,
         email: String,
@@ -174,17 +159,52 @@ class AuthService: ObservableObject {
             }
 
             self.saveToken(token)
-            
+
             guard let inviteCode = registerResponse.inviteCode else {
                 completion(.failure(.invalideCredentials))
                 return
             }
-            self.saveToKeyChain(key: K.shared.keychainInviteCode, value: inviteCode )
-
+            self.saveToKeyChain(
+                key: K.shared.keychainInviteCode,
+                value: inviteCode
+            )
 
             completion(.success(token))
         }.resume()
     }
 
-    
+}
+
+
+typealias authCompletionHandlerAlias = (Result<String, AuthenticationError>) ->
+    Void
+
+enum AuthenticationError: Error {
+    case invalideCredentials
+    case custom(errorMessage: String)
+}
+
+struct LoginRequestBody: Codable {
+    let email: String
+    let password: String
+}
+
+struct User: Codable {
+    let email: String
+    let password: String
+    let name: String?  // optional since this will be used for login/register
+}
+
+struct RegisterResponse: Codable {
+    let token: String?
+    let message: String?
+    let success: Bool?
+    let inviteCode: String?
+}
+
+struct LoginResponse: Codable {
+    let token: String?
+    let message: String?
+    let success: Bool?
+    let inviteCode: String?
 }
