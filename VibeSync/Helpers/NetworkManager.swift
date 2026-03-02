@@ -7,6 +7,7 @@
 
 import Combine
 import Foundation
+import SwiftUI
 
 @MainActor
 class NetworkManager: ObservableObject {
@@ -14,6 +15,9 @@ class NetworkManager: ObservableObject {
     @Published var friends: [Friend] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
+
+    @Published var sendingVibe = false
+    @Published var sendSuccess: Bool?
 
     private var lastFetchTime: Date?
     private let cacheValidityDuration: TimeInterval = 300  // 5 minutes
@@ -87,6 +91,145 @@ class NetworkManager: ObservableObject {
         }
 
         isLoading = false
+    }
+
+    /// Send vibe to friends
+    func sendVibe(
+        to recipients: [String],
+        with jwtToken: String,
+        image: UIImage
+    ) async {
+        guard let url = URL(string: K.shared.sendNotificatioURL) else {
+            print(" Invalid URL")
+
+            self.errorMessage = "Invalid server URL"
+            self.sendSuccess = false
+
+            return
+        }
+
+        self.sendingVibe = true
+        self.errorMessage = nil
+
+        do {
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.addValue(
+                "Bearer \(jwtToken)",
+                forHTTPHeaderField: "Authorization"
+            )
+
+            // Multipart/form-data boundary
+            let boundary = "Boundary-\(UUID().uuidString)"
+            request.setValue(
+                "multipart/form-data; boundary=\(boundary)",
+                forHTTPHeaderField: "Content-Type"
+            )
+
+            var bodyData = Data()
+
+            //  Add receivers as JSON array
+            do {
+                let receiversJSON = try JSONSerialization.data(
+                    withJSONObject: recipients,
+                    options: []
+                )
+
+                bodyData.append("--\(boundary)\r\n".data(using: .utf8)!)
+                bodyData.append(
+                    "Content-Disposition: form-data; name=\"receivers\"\r\n"
+                        .data(using: .utf8)!
+                )
+                bodyData.append(
+                    "Content-Type: application/json\r\n\r\n".data(using: .utf8)!
+                )
+                bodyData.append(receiversJSON)
+                bodyData.append("\r\n".data(using: .utf8)!)
+
+                print(
+                    "Sending to \(recipients.count) recipients: \(recipients)"
+                )
+            } catch {
+                print("Failed to serialize receivers: \(error)")
+
+                self.errorMessage = "Failed to prepare recipients data"
+                self.sendingVibe = false
+                self.sendSuccess = false
+
+                return
+            }
+
+            // Add image
+            if let imageData = image.jpegData(compressionQuality: 0.8) {
+                bodyData.append("--\(boundary)\r\n".data(using: .utf8)!)
+                bodyData.append(
+                    "Content-Disposition: form-data; name=\"image\"; filename=\"vibe.jpg\"\r\n"
+                        .data(using: .utf8)!
+                )
+                bodyData.append(
+                    "Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!
+                )
+                bodyData.append(imageData)
+                bodyData.append("\r\n".data(using: .utf8)!)
+
+                print("Image size: \(imageData.count) bytes")
+            } else {
+                print("Failed to convert image to JPEG")
+                await MainActor.run {
+                    self.errorMessage = "Failed to process image"
+                    self.sendingVibe = false
+                    self.sendSuccess = false
+                }
+                return
+            }
+
+            // End boundary
+            bodyData.append("--\(boundary)--\r\n".data(using: .utf8)!)
+
+            request.httpBody = bodyData
+
+            // Send request
+            let (data, response) = try await URLSession.shared.data(
+                for: request
+            )
+
+            if let httpResponse = response as? HTTPURLResponse {
+                print("Status code: \(httpResponse.statusCode)")
+
+                if (200...299).contains(httpResponse.statusCode) {
+                    if let responseBody = try? JSONSerialization.jsonObject(
+                        with: data
+                    ) {
+                        print("Response: \(responseBody)")
+                    }
+
+                    self.sendSuccess = true
+                    self.sendingVibe = false
+
+                } else {
+                    if let responseBody = try? JSONSerialization.jsonObject(
+                        with: data
+                    ) {
+                        print("Error response: \(responseBody)")
+                    }
+
+                    self.errorMessage =
+                        "Server error: \(httpResponse.statusCode)"
+                    self.sendSuccess = false
+                    self.sendingVibe = false
+
+                }
+            }
+
+        } catch {
+            print("Send vibe error: \(error)")
+
+            self.errorMessage =
+                "Failed to send vibe: \(error.localizedDescription)"
+            self.sendSuccess = false
+            self.sendingVibe = false
+
+        }
     }
 }
 

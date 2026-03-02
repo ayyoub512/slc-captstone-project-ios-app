@@ -25,7 +25,7 @@ struct K {
     
     
     // API END POINTS
-    let apiURL = "https://2da2-2001-1970-4c69-b400-2dec-738b-36ec-fac.ngrok-free.app/api"
+    let apiURL = "https://ef52-2001-1970-4c69-b400-cf3-2d8e-3024-bd3.ngrok-free.app/api"
     var logingURL: String { apiURL + "/auth/login" }
     var registerURL: String { apiURL + "/auth/register" }
     var registerDeviceURL: String { apiURL + "/register-device" }
