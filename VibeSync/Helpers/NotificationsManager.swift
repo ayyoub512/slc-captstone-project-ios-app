@@ -26,7 +26,7 @@ class NotificationsManager: ObservableObject {
             self.hasPermission = try await UNUserNotificationCenter.current()
                 .requestAuthorization(options: [.alert, .badge, .sound])
         } catch {
-            print("Error: \(error)")
+            Log.shared.error("Error: \(error)")
         }
     }
 
@@ -66,7 +66,7 @@ class NotificationsManager: ObservableObject {
     
     func sendDeviceTokenToServer(with token: String) {
         // Let's make sure it hasn't change yet
-        print("Saving app push notification token to server")
+        Log.shared.info("Saving app push notification token to server")
 
         guard let url = URL(string: K.shared.registerDeviceURL)
         else { return }
@@ -76,7 +76,7 @@ class NotificationsManager: ObservableObject {
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 
         guard let jwtToken = keyChain.get(K.shared.keyChainUserTokenKey) else {
-            print(
+            Log.shared.info(
                 "No jwt token is stored in chain to be used for APNs server device registeration"
             )
             return
@@ -97,14 +97,14 @@ class NotificationsManager: ObservableObject {
         )
 
         URLSession.shared.dataTask(with: request) { data, response, error in
-            print("Request was made")
+            Log.shared.info("sendDeviceTokenToServer Request was made")
             if let error = error {
-                print("Error sending device token: \(error)")
+                Log.shared.error("Error sending device token: \(error)")
                 return
             }
 
             if let response = response as? HTTPURLResponse {
-                print("Device token sent. Status code: \(response.statusCode)")
+                Log.shared.info("Device token sent. Status code: \(response.statusCode)")
             }
         }.resume()
     }
@@ -116,7 +116,7 @@ class NotificationsManager: ObservableObject {
 //            let userId = 9
             
             guard let url = URL(string: K.shared.sendNotificatioURL) else {
-                print("Invalid URL")
+                Log.shared.error("Invalid URL")
                 return
             }
             
@@ -126,7 +126,7 @@ class NotificationsManager: ObservableObject {
             
             // Use stored JWT for authorization
             guard let jwtToken = keyChain.get(K.shared.keyChainUserTokenKey) else {
-                print("ERROR: No JWT token found") // TODO: Go to login
+                Log.shared.error("ERROR: No JWT token found") // TODO: Go to login
                 return
             }
             request.addValue("Bearer \(jwtToken)", forHTTPHeaderField: "Authorization")
@@ -141,17 +141,17 @@ class NotificationsManager: ObservableObject {
         
             URLSession.shared.dataTask(with: request) { data, response, error in
                 if let error = error {
-                    print("Error sending notification: \(error)")
+                    Log.shared.error("Error sending notification: \(error)")
                     return
                 }
                 
                 if let response = response as? HTTPURLResponse {
-                    print("Notification request sent. Status code: \(response.statusCode)")
+                    Log.shared.info("Notification request sent. Status code: \(response.statusCode)")
                 }
                 
                 if let data = data,
                    let responseBody = try? JSONSerialization.jsonObject(with: data) {
-                    print("Response body: \(responseBody)")
+                    Log.shared.info("Response body: \(responseBody)")
                 }
             }.resume()
         }

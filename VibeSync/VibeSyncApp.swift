@@ -74,7 +74,10 @@ struct VibeSyncApp: App {
 
     @StateObject var authentication = AuthService()
     @State private var navManager = NavigationManager()
-    
+
+    @StateObject private var notificationManager = NotificationsManager()
+    @State private var showNotificationPrompt = false
+
     var body: some Scene {
         WindowGroup {
             Group {
@@ -100,9 +103,21 @@ struct VibeSyncApp: App {
             }
             .environment(navManager)
             .environmentObject(authentication)
+            .environmentObject(notificationManager)
             .onOpenURL { url in
-                // TODO: Handle deep link
+                // TODO: Handle notification deep link
                 Log.shared.info("Opened a new url \(url.absoluteString) ")
+            }
+            // Notification
+            .task {
+                await notificationManager.getAuthStatus()
+                if !notificationManager.hasPermission {
+                    showNotificationPrompt = true
+                }
+            }
+            .sheet(isPresented: $showNotificationPrompt) {
+                NotificationPromptView()
+                    .environmentObject(notificationManager)
             }
         }
     }
