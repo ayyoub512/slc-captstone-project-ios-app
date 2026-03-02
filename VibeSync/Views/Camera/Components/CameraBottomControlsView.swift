@@ -33,6 +33,7 @@ struct CameraBottomControlsView: View {
                 }
             }
         }
+        .padding()
     }
 
     private var captureButton: some View {

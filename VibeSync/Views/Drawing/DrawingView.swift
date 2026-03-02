@@ -118,7 +118,7 @@ struct DrawingView: View {
                 .padding()
 
             Button("Send Test Notification") {
-                notificationManager.sendTestNotification(to: 12)
+//                notificationManager.sendTestNotification(to: 12)
             }
             .buttonStyle(.borderedProminent)
             .padding()

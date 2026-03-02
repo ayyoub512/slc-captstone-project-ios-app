@@ -64,6 +64,7 @@ class NotificationsManager: ObservableObject {
     }
 
     
+    /// Send APNS token to server
     func sendDeviceTokenToServer(with token: String) {
         // Let's make sure it hasn't change yet
         Log.shared.info("Saving app push notification token to server")
@@ -109,51 +110,4 @@ class NotificationsManager: ObservableObject {
         }.resume()
     }
 
-    
-    /// Send a push notification
-    func sendTestNotification(to recepientId: Int) {
-            // Hard-coded user ID (for testing)
-//            let userId = 9
-            
-            guard let url = URL(string: K.shared.sendNotificatioURL) else {
-                Log.shared.error("Invalid URL")
-                return
-            }
-            
-            var request = URLRequest(url: url)
-            request.httpMethod = "POST"
-            request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-            
-            // Use stored JWT for authorization
-            guard let jwtToken = keyChain.get(K.shared.keyChainUserTokenKey) else {
-                Log.shared.error("ERROR: No JWT token found") // TODO: Go to login
-                return
-            }
-            request.addValue("Bearer \(jwtToken)", forHTTPHeaderField: "Authorization")
-            
-            // The notification payload
-            let body: [String: Any] = [
-                "title": "Hello User \(recepientId)",
-                "body": "This is a test push notification"
-            ]
-            
-            request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
-        
-            URLSession.shared.dataTask(with: request) { data, response, error in
-                if let error = error {
-                    Log.shared.error("Error sending notification: \(error)")
-                    return
-                }
-                
-                if let response = response as? HTTPURLResponse {
-                    Log.shared.info("Notification request sent. Status code: \(response.statusCode)")
-                }
-                
-                if let data = data,
-                   let responseBody = try? JSONSerialization.jsonObject(with: data) {
-                    Log.shared.info("Response body: \(responseBody)")
-                }
-            }.resume()
-        }
-    
 }

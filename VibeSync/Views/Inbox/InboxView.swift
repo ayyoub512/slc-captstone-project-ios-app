@@ -15,7 +15,7 @@ struct InboxView: View {
 
     var body: some View {
         List {
-            if networkManager.isLoading {
+            if networkManager.working {
                 ProgressView("Fetching your squad...")
             } else if let error = networkManager.errorMessage {
                 Text(error).foregroundColor(.red)
@@ -76,7 +76,6 @@ struct InboxView: View {
                 } label: {
                     Image(systemName: "ellipsis")
                         .font(.title2)
-                    //                            .foregroundStyle(.primary)
                 }
             }
         }
@@ -89,6 +88,8 @@ struct InboxView: View {
             AddFriendView()
                 .padding(.top, 10)
                 .presentationDetents([.medium])
+                .environmentObject(networkManager)
+                .environmentObject(auth)
         }
     }
 }

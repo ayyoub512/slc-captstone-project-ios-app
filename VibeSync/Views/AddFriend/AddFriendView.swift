@@ -10,56 +10,95 @@ import UIKit
 
 struct AddFriendView: View {
     @State private var code: String = ""
+    @EnvironmentObject var networkManager: NetworkManager
+    @EnvironmentObject var auth: AuthService
 
     var body: some View {
-        Form{
-            Section(header: Text("Enter Friend’s Invite Code").font(.headline)) {
+        Form {
+            Section(header: Text("Enter Friend’s Invite Code").font(.headline))
+            {
                 TextField("Enter invite code", text: $code)
                     .autocapitalization(.allCharacters)
                     .disableAutocorrection(true)
-                    .padding(.horizontal, 0) // Form handles padding
-               
-                Button(action: {
-                    submitCode()
-                }) {
-                    Text("Add")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.glassProminent)
-            }
-            
-            Section(header: Text("Share Your Invite Code").font(.headline), footer: Text("Send this code to a friend to add you")) {
+                    .padding(.horizontal, 0)  // Form handles padding
+
                 VStack(alignment: .leading){
-                    HStack{
+                    Button(action: {
+                        submitCode()
+                    }) {
+                        if networkManager.working {
+                            ProgressView()
+                                .frame(maxWidth: .infinity)
+                            
+                        } else {
+                            Text("Add")
+                                .frame(maxWidth: .infinity)
+                        }
+                    }
+                    .buttonStyle(.glassProminent)
+                    
+                    
+                    
+                        
+
+                    
+                    
+                    
+                    
+                    
+                    if let success = networkManager.success, success {
+                        Text("Added with success")
+                            .font(.footnote)
+                            .padding(.top, 4)
+                            .foregroundStyle(.green)
+                            
+                    }
+                    
+                    if let error = networkManager.errorMessage {
+                        Text(error)
+                            .foregroundStyle(.red)
+                            .font(.footnote)
+                            .padding(.top, 4)
+                    }
+                }
+            }
+
+            Section(
+                header: Text("Share Your Invite Code").font(.headline),
+                footer: Text("Send this code to a friend to add you")
+            ) {
+                VStack(alignment: .leading) {
+                    HStack {
                         Text("Your invite code is: ")
                         Spacer()
                         CopyableText(text: "G3CM2A")
                     }
-                    
-
                 }
             }
 
         }
     }
-    
+
     private func submitCode() {
-            print("Submitted code: \(code)")
-            // Add your verification or API call here
+        Task {
+            if let token = auth.getToken() {
+                await networkManager.addFriend(with: code, token: token)
+            }
         }
+    }
 }
 
 struct CopyableText: View {
     let text: String
-    
+
     @State private var didCopy = false
-    
+
     var body: some View {
         HStack(spacing: 12) {
             Text(text)
                 .foregroundStyle(.primary)
                 .textSelection(.enabled)
-            
+
             Image(systemName: didCopy ? "checkmark.circle.fill" : "doc.on.doc")
                 .font(.body)
                 .foregroundStyle(didCopy ? .green : .secondary)
@@ -71,18 +110,18 @@ struct CopyableText: View {
                 .fill(Color(.secondarySystemBackground))
                 .opacity(0.1)
         )
-        .contentShape(RoundedRectangle(cornerRadius: 14)) // makes full area tappable
+        .contentShape(RoundedRectangle(cornerRadius: 14))  // makes full area tappable
         .onTapGesture {
             copyToClipboard()
         }
         .animation(.easeInOut(duration: 0.2), value: didCopy)
     }
-    
+
     private func copyToClipboard() {
         UIPasteboard.general.string = text
-        
+
         didCopy = true
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             didCopy = false
         }
@@ -91,4 +130,6 @@ struct CopyableText: View {
 
 #Preview {
     AddFriendView()
+        .environmentObject(AuthService())
+        .environmentObject(NetworkManager())
 }

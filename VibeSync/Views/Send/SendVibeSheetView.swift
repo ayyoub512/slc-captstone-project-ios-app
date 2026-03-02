@@ -16,10 +16,8 @@ struct SendVibeSheetView: View {
     var body: some View {
         VStack{
             ScrollView {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 80))]) {
-                    if networkManager.isLoading {
-                        ProgressView("Fetching pals...")
-                    } else if let error = networkManager.errorMessage {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))]) {
+                    if let error = networkManager.errorMessage {
                         Text(error).foregroundColor(.red)
                     } else {
                         ForEach(networkManager.friends) { friend in
@@ -32,6 +30,7 @@ struct SendVibeSheetView: View {
                         }
                     }
                 }
+                .padding(.top, 2)
             }
             
             Button{
@@ -40,9 +39,18 @@ struct SendVibeSheetView: View {
                     await networkManager.sendVibe(to: selectedIDs, with: auth.getToken() ?? "", image: capturedImage)
                 }
             }label: {
-                Text("Send")
+                if networkManager.working {
+                    ProgressView()
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                }else{
+                    Text("Send")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                }
             }.buttonStyle(.glassProminent)
         }
+        .padding()
     }
 
     private func toggle(_ id: String) {

@@ -13,16 +13,15 @@ import SwiftUI
 class NetworkManager: ObservableObject {
 
     @Published var friends: [Friend] = []
-    @Published var isLoading = false
+    @Published var working = false
     @Published var errorMessage: String?
-
-    @Published var sendingVibe = false
-    @Published var sendSuccess: Bool?
+    @Published var success: Bool?
 
     private var lastFetchTime: Date?
     private let cacheValidityDuration: TimeInterval = 300  // 5 minutes
 
     // Check if cached data is still valid
+    // Cach is used the cash the fetched friends list
     private var isCacheValid: Bool {
         guard let lastFetch = lastFetchTime else { return false }
         return Date().timeIntervalSince(lastFetch) < cacheValidityDuration
@@ -47,7 +46,7 @@ class NetworkManager: ObservableObject {
             return
         }
 
-        isLoading = true
+        working = true
         errorMessage = nil
 
         do {
@@ -73,7 +72,7 @@ class NetworkManager: ObservableObject {
                 !(200...299).contains(httpResponse.statusCode)
             {
                 self.errorMessage = "Server error: \(httpResponse.statusCode)"
-                isLoading = false
+                working = false
                 return
             }
 
@@ -90,7 +89,7 @@ class NetworkManager: ObservableObject {
             self.errorMessage = "Failed to load friends"
         }
 
-        isLoading = false
+        working = false
     }
 
     /// Send vibe to friends
@@ -100,15 +99,13 @@ class NetworkManager: ObservableObject {
         image: UIImage
     ) async {
         guard let url = URL(string: K.shared.sendNotificatioURL) else {
-            print(" Invalid URL")
-
+            Log.shared.error(" Invalid URL")
             self.errorMessage = "Invalid server URL"
-            self.sendSuccess = false
-
+            self.working = false
             return
         }
 
-        self.sendingVibe = true
+        self.working = true
         self.errorMessage = nil
 
         do {
@@ -146,15 +143,15 @@ class NetworkManager: ObservableObject {
                 bodyData.append(receiversJSON)
                 bodyData.append("\r\n".data(using: .utf8)!)
 
-                print(
+                Log.shared.info(
                     "Sending to \(recipients.count) recipients: \(recipients)"
                 )
             } catch {
-                print("Failed to serialize receivers: \(error)")
+                Log.shared.error("Failed to serialize receivers: \(error)")
 
                 self.errorMessage = "Failed to prepare recipients data"
-                self.sendingVibe = false
-                self.sendSuccess = false
+                self.working = false
+                self.success = false
 
                 return
             }
@@ -172,13 +169,13 @@ class NetworkManager: ObservableObject {
                 bodyData.append(imageData)
                 bodyData.append("\r\n".data(using: .utf8)!)
 
-                print("Image size: \(imageData.count) bytes")
+                Log.shared.info("Image size: \(imageData.count) bytes")
             } else {
-                print("Failed to convert image to JPEG")
+                Log.shared.error("Failed to convert image to JPEG")
                 await MainActor.run {
                     self.errorMessage = "Failed to process image"
-                    self.sendingVibe = false
-                    self.sendSuccess = false
+                    self.working = false
+                    self.success = false
                 }
                 return
             }
@@ -194,42 +191,121 @@ class NetworkManager: ObservableObject {
             )
 
             if let httpResponse = response as? HTTPURLResponse {
-                print("Status code: \(httpResponse.statusCode)")
+                Log.shared.info("Status code: \(httpResponse.statusCode)")
 
                 if (200...299).contains(httpResponse.statusCode) {
                     if let responseBody = try? JSONSerialization.jsonObject(
                         with: data
                     ) {
-                        print("Response: \(responseBody)")
+                        Log.shared.info("Response: \(responseBody)")
                     }
 
-                    self.sendSuccess = true
-                    self.sendingVibe = false
+                    self.success = true
+                    self.working = false
 
                 } else {
                     if let responseBody = try? JSONSerialization.jsonObject(
                         with: data
                     ) {
-                        print("Error response: \(responseBody)")
+                        Log.shared.error("Error response: \(responseBody)")
                     }
 
                     self.errorMessage =
                         "Server error: \(httpResponse.statusCode)"
-                    self.sendSuccess = false
-                    self.sendingVibe = false
+                    self.success = false
+                    self.working = false
 
                 }
             }
 
         } catch {
-            print("Send vibe error: \(error)")
+            Log.shared.info("Send vibe error: \(error)")
 
             self.errorMessage =
                 "Failed to send vibe: \(error.localizedDescription)"
-            self.sendSuccess = false
-            self.sendingVibe = false
+            self.success = false
+            self.working = false
 
         }
+    }
+
+    func addFriend(with inviteCode: String, token: String) async {
+        guard let addFriendsURL = URL(string: K.shared.addFriendURL) else {
+            Log.shared.info(
+                "addFriend(with inviteCode error: K.shared.addFriendURL is not found"
+            )
+            self.working = false
+            self.success = false
+            self.errorMessage = "Error adding friend, please try again later!"
+            return
+        }
+
+        self.working = true
+        self.errorMessage = nil
+        self.success = nil
+        
+        do {
+            // Setting up the request
+            var request = URLRequest(url: addFriendsURL)
+            request.httpMethod = "POST"
+            request.addValue(
+                "application/json",
+                forHTTPHeaderField: "Content-Type"
+            )
+            request.addValue(
+                "Bearer \(token)",
+                forHTTPHeaderField: "Authorization"
+            )
+
+            let body: [String: Any] = [
+                "inviteCode": inviteCode
+            ]
+            
+            request.httpBody = try? JSONSerialization.data(
+                withJSONObject: body,
+                options: []
+            )
+            
+            // Using await to perform the request
+            let (data, response) = try await URLSession.shared.data(
+                for: request
+            )
+
+            // Checking errors (e.g,  401)
+            if let httpResponse = response as? HTTPURLResponse,
+                !(200...299).contains(httpResponse.statusCode)
+            {
+                Log.shared.error("Server error: \(httpResponse.statusCode)")
+                self.errorMessage = "Server error: \(httpResponse.statusCode)"
+                self.working = false
+                self.success = false
+                return
+            }
+
+            // Decoding
+            let decodedResponse = try JSONDecoder().decode(
+                AddFriendResponse.self,
+                from: data
+            )
+
+            //Updating UI
+            self.working = false
+            if decodedResponse.success ?? false {
+                self.errorMessage = nil
+                self.success = true
+            }else{
+                self.errorMessage = decodedResponse.message
+                self.success = false
+            }
+
+        } catch {
+            Log.shared.error("Fetch Friends error: \(error)")
+            self.errorMessage = "Failed to add friend: \(error.localizedDescription)"
+            self.success = false
+            self.working = false
+        }
+
+        working = false
     }
 }
 
@@ -243,4 +319,9 @@ struct Friend: Codable, Identifiable, Hashable {
 struct FriendListResponse: Codable {
     let message: String
     let friends: [Friend]
+}
+
+struct AddFriendResponse: Codable {
+    let message: String?
+    let success: Bool?
 }

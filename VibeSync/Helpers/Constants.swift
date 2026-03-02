@@ -33,5 +33,6 @@ struct K {
     var sendNotificatioURL: String { apiURL + "/send-notification" }
     var friendsListURL: String { apiURL + "/getFriendList" }
     var getMessagesURL: String { apiURL + "/getMessagesByFriend" }
+    var addFriendURL: String { apiURL + "/addFriend" }
 
 }
