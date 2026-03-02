@@ -8,29 +8,6 @@
 import PencilKit
 import SwiftUI
 
-// Helper class for saving images
-class ImageSaver: NSObject {
-    func writeToPhotoAlbum(image: UIImage) {
-        UIImageWriteToSavedPhotosAlbum(
-            image,
-            self,
-            #selector(saveCompleted(_:didFinishSavingWithError:contextInfo:)),
-            nil
-        )
-    }
-
-    @objc func saveCompleted(
-        _ image: UIImage,
-        didFinishSavingWithError error: Error?,
-        contextInfo: UnsafeRawPointer?
-    ) {
-        if let error = error {
-            print("Error saving image: \(error.localizedDescription)")
-        } else {
-            print("Image saved successfully!")
-        }
-    }
-}
 
 struct CanvasView: UIViewRepresentable {
 //    @Binding var canvasView: PKCanvasView
