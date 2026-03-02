@@ -26,14 +26,34 @@ struct InboxView: View {
                 }
             }
         }
-        .padding(.horizontal, 10)
-        .navigationTitle("Inbox")
-        .navigationDestination(for: Friend.self, destination: { friend in
-            ChatView(friend: friend)
-        })
+        .navigationDestination(
+            for: Friend.self,
+            destination: { friend in
+                ChatView(friend: friend)
+            }
+        )
         .toolbar {
-            Button(action: { /* Logic to show Add Friend sheet */  }) {
-                Image(systemName: "person.badge.plus")
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    withAnimation{
+                        navManager.selectedTab = 0
+                    }
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                    }
+                }
+            }
+
+            ToolbarItem(placement: .principal) {
+                Text("Inbox")
+                    .font(.largeTitle.bold())
+            }
+
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: { /* Add friend logic */  }) {
+                    Image(systemName: "person.badge.plus")
+                }
             }
         }
         .task {
