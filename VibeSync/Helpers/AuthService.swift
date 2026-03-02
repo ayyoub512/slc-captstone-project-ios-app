@@ -56,7 +56,7 @@ class AuthService: ObservableObject {
 
     func logout() {
         keyChain.delete(K.shared.keyChainUserTokenKey)
-        keyChain.delete(K.shared.keychainInviteCode)
+        keyChain.delete(K.shared.keychainInviteCodeKey)
         self.updateAuthStatus(isAuthenticated: false)
     }
 }
@@ -108,8 +108,17 @@ extension AuthService {
                 return
             }
             self.saveToKeyChain(
-                key: K.shared.keychainInviteCode,
+                key: K.shared.keychainInviteCodeKey,
                 value: inviteCode
+            )
+            
+            guard let userID = loginResponse.userID else {
+                completion(.failure(.invalideCredentials))
+                return
+            }
+            self.saveToKeyChain(
+                key: K.shared.keychainUserIDKey,
+                value: userID
             )
 
             completion(.success(token))
@@ -165,8 +174,17 @@ extension AuthService {
                 return
             }
             self.saveToKeyChain(
-                key: K.shared.keychainInviteCode,
+                key: K.shared.keychainInviteCodeKey,
                 value: inviteCode
+            )
+            
+            guard let userID = registerResponse.userID else {
+                completion(.failure(.invalideCredentials))
+                return
+            }
+            self.saveToKeyChain(
+                key: K.shared.keychainUserIDKey,
+                value: userID
             )
 
             completion(.success(token))
@@ -198,13 +216,15 @@ struct User: Codable {
 struct RegisterResponse: Codable {
     let token: String?
     let message: String?
-    let success: Bool?
+    let error: String?
     let inviteCode: String?
+    let userID: String?
 }
 
 struct LoginResponse: Codable {
     let token: String?
     let message: String?
-    let success: Bool?
+    let error: String?
     let inviteCode: String?
+    let userID: String?
 }

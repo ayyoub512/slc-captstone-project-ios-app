@@ -13,7 +13,7 @@ struct ChatView: View {
     @EnvironmentObject var auth: AuthService
 
     // You need your own ID to align messages (Sent vs Received)
-    let myID: String = "699e1c0fce42532ffd4c2e51" // TODO:  make it dynamic
+    let myID: String = KeyChainManager.shared.get(key: K.shared.keychainUserIDKey) // TODO:  make it dynamic
 
     var body: some View {
         ZStack {

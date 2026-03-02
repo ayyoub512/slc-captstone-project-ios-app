@@ -22,8 +22,8 @@ struct K {
     }
     let keyChainUserTokenKey = "userToken"
     let keychainAPNKey = "deviceAPNToken"
-    let keychainInviteCode = "inviteCode"
-    
+    let keychainInviteCodeKey = "inviteCode"
+    let keychainUserIDKey = "userID"
     
     // API END POINTS
     let apiURL = "https://ef52-2001-1970-4c69-b400-cf3-2d8e-3024-bd3.ngrok-free.app/api"
