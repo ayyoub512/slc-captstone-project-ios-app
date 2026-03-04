@@ -37,7 +37,7 @@ struct InboxView: View {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: {
                     withAnimation {
-                        navManager.selectedTab = 0
+                        navManager.selectedTab = 1
                     }
                 }) {
                     HStack {

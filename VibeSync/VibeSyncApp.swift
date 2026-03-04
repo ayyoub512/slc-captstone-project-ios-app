@@ -83,21 +83,30 @@ struct VibeSyncApp: App {
             Group {
                 if authentication.isAuthenticated {
                     TabView(selection: $navManager.selectedTab) {
-                        CameraView()
-                            .tag(0)
                         
+                        NavigationStack(path: $navManager.profilePath){
+                            ProfileView()
+                                .tag(0)
+                        }
+                       
+                        CameraView()
+                            .tag(1)
+                        
+                       
                         NavigationStack(path: $navManager.inboxPath){
                             InboxView()
                         }
-                        .tag(1)
+                        .tag(2)
+                        
+                        
                     }
+                    
                     .tabViewStyle(.page(indexDisplayMode: .never))
                     .ignoresSafeArea()
                     
                 } else {
                     NavigationStack {
                         AuthContainerView()
-                            .environmentObject(authentication)
                     }
                 }
             }

@@ -14,9 +14,6 @@ struct CameraView: View {
 
             VStack {
                 CameraHeaderView()
-                    .padding(.top, 50)
-
-                Spacer()
 
                 CameraPreviewContainer(viewModel: viewModel)
 
@@ -28,7 +25,6 @@ struct CameraView: View {
                         showSendMessageSheet = true
                     }
                 )
-                .padding(.bottom, 40)
             }
         }
         .onAppear {

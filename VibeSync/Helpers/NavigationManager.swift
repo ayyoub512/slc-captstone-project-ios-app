@@ -11,11 +11,12 @@ import Foundation
 @Observable
 class NavigationManager {
     
-    // 0 for camera/drawing, 1 = inbox
-    var selectedTab: Int = 0
+    var selectedTab: Int = 1 // camera
     
     // Control the stack of the inbox
     var inboxPath = NavigationPath()
+    
+    var profilePath = NavigationPath() // allows for progrmmation navigation
     
     // Function to handle deep links (from Push Notifications)
 //    func openMessage(id: String) {
