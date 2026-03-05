@@ -17,20 +17,16 @@ struct Provider: AppIntentTimelineProvider {
         category: "WidgetPush"
     )
 
-    let imgPlaceHolder =
-        "https://bucket-vibe-sync.s3.us-west-2.amazonaws.com/eaa70e71d096c729dd54c0430ab53a7d.jpg"
+    let imgPlaceHolder = "https://bucket-vibe-sync.s3.us-west-2.amazonaws.com/c24f51a496510a96bff0c6806ad0e80b.jpg"
 
     // Helper function to call your GetMessagesByFriendController
     func fetchLatestImage() async -> String? {
         logger.log("Widgey: Fetching latest widget image")
         let kc = KeychainSwift()
-        //        let friendID = "69a884030557640330beef61"
         kc.accessGroup = K.shared.keyChainSharedAccessGroup
 
-        // 1. Get Auth Token
-        guard let token = kc.get(K.shared.keyChainUserTokenKey) else {
-            return nil
-        }
+        guard let token = kc.get(K.shared.keyChainUserTokenKey)
+        else { return nil }
 
         guard let url = URL(string: K.shared.getLatestMessageURL)
         else { return nil }
@@ -39,9 +35,6 @@ struct Provider: AppIntentTimelineProvider {
         request.httpMethod = "GET"
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        //        request.httpBody = try? JSONSerialization.data(withJSONObject: [
-        //            "friendID": friendID
-        //        ])
 
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
@@ -50,50 +43,14 @@ struct Provider: AppIntentTimelineProvider {
                 from: data
             )
 
-            logger.log("Widget: Got the image ")
-            if let img = response.messages.first?.imageURL {
-                logger.log("Image URL: \(img, privacy: .public)")
+            guard let imgURl = response.messages.first?.resizedImageURL else {
+                logger.error("Error getting resizeimageurl")
+                return "" // TODO: Use a default image or something here
             }
+            logger.log("Image URL: \(imgURl, privacy: .public)")
 
             // Get the imageURL from the very last message in the array
-            return response.messages.last?.imageURL
-        } catch {
-            return nil
-        }
-    }
-
-    func fetchLatestImageByFriend() async -> String? {
-        logger.log("Widgey: Fetching latest widget image")
-        let kc = KeychainSwift()
-        let friendID = "69a884030557640330beef61"
-        kc.accessGroup = K.shared.keyChainSharedAccessGroup
-
-        // 1. Get Auth Token
-        guard let token = kc.get(K.shared.keyChainUserTokenKey) else {
-            return nil
-        }
-
-        guard let url = URL(string: K.shared.getLatestMessageByFriendURL)
-        else { return nil }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try? JSONSerialization.data(withJSONObject: [
-            "friendID": friendID
-        ])
-
-        do {
-            let (data, _) = try await URLSession.shared.data(for: request)
-            let response = try JSONDecoder().decode(
-                MessagesResponse.self,
-                from: data
-            )
-
-            logger.log("Widget: Got the image ")
-            // Get the imageURL from the very last message in the array
-            return response.messages.last?.imageURL
+            return imgURl
         } catch {
             return nil
         }
@@ -271,10 +228,11 @@ struct MessageEntry: Decodable {
     let senderID: String
     let receiverID: String
     let imageURL: String
+    let resizedImageURL: String
     let createdAt: String  // Capturing as String; can be converted to Date later
 
     enum CodingKeys: String, CodingKey {
-        case senderID, receiverID, imageURL
+        case senderID, receiverID, imageURL, resizedImageURL
         case createdAt = "created_at"  // Maps from snake_case in your Mongoose select
     }
 }
@@ -287,40 +245,18 @@ struct LatestImageResponse: Codable {
 // Widgets need a simple way to load images; AsyncImage can be flaky in Widgets
 struct NetworkImage: View {
     let url: URL
-    
+
     var body: some View {
-        if let uiImage = loadResizedImage(from: url) {
+        if let data = try? Data(contentsOf: url),
+            let uiImage = UIImage(data: data)
+        {
             Image(uiImage: uiImage)
                 .resizable()
                 .aspectRatio(contentMode: .fill)
         } else {
             Color.gray
         }
-//        Color.gray
     }
-    
-    
-    private func loadResizedImage(from url: URL) -> UIImage? {
-            guard let data = try? Data(contentsOf: url),
-                  let source = CGImageSourceCreateWithData(data as CFData, nil) else {
-                Log.shared.error("RETURNING -  guard let data = try? Data(contentsOf: url),")
-                return nil
-            }
-            
-            let options: [CFString: Any] = [
-                kCGImageSourceThumbnailMaxPixelSize: 800,  // Safe well under widget max
-                kCGImageSourceCreateThumbnailFromImageAlways: true,
-                kCGImageSourceCreateThumbnailWithTransform: true
-            ]
-            
-            guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
-                Log.shared.error("RETURNING -  guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {")
-
-                return nil
-            }
-            
-            return UIImage(cgImage: cgImage)
-        }
 
 }
 

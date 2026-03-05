@@ -34,7 +34,6 @@ struct K {
     var friendsListURL: String { apiURL + "/getFriendList" }
     var getMessagesURL: String { apiURL + "/getMessagesByFriend" }
     var addFriendURL: String { apiURL + "/addFriend" }
-    var getLatestMessageByFriendURL: String { apiURL + "/getNewestMessageByGivenFriend" }
     var getLatestMessageURL: String { apiURL + "/getNewestMessageByFriends" }
 
 }
