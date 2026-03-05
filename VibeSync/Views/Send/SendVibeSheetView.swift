@@ -6,15 +6,17 @@
 //
 
 import SwiftUI
+
 struct SendVibeSheetView: View {
     @ObservedObject var networkManager: NetworkManager
     @Binding var selectedFriendIDs: Set<String>
     @EnvironmentObject var auth: AuthService
+//    let overlayText: String
 
     let capturedImage: UIImage
 
     var body: some View {
-        VStack{
+        VStack {
             ScrollView {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))]) {
                     if let error = networkManager.errorMessage {
@@ -23,7 +25,9 @@ struct SendVibeSheetView: View {
                         ForEach(networkManager.friends) { friend in
                             ContactBubble(
                                 friend: friend,
-                                isSelected: selectedFriendIDs.contains(friend.id)
+                                isSelected: selectedFriendIDs.contains(
+                                    friend.id
+                                )
                             ) {
                                 toggle(friend.id)
                             }
@@ -32,23 +36,29 @@ struct SendVibeSheetView: View {
                 }
                 .padding(.top, 2)
             }
-            
-            Button{
+
+            Button {
                 Task {
-                    let selectedIDs = Array(selectedFriendIDs) // Convert Set<String> → [String]
-                    await networkManager.sendVibe(to: selectedIDs, with: auth.getToken() ?? "", image: capturedImage)
+                    let selectedIDs = Array(selectedFriendIDs)  // Convert Set<String> → [String]
+
+                    await networkManager.sendVibe(
+                        to: selectedIDs,
+                        with: auth.getToken() ?? "",
+                        image: capturedImage
+                    )
                 }
-            }label: {
+            } label: {
                 if networkManager.working {
                     ProgressView()
                         .padding()
                         .frame(maxWidth: .infinity)
-                }else{
+                } else {
                     Text("Send")
                         .frame(maxWidth: .infinity)
                         .padding()
                 }
             }.buttonStyle(.glassProminent)
+                .disabled(networkManager.working)
         }
         .padding()
     }
@@ -60,4 +70,5 @@ struct SendVibeSheetView: View {
             selectedFriendIDs.insert(id)
         }
     }
+
 }

@@ -4,9 +4,15 @@ struct CameraView: View {
     @StateObject private var viewModel = CameraViewModel()
     @StateObject private var networkManager = NetworkManager()
     @EnvironmentObject var auth: AuthService
-
+    
+    @EnvironmentObject var notificationManager: NotificationsManager
+    @State private var showNotificationPrompt = false
+    
     @State private var showSendMessageSheet = false
     @State private var selectedFriendIDs: Set<String> = []
+    
+    @State private var hasOverlayText: Bool = false
+    @State private var finalImage: Image?
 
     var body: some View {
         ZStack {
@@ -16,6 +22,8 @@ struct CameraView: View {
                 CameraHeaderView()
 
                 CameraPreviewContainer(viewModel: viewModel)
+                
+//                CameraPreviewContainer(viewModel: viewModel, hasOverlayText: $hasOverlayText, finalImage: $finalImage)
 
                 Spacer()
 
@@ -58,6 +66,7 @@ struct CameraView: View {
                 SendVibeSheetView(
                     networkManager: networkManager,
                     selectedFriendIDs: $selectedFriendIDs,
+//                    overlayText: overlayText,
                     capturedImage: image
                 )
                 .environmentObject(auth)
@@ -66,6 +75,19 @@ struct CameraView: View {
                 Text("No image available")
             }
 
+        }
+        // Notification
+        .task {
+            await notificationManager.getAuthStatus()
+            if auth.isAuthenticated {
+                if !notificationManager.hasPermission {
+                    showNotificationPrompt = true
+                }
+            }
+        }
+        .sheet(isPresented: $showNotificationPrompt) {
+            NotificationPromptView()
+                .environmentObject(notificationManager)
         }
     }
 

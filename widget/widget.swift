@@ -16,14 +16,15 @@ struct Provider: AppIntentTimelineProvider {
         subsystem: "io.ayyoub.vibe-sync",
         category: "WidgetPush"
     )
-    
-    let imgPlaceHolder = "https://bucket-vibe-sync.s3.us-west-2.amazonaws.com/eaa70e71d096c729dd54c0430ab53a7d.jpg"
-    
+
+    let imgPlaceHolder =
+        "https://bucket-vibe-sync.s3.us-west-2.amazonaws.com/eaa70e71d096c729dd54c0430ab53a7d.jpg"
+
     // Helper function to call your GetMessagesByFriendController
     func fetchLatestImage() async -> String? {
         logger.log("Widgey: Fetching latest widget image")
         let kc = KeychainSwift()
-        let friendID = "699e1c1fce42532ffd4c2e57"
+        //        let friendID = "69a884030557640330beef61"
         kc.accessGroup = K.shared.keyChainSharedAccessGroup
 
         // 1. Get Auth Token
@@ -31,7 +32,48 @@ struct Provider: AppIntentTimelineProvider {
             return nil
         }
 
-        guard let url = URL(string: K.shared.apiURL + "/getMessagesByFriend")
+        guard let url = URL(string: K.shared.getLatestMessageURL)
+        else { return nil }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        //        request.httpBody = try? JSONSerialization.data(withJSONObject: [
+        //            "friendID": friendID
+        //        ])
+
+        do {
+            let (data, _) = try await URLSession.shared.data(for: request)
+            let response = try JSONDecoder().decode(
+                MessagesResponse.self,
+                from: data
+            )
+
+            logger.log("Widget: Got the image ")
+            if let img = response.messages.first?.imageURL {
+                logger.log("Image URL: \(img, privacy: .public)")
+            }
+
+            // Get the imageURL from the very last message in the array
+            return response.messages.last?.imageURL
+        } catch {
+            return nil
+        }
+    }
+
+    func fetchLatestImageByFriend() async -> String? {
+        logger.log("Widgey: Fetching latest widget image")
+        let kc = KeychainSwift()
+        let friendID = "69a884030557640330beef61"
+        kc.accessGroup = K.shared.keyChainSharedAccessGroup
+
+        // 1. Get Auth Token
+        guard let token = kc.get(K.shared.keyChainUserTokenKey) else {
+            return nil
+        }
+
+        guard let url = URL(string: K.shared.getLatestMessageByFriendURL)
         else { return nil }
 
         var request = URLRequest(url: url)
@@ -48,7 +90,7 @@ struct Provider: AppIntentTimelineProvider {
                 MessagesResponse.self,
                 from: data
             )
-            
+
             logger.log("Widget: Got the image ")
             // Get the imageURL from the very last message in the array
             return response.messages.last?.imageURL
@@ -59,7 +101,11 @@ struct Provider: AppIntentTimelineProvider {
 
     // Sets up a default widget entry.
     func placeholder(in context: Context) -> SimpleEntry {
-        SimpleEntry(date: Date(), configuration: ConfigurationAppIntent(), imageURL: imgPlaceHolder)
+        SimpleEntry(
+            date: Date(),
+            configuration: ConfigurationAppIntent(),
+            imageURL: imgPlaceHolder
+        )
     }
 
     // Defines how your widget should look in a static state
@@ -67,7 +113,11 @@ struct Provider: AppIntentTimelineProvider {
         for configuration: ConfigurationAppIntent,
         in context: Context
     ) async -> SimpleEntry {
-        SimpleEntry(date: Date(), configuration: configuration, imageURL: imgPlaceHolder)
+        SimpleEntry(
+            date: Date(),
+            configuration: configuration,
+            imageURL: imgPlaceHolder
+        )
     }
 
     // Generates the timeline entries for widget, specifying when and how often the widget's data should be refreshed.
@@ -111,7 +161,6 @@ struct widgetEntryView: View {
                 Text("Image goes here")
             }
 
-            
         }
         .containerBackground(.black.gradient, for: .widget)
     }
@@ -222,14 +271,13 @@ struct MessageEntry: Decodable {
     let senderID: String
     let receiverID: String
     let imageURL: String
-    let createdAt: String // Capturing as String; can be converted to Date later
+    let createdAt: String  // Capturing as String; can be converted to Date later
 
     enum CodingKeys: String, CodingKey {
         case senderID, receiverID, imageURL
-        case createdAt = "created_at" // Maps from snake_case in your Mongoose select
+        case createdAt = "created_at"  // Maps from snake_case in your Mongoose select
     }
 }
-
 
 // Helper struct for decoding
 struct LatestImageResponse: Codable {
@@ -239,17 +287,41 @@ struct LatestImageResponse: Codable {
 // Widgets need a simple way to load images; AsyncImage can be flaky in Widgets
 struct NetworkImage: View {
     let url: URL
+    
     var body: some View {
-        if let data = try? Data(contentsOf: url),
-            let uiImage = UIImage(data: data)
-        {
+        if let uiImage = loadResizedImage(from: url) {
             Image(uiImage: uiImage)
                 .resizable()
                 .aspectRatio(contentMode: .fill)
         } else {
             Color.gray
         }
+//        Color.gray
     }
+    
+    
+    private func loadResizedImage(from url: URL) -> UIImage? {
+            guard let data = try? Data(contentsOf: url),
+                  let source = CGImageSourceCreateWithData(data as CFData, nil) else {
+                Log.shared.error("RETURNING -  guard let data = try? Data(contentsOf: url),")
+                return nil
+            }
+            
+            let options: [CFString: Any] = [
+                kCGImageSourceThumbnailMaxPixelSize: 800,  // Safe well under widget max
+                kCGImageSourceCreateThumbnailFromImageAlways: true,
+                kCGImageSourceCreateThumbnailWithTransform: true
+            ]
+            
+            guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
+                Log.shared.error("RETURNING -  guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {")
+
+                return nil
+            }
+            
+            return UIImage(cgImage: cgImage)
+        }
+
 }
 
 //#Preview(as: .systemSmall) {

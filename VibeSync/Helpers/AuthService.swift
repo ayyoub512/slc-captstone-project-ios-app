@@ -55,8 +55,9 @@ class AuthService: ObservableObject {
     }
 
     func logout() {
-        keyChain.delete(K.shared.keyChainUserTokenKey)
-        keyChain.delete(K.shared.keychainInviteCodeKey)
+//        keyChain.delete(K.shared.keyChainUserTokenKey)
+//        keyChain.delete(K.shared.keychainInviteCodeKey)
+        KeyChainManager.shared.clearKeyChain()
         self.updateAuthStatus(isAuthenticated: false)
     }
 }

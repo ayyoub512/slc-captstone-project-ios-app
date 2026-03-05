@@ -31,4 +31,8 @@ struct KeyChainManager {
         keyChain.set(value, forKey: key)
         keyChain.synchronizable = synchronizable
     }
+    
+    func clearKeyChain(){
+        keyChain.clear()
+    }
 }

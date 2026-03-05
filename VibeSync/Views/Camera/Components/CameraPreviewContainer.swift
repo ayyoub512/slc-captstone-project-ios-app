@@ -11,9 +11,11 @@ struct CameraPreviewContainer: View {
     @ObservedObject var viewModel: CameraViewModel
 
     // Label overlay
-    @State private var label: String = "Hi"
+    @State private var overlayText: String = "Hi"
     @State private var isEditingText = false
-
+//    @Binding var hasOverlayText: Bool
+//    @Binding var finalImage: Image
+    
     var body: some View {
         ZStack {
             GeometryReader { geo in
@@ -29,11 +31,11 @@ struct CameraPreviewContainer: View {
                                         Spacer()
                                         HStack{
                                             EditableLabel(
-                                                $label,
+                                                $overlayText,
                                                 isEditing: $isEditingText
                                             ) {
                                                 print(
-                                                    "Editing ended. New username: \(label)"
+                                                    "Editing ended. New overlay Text: \(overlayText)"
                                                 )
                                             }
                                             .font(.title2)

@@ -76,7 +76,6 @@ struct VibeSyncApp: App {
     @State private var navManager = NavigationManager()
 
     @StateObject private var notificationManager = NotificationsManager()
-    @State private var showNotificationPrompt = false
 
     var body: some Scene {
         WindowGroup {
@@ -91,6 +90,7 @@ struct VibeSyncApp: App {
                        
                         CameraView()
                             .tag(1)
+                            .environmentObject(notificationManager)
                         
                        
                         NavigationStack(path: $navManager.inboxPath){
@@ -117,17 +117,7 @@ struct VibeSyncApp: App {
                 // TODO: Handle notification deep link
                 Log.shared.info("Opened a new url \(url.absoluteString) ")
             }
-            // Notification
-            .task {
-                await notificationManager.getAuthStatus()
-                if !notificationManager.hasPermission {
-                    showNotificationPrompt = true
-                }
-            }
-            .sheet(isPresented: $showNotificationPrompt) {
-                NotificationPromptView()
-                    .environmentObject(notificationManager)
-            }
+            
         }
     }
 }
