@@ -11,9 +11,6 @@ struct CameraView: View {
     @State private var showSendMessageSheet = false
     @State private var selectedFriendIDs: Set<String> = []
     
-    @State private var hasOverlayText: Bool = false
-    @State private var bakedImage: UIImage = UIImage()
-    @State private var bakeImage: Bool = false
     @State private var isEditingText = false
 
     var body: some View {
@@ -25,7 +22,7 @@ struct CameraView: View {
 
 //                CameraPreviewContainer(viewModel: viewModel)
                 
-                CameraPreviewContainer(viewModel: viewModel, isEditingText: $isEditingText, hasOverlayText: $hasOverlayText, bakedImage: $bakedImage, bakeImage: $bakeImage)
+                CameraPreviewContainer(viewModel: viewModel, isEditingText: $isEditingText)
 
                 Spacer()
 
@@ -64,16 +61,13 @@ struct CameraView: View {
             Text("Please enable camera access in Settings to capture vibes.")
         }
         .sheet(isPresented: $showSendMessageSheet) {
-            if let image = viewModel.capturedImage {
+            if viewModel.capturedImage != nil {
                 SendVibeSheetView(
                     networkManager: networkManager,
                     selectedFriendIDs: $selectedFriendIDs,
-//                    overlayText: overlayText,
-                    bakeImage: $bakeImage,
-                    bakedImage: $bakedImage,
-                    capturedImage: image
                 )
                 .environmentObject(auth)
+                .environmentObject(viewModel)
                 .presentationDetents([.medium])
             } else {
                 Text("No image available")

@@ -11,11 +11,7 @@ struct SendVibeSheetView: View {
     @ObservedObject var networkManager: NetworkManager
     @Binding var selectedFriendIDs: Set<String>
     @EnvironmentObject var auth: AuthService
-    @Binding var bakeImage: Bool
-    @Binding var bakedImage: UIImage
-//    let overlayText: String
-
-    let capturedImage: UIImage
+    @EnvironmentObject var viewModel: CameraViewModel
 
     var body: some View {
         VStack {
@@ -40,15 +36,16 @@ struct SendVibeSheetView: View {
             }
 
             Button {
-                bakeImage = true
-                print("Channging bakeImage to: true")
                 Task {
-                    let selectedIDs = Array(selectedFriendIDs)  // Convert Set<String> → [String]
-
+                    guard let finalImage = await viewModel.renderFinalImage() else {
+                        Log.shared.error("error: guard let finalImage = await viewModel.renderFinalImage() else")
+                        return
+                    }
+                
                     await networkManager.sendVibe(
-                        to: selectedIDs,
+                        to: Array(selectedFriendIDs), // Convert Set<String> → [String]
                         with: auth.getToken() ?? "",
-                        image: bakedImage
+                        image: finalImage
                     )
                 }
             } label: {

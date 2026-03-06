@@ -9,13 +9,7 @@ import SwiftUI
 
 struct CameraPreviewContainer: View {
     @ObservedObject var viewModel: CameraViewModel
-
-    // Label overlay
-    @State private var overlayText: String = "Hi"
     @Binding var isEditingText: Bool
-    @Binding var hasOverlayText: Bool
-    @Binding var bakedImage: UIImage
-    @Binding var bakeImage: Bool
 
     var body: some View {
         ZStack {
@@ -24,14 +18,25 @@ struct CameraPreviewContainer: View {
                     .fill(Color.gray.opacity(0.2))
                     .overlay {
                         if let image = viewModel.capturedImage {
-                            ImageView(
+                            ComposableImageView(
                                 image: image,
-                                parentWidth: geo.size.width,
-                                parentHeight: geo.size.height,
-                                overlayText: $overlayText,
-                                isEditingText: $isEditingText,
-                                bakedImage: $bakedImage
+                                overlayText: viewModel.overlayText
                             )
+                            .overlay(alignment: .bottom) {
+                                // EditableLabel sits on top for interaction only
+                                // it doesn't affect what gets rendered
+                                HStack {
+                                    EditableLabel(
+                                        $viewModel.overlayText,
+                                        isEditing: $isEditingText
+                                    ) {}
+//                                    .font(.title2)
+//                                    .foregroundStyle(.clear)  // invisible — ComposableImageView draws the text
+//                                    .fixedSize()
+                                }
+//                                .padding()
+//                                .frame(height: geo.size.height)
+                            }
 
                         } else {
                             CameraPreviewView(session: viewModel.session)
@@ -52,27 +57,7 @@ struct CameraPreviewContainer: View {
                 }
             }
         }
-        .frame(height: 400)
-        .onChange(of: bakeImage) { oldBakeBool, newBakeBool in
-            print("Bake imag has changed")
-            if newBakeBool, let image = viewModel.capturedImage {
-                print("overlay Text: \(overlayText), isEditingText: \(isEditingText)")
-                let bakedImageView = ImageView(
-                    image: image,
-                    parentWidth: 600,
-                    parentHeight: 600,
-                    overlayText: $overlayText,
-                    isEditingText: $isEditingText,
-                    bakedImage: $bakedImage
-                )
-                let renderer = ImageRenderer(content: bakedImageView)
-                if let uiImage = renderer.uiImage {
-                    print("BakedImage has changed")
-                    bakedImage = uiImage
-                }
-
-            }
-        }
+//        .frame(height: 400)
     }
 
     private var flipCameraButton: some View {
@@ -90,50 +75,6 @@ struct CameraPreviewContainer: View {
     }
 }
 
-struct ImageView: View {
-    let image: UIImage
-    let parentWidth: CGFloat
-    let parentHeight: CGFloat
-
-    @Binding var overlayText: String
-    @Binding var isEditingText: Bool
-    @Binding var bakedImage: UIImage
-
-    var body: some View {
-        Image(uiImage: image)
-            .resizable()
-            .aspectRatio(contentMode: .fill)
-            .overlay {
-                VStack {
-                    Spacer()
-                    HStack {
-                        EditableLabel(
-                            $overlayText,
-                            isEditing: $isEditingText
-                        ) {
-                            print(
-                                "Editing ended. New overlay Text: \(overlayText)"
-                            )
-                        }
-                        .font(.title2)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(
-                            RoundedRectangle(cornerRadius: 24)
-                                .fill(Color.black.opacity(0.6))
-                        )
-                        .fixedSize()
-                    }.padding()  // padding from the image edges
-                }
-                .frame(
-                    width: parentWidth,  // geo.size.width,
-                    height: parentHeight,  // geo.size.height,
-                    alignment: .bottom
-                )
-
-            }
-    }
-}
 
 public struct EditableLabel: View {
     @Binding var text: String
@@ -196,5 +137,33 @@ public struct EditableLabel: View {
         text = newValue
         isEditing = false
         onEditEnd()
+    }
+}
+
+struct ComposableImageView: View {
+    let image: UIImage
+    let overlayText: String
+
+    var body: some View {
+        Image(uiImage: image)
+            .resizable()
+            .aspectRatio(contentMode: .fill)
+            .overlay(alignment: .bottom) {
+                if !overlayText.isEmpty {
+                    HStack {
+                        Text(overlayText)
+                            .font(.title2)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(
+                                RoundedRectangle(cornerRadius: 24)
+                                    .fill(Color.black.opacity(0.6))
+                            )
+                            .fixedSize()
+                    }
+                    .padding()
+                }
+            }
     }
 }
