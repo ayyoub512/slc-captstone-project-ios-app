@@ -12,7 +12,9 @@ struct CameraView: View {
     @State private var selectedFriendIDs: Set<String> = []
     
     @State private var hasOverlayText: Bool = false
-    @State private var finalImage: Image?
+    @State private var bakedImage: UIImage = UIImage()
+    @State private var bakeImage: Bool = false
+    @State private var isEditingText = false
 
     var body: some View {
         ZStack {
@@ -21,9 +23,9 @@ struct CameraView: View {
             VStack {
                 CameraHeaderView()
 
-                CameraPreviewContainer(viewModel: viewModel)
+//                CameraPreviewContainer(viewModel: viewModel)
                 
-//                CameraPreviewContainer(viewModel: viewModel, hasOverlayText: $hasOverlayText, finalImage: $finalImage)
+                CameraPreviewContainer(viewModel: viewModel, isEditingText: $isEditingText, hasOverlayText: $hasOverlayText, bakedImage: $bakedImage, bakeImage: $bakeImage)
 
                 Spacer()
 
@@ -67,6 +69,8 @@ struct CameraView: View {
                     networkManager: networkManager,
                     selectedFriendIDs: $selectedFriendIDs,
 //                    overlayText: overlayText,
+                    bakeImage: $bakeImage,
+                    bakedImage: $bakedImage,
                     capturedImage: image
                 )
                 .environmentObject(auth)
@@ -88,6 +92,12 @@ struct CameraView: View {
         .sheet(isPresented: $showNotificationPrompt) {
             NotificationPromptView()
                 .environmentObject(notificationManager)
+        }
+        .onTapGesture {
+            if isEditingText {
+                print("Clicked away while isEditingText=true")
+                isEditingText = false
+            }
         }
     }
 

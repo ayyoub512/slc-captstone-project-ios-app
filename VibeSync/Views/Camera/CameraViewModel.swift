@@ -8,7 +8,8 @@ class CameraViewModel: NSObject, ObservableObject {
     @Published var capturedImage: UIImage?
     @Published var showPermissionAlert = false
     @Published var currentPosition: AVCaptureDevice.Position = .back
-
+    @Published var overlayText: String = ""
+    
     // MARK: - Private Properties
     private var photoOutput = AVCapturePhotoOutput()
     private var currentInput: AVCaptureDeviceInput?
@@ -166,6 +167,16 @@ class CameraViewModel: NSObject, ObservableObject {
         }
     }
 }
+
+// MARK: - Genrate image with text
+extension CameraViewModel {
+//    func generateImageWithText() -> UIImage? {
+//        
+//    }
+}
+
+
+
 
 // MARK: - AVCapturePhotoCaptureDelegate
 extension CameraViewModel: AVCapturePhotoCaptureDelegate {

@@ -11,6 +11,8 @@ struct SendVibeSheetView: View {
     @ObservedObject var networkManager: NetworkManager
     @Binding var selectedFriendIDs: Set<String>
     @EnvironmentObject var auth: AuthService
+    @Binding var bakeImage: Bool
+    @Binding var bakedImage: UIImage
 //    let overlayText: String
 
     let capturedImage: UIImage
@@ -38,13 +40,15 @@ struct SendVibeSheetView: View {
             }
 
             Button {
+                bakeImage = true
+                print("Channging bakeImage to: true")
                 Task {
                     let selectedIDs = Array(selectedFriendIDs)  // Convert Set<String> → [String]
 
                     await networkManager.sendVibe(
                         to: selectedIDs,
                         with: auth.getToken() ?? "",
-                        image: capturedImage
+                        image: bakedImage
                     )
                 }
             } label: {
