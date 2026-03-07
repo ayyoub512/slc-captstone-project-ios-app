@@ -54,6 +54,3 @@ private struct PaperControllerView: UIViewControllerRepresentable {
     }
 }
 
-#Preview {
-    DrawingContentViewYT()
-}

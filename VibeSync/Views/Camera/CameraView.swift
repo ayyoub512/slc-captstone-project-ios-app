@@ -13,28 +13,38 @@ struct CameraView: View {
     @State private var selectedFriendIDs: Set<String> = []
 
     @State private var editorData = EditorData()
-  
+    
+    @State private var useCameraMode: Bool = true // [Camera Mode Or Canvas Mode] - By default uses Camera mode
+
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
 
             VStack {
                 CameraHeaderView()
-
                 Spacer()
-                ZStack{
+                ZStack {
                     GeometryReader { geo in
-                        ZStack{
-                            if let image = viewModel.capturedImage {
-                                EditorView(size: geo.size, data: editorData, image: image)
-                            } else {
-                                CameraPreviewView(session: viewModel.session)
+                        ZStack {
+                            if (useCameraMode){
+                                if let image = viewModel.capturedImage {
+                                    EditorView(
+                                        size: geo.size,
+                                        data: editorData,
+                                        image: image
+                                    )
+                                } else {
+                                    CameraPreviewView(session: viewModel.session)
+                                }
+                            }else{
+                                EditorView(
+                                    size: geo.size,
+                                    data: editorData
+                                )
                             }
-                            
-                            
                         }
                     }
-                    
+
                     if viewModel.capturedImage == nil {
                         VStack {
                             HStack {
@@ -52,6 +62,7 @@ struct CameraView: View {
                 CameraBottomControlsView(
                     viewModel: viewModel,
                     editorData: editorData,
+                    useCameraMode: $useCameraMode,
                     onSendTapped: {
                         showSendMessageSheet = true
                     }
@@ -60,12 +71,13 @@ struct CameraView: View {
         }
         .onAppear {
             viewModel.checkPermissions()
+            loadFriendsIfNeeded()
         }
-        .onChange(of: viewModel.capturedImage) { old, new in
-            if new != nil, old == nil {
-                loadFriendsIfNeeded()
-            }
-        }
+//        .onChange(of: viewModel.capturedImage) { old, new in
+//            if new != nil, old == nil {
+//                loadFriendsIfNeeded()
+//            }
+//        }
         .onDisappear {
             viewModel.stopSession()
         }
@@ -85,18 +97,18 @@ struct CameraView: View {
             Text("Please enable camera access in Settings to capture vibes.")
         }
         .sheet(isPresented: $showSendMessageSheet) {
-            if viewModel.capturedImage != nil {
+//            if viewModel.capturedImage != nil {
                 SendVibeSheetView(
                     networkManager: networkManager,
                     selectedFriendIDs: $selectedFriendIDs,
                     editorData: editorData
                 )
                 .environmentObject(auth)
-//                .environmentObject(viewModel)
+                //                .environmentObject(viewModel)
                 .presentationDetents([.medium])
-            } else {
-                Text("No image available")
-            }
+//            } else {
+//                Text("No image available")
+//            }
 
         }
         // Notification
@@ -116,12 +128,12 @@ struct CameraView: View {
     }
 
     private func loadFriendsIfNeeded() {
-        guard let token = auth.getToken() else { return }
         Task {
+            guard let token = auth.getToken() else { return }
             await networkManager.fetchFriends(token: token, forceRefresh: false)
         }
     }
-    
+
     private var flipCameraButton: some View {
         Button {
             viewModel.flipCamera()

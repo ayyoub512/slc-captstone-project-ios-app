@@ -12,9 +12,9 @@ import SwiftUI
 @Observable
 class EditorData {
     var controller: PaperMarkupViewController?
-    //    var markup: PaperMarkup?
     var toolPicker = PKToolPicker()
     var viewSize: CGSize?
+    var hasContent: Bool = false
 
     func initializeController(
         _ rect: CGRect,
@@ -27,6 +27,7 @@ class EditorData {
         )
         newController.markup = PaperMarkup(bounds: rect)
         newController.zoomRange = 0.8...1.5
+        
         self.controller = newController
     }
 
@@ -34,6 +35,7 @@ class EditorData {
 
     func insertText(_ text: NSAttributedString, rect: CGRect) {
         controller?.markup?.insertNewTextbox(attributedText: text, frame: rect)
+        hasContent = true
     }
 
     func insertBackground(_ image: UIImage, rect: CGRect) {
@@ -68,6 +70,8 @@ class EditorData {
         }
 
         controller?.markup?.insertNewImage(cgImage, frame: drawRect)
+        hasContent = true
+        
     }
 
     func insertImage(_ image: UIImage, rect: CGRect) {
@@ -107,11 +111,13 @@ class EditorData {
         guard let context = makeCGContext(size: rect.size, scale: scale),
             let markup = controller?.markup
         else {
+            Log.shared.error("Error - guard let context = makeCGContext(size: rec ")
             return nil
         }
 
         await markup.draw(in: context, frame: rect)
         guard let cgImage = context.makeImage() else {
+            Log.shared.error("Error - guard let cgImage = context.makeImage() else {")
             return nil
         }
 

@@ -168,29 +168,6 @@ class CameraViewModel: NSObject, ObservableObject {
     }
 }
 
-// MARK: - Genrate image with text
-extension CameraViewModel {
-    // MARK: - Render final image
-    @MainActor
-    func renderFinalImage() -> UIImage? {
-        guard let image = capturedImage else {
-            Log.shared.error("Error - guard let image = capturedImage else {")
-            return nil
-        }
-
-        let view = ComposableImageView(
-            image: image,
-            overlayText: overlayText
-        )
-        .frame(width: image.size.width, height: image.size.height)
-
-        let renderer = ImageRenderer(content: view)
-//        renderer.scale = 3.0 // match retina
-        return renderer.uiImage
-    }
-}
-
-
 
 
 // MARK: - AVCapturePhotoCaptureDelegate
