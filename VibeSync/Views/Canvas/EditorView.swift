@@ -25,7 +25,6 @@ struct EditorView: View {
         }
         .onAppear {
             Log.shared.debug("On appear: Calling .initializeController")
-            guard data.controller == nil else {return}
             data.initializeController(.init(origin: .zero, size: size))
             data.viewSize = size
             if let userImage = image {

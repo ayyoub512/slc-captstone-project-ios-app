@@ -22,15 +22,28 @@ struct CameraView: View {
                 CameraHeaderView()
 
                 Spacer()
-                GeometryReader { geo in
-                    ZStack{
-                        if let image = viewModel.capturedImage {
-                            EditorView(size: geo.size, data: editorData, image: image)
-                        } else {
-                            CameraPreviewView(session: viewModel.session)
+                ZStack{
+                    GeometryReader { geo in
+                        ZStack{
+                            if let image = viewModel.capturedImage {
+                                EditorView(size: geo.size, data: editorData, image: image)
+                            } else {
+                                CameraPreviewView(session: viewModel.session)
+                            }
+                            
+                            
                         }
-                        
-                        
+                    }
+                    
+                    if viewModel.capturedImage == nil {
+                        VStack {
+                            HStack {
+                                Spacer()
+                                flipCameraButton
+                                    .padding(16)
+                            }
+                            Spacer()
+                        }
                     }
                 }
 
@@ -107,6 +120,19 @@ struct CameraView: View {
         Task {
             await networkManager.fetchFriends(token: token, forceRefresh: false)
         }
+    }
+    
+    private var flipCameraButton: some View {
+        Button {
+            viewModel.flipCamera()
+        } label: {
+            Image(systemName: "arrow.triangle.2.circlepath.camera.fill")
+                .foregroundColor(.white)
+                .padding(12)
+                .background(Color.black.opacity(0.6))
+                .clipShape(Circle())
+        }
+        .padding(16)
     }
 }
 

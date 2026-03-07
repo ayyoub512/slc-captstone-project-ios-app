@@ -21,17 +21,17 @@ struct CameraBottomControlsView: View {
     var onSendTapped: () -> Void
 
     var body: some View {
-        VStack{
-            HStack(spacing: 6){
-                Group{
+        VStack {
+            HStack(spacing: 6) {
+                Group {
                     Button("Text") {
                         editorData.insertText(.init("Text"), rect: .zero)
                     }
-                    
+
                     Button("Image") {
                         showImagePicker.toggle()
                     }
-                    
+
                     Button(showTools ? "Hide" : "Show") {
                         showTools.toggle()
                         editorData.showPencilKitTools(showTools)
@@ -39,8 +39,8 @@ struct CameraBottomControlsView: View {
                 }
                 .buttonStyle(.glass)
                 .padding()
-                
-                Menu("Save"){
+
+                Menu("Save") {
                     Button("As Image", ) {
                         Task {
                             let rect = CGRect(
@@ -52,23 +52,29 @@ struct CameraBottomControlsView: View {
                                 scale: 2
                             ) {
                                 // Saving image
-                                UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+                                UIImageWriteToSavedPhotosAlbum(
+                                    image,
+                                    nil,
+                                    nil,
+                                    nil
+                                )
                             }
                         }
                     }
-                    
+
                     Button("As Data", ) {
                         Task {
-                            if let markupData = await editorData.exportAsData() {
+                            if let markupData = await editorData.exportAsData()
+                            {
                                 print(markupData)
                             }
                         }
                     }
                 }
                 .buttonStyle(.glass)
-                
+
             }
-            
+
             ZStack {
                 Group {
                     if viewModel.capturedImage != nil {
@@ -78,7 +84,7 @@ struct CameraBottomControlsView: View {
                     }
                 }
                 .animation(.easeInOut, value: viewModel.capturedImage)
-                
+
                 HStack {
                     if viewModel.capturedImage != nil {
                         saveButtom
@@ -90,20 +96,28 @@ struct CameraBottomControlsView: View {
                 }
             }
             .padding()
-            
-            
+
         }.photosPicker(isPresented: $showImagePicker, selection: $photoItem)
             .onChange(of: photoItem) { oldValue, newValue in
-                guard let newValue else {return}
-                
+                guard let newValue else { return }
+
                 Task {
-                    guard let data = try? await newValue.loadTransferable(type: Data.self),
-                          let image = UIImage(data: data)
+                    guard
+                        let data = try? await newValue.loadTransferable(
+                            type: Data.self
+                        ),
+                        let image = UIImage(data: data)
                     else {
                         return
                     }
-                    
-                    self.editorData.insertImage(image, rect: .init(origin: .zero, size: .init(width: 200, height: 300)))
+
+                    self.editorData.insertImage(
+                        image,
+                        rect: .init(
+                            origin: .zero,
+                            size: .init(width: 200, height: 300)
+                        )
+                    )
                     photoItem = nil
                 }
             }
@@ -112,6 +126,7 @@ struct CameraBottomControlsView: View {
     private var captureButton: some View {
         Button {
             viewModel.capturePhoto()
+
         } label: {
             Circle()
                 .strokeBorder(.cyan, lineWidth: 5)
@@ -142,6 +157,7 @@ struct CameraBottomControlsView: View {
         Button {
             withAnimation {
                 viewModel.retakePhoto()
+                editorData.reset()
             }
         } label: {
             Text("Retake")
@@ -154,13 +170,19 @@ struct CameraBottomControlsView: View {
 
     private var saveButtom: some View {
         Button {
-            guard let capturedImage = viewModel.capturedImage else {
-                print(
-                    "saveButtom - Error cant save this image, cant unwrap. returning."
+            Task{
+                let rect = CGRect(
+                    origin: .zero,
+                    size: .init(width: 350, height: 670)
                 )
-                return
+                if let image = await editorData.exportAsImage(
+                    rect,
+                    scale: 2
+                ) {
+                    // Saving image
+                    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+                }
             }
-            imageSaver.writeToPhotoAlbum(image: capturedImage)
 
         } label: {
             Image(systemName: saveButtonIconName)

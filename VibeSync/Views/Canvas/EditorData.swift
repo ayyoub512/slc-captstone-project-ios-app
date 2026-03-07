@@ -22,35 +22,18 @@ class EditorData {
     ) {
         Log.shared.debug("initializeController rect: \(rect)")
         guard controller == nil else { return }
-        let newController = PaperMarkupViewController(supportedFeatureSet: .latest)
+        let newController = PaperMarkupViewController(
+            supportedFeatureSet: .latest
+        )
         newController.markup = PaperMarkup(bounds: rect)
         newController.zoomRange = 0.8...1.5
         self.controller = newController
-
-        //
-        //        let controller = PaperMarkupViewController(supportedFeatureSet: .latest)
-        //        let markup = PaperMarkup(bounds: rect)
-        //
-        //        if let existingController = self.controller {
-        //            Log.shared.debug("initializeController existingController = self.controller")
-        //
-        //            existingController.markup = markup
-        //            self.markup = markup
-        //        }else{
-        //            Log.shared.debug("initializeController else of existingController = self.controller")
-        //            self.markup = markup
-        //            self.controller = controller
-        //            self.controller?.markup = markup
-        //            self.controller?.zoomRange = 0.8...1.5
-        //        }
     }
 
     // markup editing methods
 
     func insertText(_ text: NSAttributedString, rect: CGRect) {
         controller?.markup?.insertNewTextbox(attributedText: text, frame: rect)
-//        markup?.insertNewTextbox(attributedText: text, frame: rect)
-//        refreshController()
     }
 
     func insertBackground(_ image: UIImage, rect: CGRect) {
@@ -85,24 +68,16 @@ class EditorData {
         }
 
         controller?.markup?.insertNewImage(cgImage, frame: drawRect)
-        
-//        markup?.insertNewImage(cgImage, frame: drawRect)
-
-//        refreshController()
     }
 
     func insertImage(_ image: UIImage, rect: CGRect) {
         guard let cgImage = image.cgImage else { return }
-        
+
         controller?.markup?.insertNewImage(cgImage, frame: rect)
-//        markup?.insertNewImage(cgImage, frame: rect)
-//        refreshController()
     }
 
     func insertShape(_ type: ShapeConfiguration, rect: CGRect) {
         controller?.markup?.insertNewShape(configuration: type, frame: rect)
-        //markup?.insertNewShape(configuration: type, frame: rect)
-        refreshController()
     }
 
     func showPencilKitTools(_ isVisible: Bool) {
@@ -122,15 +97,9 @@ class EditorData {
 
     }
 
-    func refreshController() {
-        Log.shared.debug("inside refreshController")
-//        controller?.markup = markup
-        //        self.markup = liveMarkup
-        //
-        //        if let liveMarkup = controller?.markup {
-        //            Log.shared.debug("self.markup = liveMarkup;  syncMarkupFromController")
-        //            self.markup = liveMarkup
-        //        }
+    func reset() {
+        controller = nil
+        viewSize = nil
     }
 
     // markup to Data/Image
