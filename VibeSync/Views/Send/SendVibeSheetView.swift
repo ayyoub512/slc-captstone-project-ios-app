@@ -38,10 +38,12 @@ struct SendVibeSheetView: View {
 
             Button {
                 Task {
+                    guard let size = editorData.viewSize else { return }
                     let rect = CGRect(
                         origin: .zero,
-                        size: .init(width: 350, height: 670)
+                        size: size
                     )
+
                     guard
                         let image = await editorData.exportAsImage(
                             rect,

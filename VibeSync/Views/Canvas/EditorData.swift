@@ -12,92 +12,96 @@ import SwiftUI
 @Observable
 class EditorData {
     var controller: PaperMarkupViewController?
-    var markup: PaperMarkup?
+    //    var markup: PaperMarkup?
     var toolPicker = PKToolPicker()
     var viewSize: CGSize?
-    
 
     func initializeController(
         _ rect: CGRect,
-        welcomeText: String = "Lets make something special"
+        welcomeText: String = "Text"
     ) {
-        let controller = PaperMarkupViewController(supportedFeatureSet: .latest)
-        let markup = PaperMarkup(bounds: rect)
+        Log.shared.debug("initializeController rect: \(rect)")
+        guard controller == nil else { return }
+        let newController = PaperMarkupViewController(supportedFeatureSet: .latest)
+        newController.markup = PaperMarkup(bounds: rect)
+        newController.zoomRange = 0.8...1.5
+        self.controller = newController
 
-        // Ensure canvas begins with an aempty state whenever the initializecontroller method is called
-        if let existingController = self.controller {
-            existingController.markup = markup
-            self.markup = markup
-        } else {
-            self.markup = markup
-            self.controller = controller
-            self.controller?.markup = markup
-            self.controller?.zoomRange = 0.8...1.5
-        }
-
-        if !welcomeText.isEmpty {
-            let text = NSAttributedString(
-                string: welcomeText,
-                attributes: [
-                    .font: UIFont.systemFont(ofSize: 18)
-                ]
-            )
-
-            let centerRect = text.centerRect(in: rect)
-            insertText(text, rect: centerRect)
-        }
+        //
+        //        let controller = PaperMarkupViewController(supportedFeatureSet: .latest)
+        //        let markup = PaperMarkup(bounds: rect)
+        //
+        //        if let existingController = self.controller {
+        //            Log.shared.debug("initializeController existingController = self.controller")
+        //
+        //            existingController.markup = markup
+        //            self.markup = markup
+        //        }else{
+        //            Log.shared.debug("initializeController else of existingController = self.controller")
+        //            self.markup = markup
+        //            self.controller = controller
+        //            self.controller?.markup = markup
+        //            self.controller?.zoomRange = 0.8...1.5
+        //        }
     }
 
     // markup editing methods
 
     func insertText(_ text: NSAttributedString, rect: CGRect) {
-        markup?.insertNewTextbox(attributedText: text, frame: rect)
-        refreshController()
+        controller?.markup?.insertNewTextbox(attributedText: text, frame: rect)
+//        markup?.insertNewTextbox(attributedText: text, frame: rect)
+//        refreshController()
     }
 
-    
     func insertBackground(_ image: UIImage, rect: CGRect) {
+        Log.shared.debug(
+            "insertBackground rect: \(rect), imageSize: \(image.size)"
+        )
+
         guard let normalizedImage = image.fixedOrientation(),
-                  let cgImage = normalizedImage.cgImage
-            else { return }
+            let cgImage = normalizedImage.cgImage
+        else { return }
 
-            let canvasSize = rect.size
-            let imageSize = normalizedImage.size
+        let canvasSize = rect.size
+        let imageSize = normalizedImage.size
 
-            let imageAspect = imageSize.width / imageSize.height
-            let canvasAspect = canvasSize.width / canvasSize.height
+        let imageAspect = imageSize.width / imageSize.height
+        let canvasAspect = canvasSize.width / canvasSize.height
 
-            var drawRect = CGRect.zero
+        var drawRect = CGRect.zero
 
-            if imageAspect > canvasAspect {
-                // Image is wider than canvas → scale width, crop horizontally
-                let height = canvasSize.height
-                let width = height * imageAspect
-                let x = (canvasSize.width - width) / 2
-                drawRect = CGRect(x: x, y: 0, width: width, height: height)
-            } else {
-                // Image is taller than canvas → scale height, crop vertically
-                let width = canvasSize.width
-                let height = width / imageAspect
-                let y = (canvasSize.height - height) / 2
-                drawRect = CGRect(x: 0, y: y, width: width, height: height)
-            }
+        if imageAspect > canvasAspect {
+            // Image is wider than canvas → scale width, crop horizontally
+            let height = canvasSize.height
+            let width = height * imageAspect
+            let x = (canvasSize.width - width) / 2
+            drawRect = CGRect(x: x, y: 0, width: width, height: height)
+        } else {
+            // Image is taller than canvas → scale height, crop vertically
+            let width = canvasSize.width
+            let height = width / imageAspect
+            let y = (canvasSize.height - height) / 2
+            drawRect = CGRect(x: 0, y: y, width: width, height: height)
+        }
 
-            markup?.insertNewImage(cgImage, frame: drawRect)
+        controller?.markup?.insertNewImage(cgImage, frame: drawRect)
+        
+//        markup?.insertNewImage(cgImage, frame: drawRect)
 
-            refreshController()
-
+//        refreshController()
     }
-    
-    
+
     func insertImage(_ image: UIImage, rect: CGRect) {
         guard let cgImage = image.cgImage else { return }
-        markup?.insertNewImage(cgImage, frame: rect)
-        refreshController()
+        
+        controller?.markup?.insertNewImage(cgImage, frame: rect)
+//        markup?.insertNewImage(cgImage, frame: rect)
+//        refreshController()
     }
 
     func insertShape(_ type: ShapeConfiguration, rect: CGRect) {
-        markup?.insertNewShape(configuration: type, frame: rect)
+        controller?.markup?.insertNewShape(configuration: type, frame: rect)
+        //markup?.insertNewShape(configuration: type, frame: rect)
         refreshController()
     }
 
@@ -119,11 +123,18 @@ class EditorData {
     }
 
     func refreshController() {
-        controller?.markup = markup
+        Log.shared.debug("inside refreshController")
+//        controller?.markup = markup
+        //        self.markup = liveMarkup
+        //
+        //        if let liveMarkup = controller?.markup {
+        //            Log.shared.debug("self.markup = liveMarkup;  syncMarkupFromController")
+        //            self.markup = liveMarkup
+        //        }
     }
 
     // markup to Data/Image
-    func exportAsImage(_ rect: CGRect, scale: CGFloat = 1) async -> UIImage? {
+    func exportAsImage(_ rect: CGRect, scale: CGFloat = 2) async -> UIImage? {
         guard let context = makeCGContext(size: rect.size, scale: scale),
             let markup = controller?.markup
         else {
@@ -137,11 +148,11 @@ class EditorData {
 
         return UIImage(cgImage: cgImage)
     }
-    
+
     func exportAsData() async -> Data? {
         do {
-            return try await markup?.dataRepresentation()
-        }catch{
+            return try await controller?.markup?.dataRepresentation()
+        } catch {
             Log.shared.error(error.localizedDescription)
             return nil
         }
@@ -170,14 +181,13 @@ class EditorData {
         }
 
         context.scaleBy(x: scale, y: scale)
-        
+
         // Flipping the image
         context.translateBy(x: 0, y: size.height)
         context.scaleBy(x: 1, y: -1)
         return context
     }
 }
-
 
 // Helper to fix orientation
 extension UIImage {

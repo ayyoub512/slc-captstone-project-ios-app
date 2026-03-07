@@ -16,7 +16,7 @@ struct CameraBottomControlsView: View {
     @State private var showImagePicker: Bool = false
     @State private var photoItem: PhotosPickerItem?
 
-    var editorData: EditorData
+    @Bindable var editorData: EditorData
 
     var onSendTapped: () -> Void
 

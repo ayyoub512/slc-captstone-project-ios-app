@@ -25,7 +25,7 @@ struct CameraView: View {
                 GeometryReader { geo in
                     ZStack{
                         if let image = viewModel.capturedImage {
-                            EditorView(size: geo.size, editorData: editorData, image: image)
+                            EditorView(size: geo.size, data: editorData, image: image)
                         } else {
                             CameraPreviewView(session: viewModel.session)
                         }
