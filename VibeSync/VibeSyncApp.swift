@@ -81,34 +81,30 @@ struct VibeSyncApp: App {
         WindowGroup {
             Group {
                 if authentication.isAuthenticated {
-                    DrawingContentViewYT()
+
+                    TabView(selection: $navManager.selectedTab) {
+                        
+                        NavigationStack(path: $navManager.profilePath){
+                            ProfileView()
+                        }
+                        .tag(0)
+                        
+                        
+                        CameraView()
+                            .tag(1)
+                            .environmentObject(notificationManager)
+                
+                        
+                        NavigationStack(path: $navManager.inboxPath){
+                            InboxView()
+                        }
+                        .tag(2)
+                        
+                        
+                    }
                     
-//                    TabView(selection: $navManager.selectedTab) {
-//                        
-//                        NavigationStack(path: $navManager.profilePath){
-//                            ProfileView()
-//                                .tag(0)
-//                        }
-//                        
-//                        CameraView()
-//                            .tag(1)
-//                            .environmentObject(notificationManager)
-//                       
-////                        CameraView()
-////                            .tag(1)
-////                            .environmentObject(notificationManager)
-//                        
-//                       
-//                        NavigationStack(path: $navManager.inboxPath){
-//                            InboxView()
-//                        }
-//                        .tag(2)
-//                        
-//                        
-//                    }
-//                    
-//                    .tabViewStyle(.page(indexDisplayMode: .never))
-//                    .ignoresSafeArea()
+                    .tabViewStyle(.page(indexDisplayMode: .never))
+                    .ignoresSafeArea()
                     
                 } else {
                     NavigationStack {

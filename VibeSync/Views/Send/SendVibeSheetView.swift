@@ -12,6 +12,7 @@ struct SendVibeSheetView: View {
     @Binding var selectedFriendIDs: Set<String>
     @EnvironmentObject var auth: AuthService
     @EnvironmentObject var viewModel: CameraViewModel
+    var editorData: EditorData
 
     var body: some View {
         VStack {
@@ -37,15 +38,26 @@ struct SendVibeSheetView: View {
 
             Button {
                 Task {
-                    guard let finalImage = await viewModel.renderFinalImage() else {
-                        Log.shared.error("error: guard let finalImage = await viewModel.renderFinalImage() else")
+                    let rect = CGRect(
+                        origin: .zero,
+                        size: .init(width: 350, height: 670)
+                    )
+                    guard
+                        let image = await editorData.exportAsImage(
+                            rect,
+                            scale: 2
+                        )
+                    else {
+                        Log.shared.error(
+                            "error: guard let image = await editorData.exportAsImage(rect, scale: 2 )"
+                        )
                         return
                     }
-                
+
                     await networkManager.sendVibe(
-                        to: Array(selectedFriendIDs), // Convert Set<String> → [String]
+                        to: Array(selectedFriendIDs),  // Convert Set<String> → [String]
                         with: auth.getToken() ?? "",
-                        image: finalImage
+                        image: image
                     )
                 }
             } label: {

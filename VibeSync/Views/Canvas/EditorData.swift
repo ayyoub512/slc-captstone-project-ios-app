@@ -14,6 +14,8 @@ class EditorData {
     var controller: PaperMarkupViewController?
     var markup: PaperMarkup?
     var toolPicker = PKToolPicker()
+    var viewSize: CGSize?
+    
 
     func initializeController(
         _ rect: CGRect,
@@ -53,6 +55,41 @@ class EditorData {
         refreshController()
     }
 
+    
+    func insertBackground(_ image: UIImage, rect: CGRect) {
+        guard let normalizedImage = image.fixedOrientation(),
+                  let cgImage = normalizedImage.cgImage
+            else { return }
+
+            let canvasSize = rect.size
+            let imageSize = normalizedImage.size
+
+            let imageAspect = imageSize.width / imageSize.height
+            let canvasAspect = canvasSize.width / canvasSize.height
+
+            var drawRect = CGRect.zero
+
+            if imageAspect > canvasAspect {
+                // Image is wider than canvas → scale width, crop horizontally
+                let height = canvasSize.height
+                let width = height * imageAspect
+                let x = (canvasSize.width - width) / 2
+                drawRect = CGRect(x: x, y: 0, width: width, height: height)
+            } else {
+                // Image is taller than canvas → scale height, crop vertically
+                let width = canvasSize.width
+                let height = width / imageAspect
+                let y = (canvasSize.height - height) / 2
+                drawRect = CGRect(x: 0, y: y, width: width, height: height)
+            }
+
+            markup?.insertNewImage(cgImage, frame: drawRect)
+
+            refreshController()
+
+    }
+    
+    
     func insertImage(_ image: UIImage, rect: CGRect) {
         guard let cgImage = image.cgImage else { return }
         markup?.insertNewImage(cgImage, frame: rect)
@@ -138,6 +175,19 @@ class EditorData {
         context.translateBy(x: 0, y: size.height)
         context.scaleBy(x: 1, y: -1)
         return context
+    }
+}
+
+
+// Helper to fix orientation
+extension UIImage {
+    func fixedOrientation() -> UIImage? {
+        guard imageOrientation != .up else { return self }
+        UIGraphicsBeginImageContextWithOptions(size, false, scale)
+        draw(in: CGRect(origin: .zero, size: size))
+        let normalizedImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return normalizedImage
     }
 }
 

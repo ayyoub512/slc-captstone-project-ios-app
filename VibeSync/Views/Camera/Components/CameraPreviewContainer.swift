@@ -22,22 +22,7 @@ struct CameraPreviewContainer: View {
                                 image: image,
                                 overlayText: viewModel.overlayText
                             )
-                            .overlay(alignment: .bottom) {
-                                // EditableLabel sits on top for interaction only
-                                // it doesn't affect what gets rendered
-                                HStack {
-                                    EditableLabel(
-                                        $viewModel.overlayText,
-                                        isEditing: $isEditingText
-                                    ) {}
-//                                    .font(.title2)
-//                                    .foregroundStyle(.clear)  // invisible — ComposableImageView draws the text
-//                                    .fixedSize()
-                                }
-//                                .padding()
-//                                .frame(height: geo.size.height)
-                            }
-
+                            
                         } else {
                             CameraPreviewView(session: viewModel.session)
                         }
@@ -57,7 +42,6 @@ struct CameraPreviewContainer: View {
                 }
             }
         }
-//        .frame(height: 400)
     }
 
     private var flipCameraButton: some View {
@@ -73,71 +57,7 @@ struct CameraPreviewContainer: View {
         }
         .padding(16)
     }
-}
 
-
-public struct EditableLabel: View {
-    @Binding var text: String
-    @Binding var isEditing: Bool
-
-    @State private var newValue: String = ""
-    @FocusState private var isFocused: Bool
-
-    let onEditEnd: () -> Void
-
-    public init(
-        _ txt: Binding<String>,
-        isEditing: Binding<Bool>,
-        onEditEnd: @escaping () -> Void
-    ) {
-        _text = txt
-        _isEditing = isEditing
-        self.onEditEnd = onEditEnd
-    }
-
-    public var body: some View {
-        ZStack {
-            Text(text)
-                .opacity(isEditing ? 0 : 1)
-                .foregroundStyle(.white)
-
-            // TextField for edit mode of View
-            TextField(
-                "",
-                text: $newValue,
-                onCommit: commit
-            )
-            .multilineTextAlignment(.center)
-            .opacity(isEditing ? 1 : 0)
-            .focused($isFocused)
-        }
-        .onTapGesture {
-            newValue = text
-            isEditing = true
-            isFocused = true
-        }
-        // Exit from EditMode on Esc key press
-        .onChange(
-            of: isEditing,
-            { oldIsEditing, newIsEditing in
-                if !newIsEditing {
-                    isFocused = false
-                    commit()
-                }
-            }
-        )
-        .onChange(of: isFocused) { oldIsfocused, newIsFocused in
-            if !newIsFocused && isEditing {
-                commit()
-            }
-        }
-    }
-
-    private func commit() {
-        text = newValue
-        isEditing = false
-        onEditEnd()
-    }
 }
 
 struct ComposableImageView: View {

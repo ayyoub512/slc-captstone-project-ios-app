@@ -17,31 +17,35 @@ struct DrawingContentViewYT: View {
 
     var body: some View {
         NavigationStack{
-            EditorView(size: .init(width: 350, height: 670), data: data)
-                .toolbar{
-                    MenuItems()
-                    
-                    Menu("Export",systemImage: "square.and.arrow.up.fill"){
-                        Button("As Image", ){
-                            Task{
-                                let rect = CGRect(origin: .zero, size: .init(width: 350, height: 670))
-                                if let image = await data.exportAsImage(rect, scale: 2){
-                                    // Saving image
-                                    UIImageWriteToSavedPhotosAlbum(image,nil, nil, nil)
-                                }
+            GeometryReader{geo in
+//                EditorView(size: .init(width: 400, height: 400), data: data)
+                
+            }.toolbar{
+                MenuItems()
+                
+                Menu("Export",systemImage: "square.and.arrow.up.fill"){
+                    Button("As Image", ){
+                        Task{
+                            let rect = CGRect(origin: .zero, size: .init(width: 350, height: 670))
+                            if let image = await data.exportAsImage(rect, scale: 2){
+                                // Saving image
+                                UIImageWriteToSavedPhotosAlbum(image,nil, nil, nil)
                             }
                         }
-                        
-                        Button("As Data", ){
-                            Task{
-                                if let markupData = await data.exportAsData(){
-                                    print(markupData)
-                                }
+                    }
+                    
+                    Button("As Data", ){
+                        Task{
+                            if let markupData = await data.exportAsData(){
+                                print(markupData)
                             }
                         }
                     }
                 }
+            }
+            
         }
+        
         .photosPicker(isPresented: $showImagePicker, selection: $photoItem)
         .onChange(of: photoItem) { oldValue, newValue in
             guard let newValue else {return}

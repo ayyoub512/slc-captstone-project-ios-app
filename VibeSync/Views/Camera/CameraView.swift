@@ -1,18 +1,19 @@
+import PhotosUI
 import SwiftUI
 
 struct CameraView: View {
     @StateObject private var viewModel = CameraViewModel()
     @StateObject private var networkManager = NetworkManager()
     @EnvironmentObject var auth: AuthService
-    
+
     @EnvironmentObject var notificationManager: NotificationsManager
     @State private var showNotificationPrompt = false
-    
+
     @State private var showSendMessageSheet = false
     @State private var selectedFriendIDs: Set<String> = []
-    
-    @State private var isEditingText = false
 
+    @State private var editorData = EditorData()
+  
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
@@ -20,14 +21,24 @@ struct CameraView: View {
             VStack {
                 CameraHeaderView()
 
-//                CameraPreviewContainer(viewModel: viewModel)
-                
-                CameraPreviewContainer(viewModel: viewModel, isEditingText: $isEditingText)
+                Spacer()
+                GeometryReader { geo in
+                    ZStack{
+                        if let image = viewModel.capturedImage {
+                            EditorView(size: geo.size, editorData: editorData, image: image)
+                        } else {
+                            CameraPreviewView(session: viewModel.session)
+                        }
+                        
+                        
+                    }
+                }
 
                 Spacer()
 
                 CameraBottomControlsView(
                     viewModel: viewModel,
+                    editorData: editorData,
                     onSendTapped: {
                         showSendMessageSheet = true
                     }
@@ -65,9 +76,10 @@ struct CameraView: View {
                 SendVibeSheetView(
                     networkManager: networkManager,
                     selectedFriendIDs: $selectedFriendIDs,
+                    editorData: editorData
                 )
                 .environmentObject(auth)
-                .environmentObject(viewModel)
+//                .environmentObject(viewModel)
                 .presentationDetents([.medium])
             } else {
                 Text("No image available")
@@ -87,12 +99,7 @@ struct CameraView: View {
             NotificationPromptView()
                 .environmentObject(notificationManager)
         }
-        .onTapGesture {
-            if isEditingText {
-                print("Clicked away while isEditingText=true")
-                isEditingText = false
-            }
-        }
+
     }
 
     private func loadFriendsIfNeeded() {
