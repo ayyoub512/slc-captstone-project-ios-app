@@ -57,14 +57,30 @@ struct CameraBottomControlsView: View {
                         Spacer()
                         showDrawToolsButton
                     }
+                    .frame(height: 70)
 
-                    /// * Bottom: Undo, Send, Save
-                    HStack {
-                        retakeButton
-                        sendButton
-                        saveAsImageButton
+                    if !showTools {
+                        /// * Bottom: Undo, Send, Save
+                        HStack {
+                            retakeButton
+                                .frame(
+                                    maxWidth: .infinity,
+                                    alignment: .trailing
+                                )
+
+                            sendButton
+                                .frame(maxWidth: .infinity, alignment: .center)
+
+                            saveAsImageButton
+                                .frame(maxWidth: .infinity, alignment: .leading)
+
+                        }
+                        .frame(height: 130)
+
+                    } else {
+                        HStack {}
+                            .frame(height: 130)
                     }
-                    .frame(height: 130)
 
                 } else {
                     /// !Captured
@@ -78,7 +94,6 @@ struct CameraBottomControlsView: View {
 
                     /// * Bottom: Upload, CaptureCamera, CanvasMode
                     HStack {
-
                         uploadImageButton
                             .frame(maxWidth: .infinity, alignment: .trailing)
 
@@ -107,7 +122,10 @@ struct CameraBottomControlsView: View {
                         ///* Bottom: CameraMode, CaptureCanvas
                         HStack {
                             uploadImageButton
-                                .frame( maxWidth: .infinity, alignment: .trailing)
+                                .frame(
+                                    maxWidth: .infinity,
+                                    alignment: .trailing
+                                )
 
                             canvasCaptureButton
                                 .frame(maxWidth: .infinity, alignment: .center)
@@ -136,7 +154,7 @@ struct CameraBottomControlsView: View {
                         }
                         /// Bottom: will have ToolBar so no need to add it
                         HStack {}
-                        .frame(height: 130)
+                            .frame(height: 130)
 
                     } else {
                         /// !Show Draw Tool (clicked done)
@@ -150,7 +168,10 @@ struct CameraBottomControlsView: View {
                         /// Bottom: Undo, Send, Save - Gried out if !hasContent
                         HStack {
                             retakeButton
-                                .frame( maxWidth: .infinity, alignment: .trailing)
+                                .frame(
+                                    maxWidth: .infinity,
+                                    alignment: .trailing
+                                )
 
                             sendButton
                                 .frame(maxWidth: .infinity, alignment: .center)
@@ -167,7 +188,6 @@ struct CameraBottomControlsView: View {
         }
 
         .padding()
-        //        .animation(.easeInOut, value: editorData.hasContent)
         .photosPicker(isPresented: $showImagePicker, selection: $photoItem)
 
         .onChange(of: photoItem) { oldValue, newValue in
@@ -316,6 +336,7 @@ extension CameraBottomControlsView {
         Button {
             withAnimation {
                 showTools = true
+                editorData.showPencilKitTools(showTools)
             }
         } label: {
             Circle()
@@ -378,6 +399,7 @@ extension CameraBottomControlsView {
                 // TODO: Difference logic here depending on weather its canvas mode or camera mode
                 viewModel.retakePhoto()
                 editorData.reset()
+
             }
         } label: {
             Image(systemName: "trash")

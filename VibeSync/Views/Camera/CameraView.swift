@@ -32,7 +32,7 @@ struct CameraView: View {
                                         size: geo.size,
                                         data: editorData,
                                         image: image
-                                    )
+                                    ).id(editorData.resetID)
                                 } else {
                                     CameraPreviewView(
                                         session: viewModel.session

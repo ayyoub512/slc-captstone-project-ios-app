@@ -15,22 +15,18 @@ final class MarkupObserver: NSObject, PaperMarkupViewController.Delegate {
     var onCanvasChanged: (() -> Void)?
 
     func paperMarkupViewControllerDidChangeMarkup(_ paperMarkupViewController: PaperMarkupViewController) {
-        Log.shared.debug("paperMarkupViewControllerDidChangeMarkup")
         onCanvasChanged?()
     }
     
     func paperMarkupViewControllerDidBeginDrawing(_ paperMarkupViewController: PaperMarkupViewController) {
-        Log.shared.debug("paperMarkupViewControllerDidBeginDrawing")
 
     }
     
     func paperMarkupViewControllerDidChangeSelection(_ paperMarkupViewController: PaperMarkupViewController) {
-        Log.shared.debug("paperMarkupViewControllerDidChangeSelection")
 
     }
     
     func paperMarkupViewControllerDidChangeContentVisibleFrame(_ paperMarkupViewController: PaperMarkupViewController) {
-        Log.shared.debug("paperMarkupViewControllerDidChangeContentVisibleFrame")
 
     }
 }
@@ -41,15 +37,18 @@ class EditorData {
     var toolPicker = PKToolPicker()
     var viewSize: CGSize?
     var hasContent: Bool = false
+    var resetID = UUID()
 
     private let observer = MarkupObserver()
 
-    func initializeController(
-        _ rect: CGRect,
-        welcomeText: String = "Text"
-    ) {
+    func initializeController(_ rect: CGRect) {
         Log.shared.debug("initializeController rect: \(rect)")
         guard controller == nil else { return }
+        
+        makeController(rect)
+    }
+    
+    private func makeController(_ rect:CGRect){
         let newController = PaperMarkupViewController(
             supportedFeatureSet: .latest
         )
@@ -133,7 +132,8 @@ class EditorData {
 
     func reset() {
         controller = nil
-        viewSize = nil
+        hasContent = false
+        resetID = UUID() /// Uniquly identifies
     }
 
     // markup to Data/Image
@@ -173,8 +173,9 @@ class EditorData {
         let height = Int(size.height * scale)
 
         let colorSpace = CGColorSpaceCreateDeviceRGB()
-        let bitmapInfo = CGImageAlphaInfo.premultipliedLast.rawValue
-
+        //let bitmapInfo = CGImageAlphaInfo.premultipliedLast.rawValue
+        let bitmapInfo = CGImageAlphaInfo.noneSkipLast.rawValue // Dont use the Alpha channel
+        
         guard
             let context = CGContext(
                 data: nil,
