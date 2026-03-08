@@ -13,8 +13,8 @@ struct CameraView: View {
     @State private var selectedFriendIDs: Set<String> = []
 
     @State private var editorData = EditorData()
-    
-    @State private var useCameraMode: Bool = true // [Camera Mode Or Canvas Mode] - By default uses Camera mode
+
+    @State private var useCameraMode: Bool = true  // [Camera Mode Or Canvas Mode] - By default uses Camera mode
 
     var body: some View {
         ZStack {
@@ -26,7 +26,7 @@ struct CameraView: View {
                 ZStack {
                     GeometryReader { geo in
                         ZStack {
-                            if (useCameraMode){
+                            if useCameraMode {
                                 if let image = viewModel.capturedImage {
                                     EditorView(
                                         size: geo.size,
@@ -34,9 +34,11 @@ struct CameraView: View {
                                         image: image
                                     )
                                 } else {
-                                    CameraPreviewView(session: viewModel.session)
+                                    CameraPreviewView(
+                                        session: viewModel.session
+                                    )
                                 }
-                            }else{
+                            } else {
                                 EditorView(
                                     size: geo.size,
                                     data: editorData
@@ -45,7 +47,7 @@ struct CameraView: View {
                         }
                     }
 
-                    if viewModel.capturedImage == nil {
+                    if viewModel.capturedImage == nil && useCameraMode {
                         VStack {
                             HStack {
                                 Spacer()
@@ -67,17 +69,13 @@ struct CameraView: View {
                         showSendMessageSheet = true
                     }
                 )
+                .frame(height: 200)
             }
         }
         .onAppear {
             viewModel.checkPermissions()
             loadFriendsIfNeeded()
         }
-//        .onChange(of: viewModel.capturedImage) { old, new in
-//            if new != nil, old == nil {
-//                loadFriendsIfNeeded()
-//            }
-//        }
         .onDisappear {
             viewModel.stopSession()
         }
@@ -97,19 +95,13 @@ struct CameraView: View {
             Text("Please enable camera access in Settings to capture vibes.")
         }
         .sheet(isPresented: $showSendMessageSheet) {
-//            if viewModel.capturedImage != nil {
-                SendVibeSheetView(
-                    networkManager: networkManager,
-                    selectedFriendIDs: $selectedFriendIDs,
-                    editorData: editorData
-                )
-                .environmentObject(auth)
-                //                .environmentObject(viewModel)
-                .presentationDetents([.medium])
-//            } else {
-//                Text("No image available")
-//            }
-
+            SendVibeSheetView(
+                networkManager: networkManager,
+                selectedFriendIDs: $selectedFriendIDs,
+                editorData: editorData
+            )
+            .environmentObject(auth)
+            .presentationDetents([.medium])
         }
         // Notification
         .task {

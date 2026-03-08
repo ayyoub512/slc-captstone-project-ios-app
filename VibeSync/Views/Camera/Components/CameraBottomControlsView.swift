@@ -24,63 +24,180 @@ struct CameraBottomControlsView: View {
 
     var body: some View {
         VStack {
-            HStack(spacing: 6) {
-                Group {
-                    textButton
 
-                    Spacer()
+            /**
+             On Camera Mode:
+                 - !Captured
+                     * Top: Flip Camera, Zoom, Flash
+                     * Bottom: Upload, CaptureCamera, CanvasMode
+                 - Captured
+                     * Top: Text, Stickers, Draw tools
+                     * Bottom: Undo, Send, Save
+            
+             On Canvas Mode:
+                - !Captured
+                     * Top: Draw Tools
+                     * Bottom: CameraMode, CaptureCanvas
+                - Captured: Show Draw tools
+                    . Show Draw Tool
+                         * Top: Text, Undo, Redo, Done
+                         * Bottom: ToolBar
+                    . !Show Draw Tool (clicked done)
+                         * Top: Text, Stickers, Draw Tools
+                         * Bottom: Undo, Send, Save - Gried out if !hasContenta
+             */
 
-                    showDrawToolsButton
+            if useCameraMode {
+                /// On Camera Mode:
+                if editorData.hasContent {
+                    /// Captured
+                    /// * Top: Text, Stickers, Draw tools
+                    HStack {
+                        textButton
+                        Spacer()
+                        showDrawToolsButton
+                    }
 
-                }
-            }
-
-            ZStack {
-                HStack {
-                    if viewModel.capturedImage != nil || editorData.controller != nil {
+                    /// * Bottom: Undo, Send, Save
+                    HStack {
                         retakeButton
                         sendButton
                         saveAsImageButton
-                    } else {
+                    }
+                    .frame(height: 130)
+
+                } else {
+                    /// !Captured
+                    /// * Top: Flip Camera, Zoom, Flash
+                    HStack {
+                        Text("Undo, Flip, zoom, flash")
+                            .foregroundStyle(.gray)
+                            .font(.footnote)
+                    }
+                    .frame(height: 70)
+
+                    /// * Bottom: Upload, CaptureCamera, CanvasMode
+                    HStack {
+
                         uploadImageButton
-                        if useCameraMode {
-                            captureButton
-                            canvasModeButton
-                        } else {
-                            sendButton
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+
+                        captureButton
+                            .frame(maxWidth: .infinity, alignment: .center)
+
+                        canvasModeButton
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .frame(height: 130)
+                }
+
+            } else {
+                /// On Canvas Mode:
+                ///   !Captured
+                if !editorData.hasContent {
+                    /// Top: Draw Tools
+                    HStack {
+                        Spacer()
+
+                        showDrawToolsButton
+                    }
+                    .frame(height: 70)
+
+                    if !showTools {
+                        ///* Bottom: CameraMode, CaptureCanvas
+                        HStack {
+                            uploadImageButton
+                                .frame( maxWidth: .infinity, alignment: .trailing)
+
+                            canvasCaptureButton
+                                .frame(maxWidth: .infinity, alignment: .center)
+
                             cameraModeButton
+                                .frame(maxWidth: .infinity, alignment: .leading)
                         }
+                        .frame(height: 130)
+
+                    } else {
+                        HStack {
+
+                        }
+                        .frame(height: 130)
                     }
+
+                } else {
+                    /// Captured: auto Show Draw tools
+                    /// showDrawTool
+                    if showTools {
+                        /// Top: Text, Undo, Redo, Done
+                        HStack {
+                            textButton
+                            Spacer()
+                            showDrawToolsButton/// will be hide tools now
+                        }
+                        /// Bottom: will have ToolBar so no need to add it
+                        HStack {}
+                        .frame(height: 130)
+
+                    } else {
+                        /// !Show Draw Tool (clicked done)
+                        /// Top: Text, Stickers, Draw Tools
+                        HStack {
+                            textButton
+                            Spacer()
+                            showDrawToolsButton
+                        }
+
+                        /// Bottom: Undo, Send, Save - Gried out if !hasContent
+                        HStack {
+                            retakeButton
+                                .frame( maxWidth: .infinity, alignment: .trailing)
+
+                            sendButton
+                                .frame(maxWidth: .infinity, alignment: .center)
+
+                            saveAsImageButton
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .frame(height: 130)
+                    }
+
                 }
-                .animation(.easeInOut, value: viewModel.capturedImage)
-
             }
-            .padding()
 
-        }.photosPicker(isPresented: $showImagePicker, selection: $photoItem)
-            .onChange(of: photoItem) { oldValue, newValue in
-                guard let newValue else { return }
+        }
 
-                Task {
-                    guard
-                        let data = try? await newValue.loadTransferable(
-                            type: Data.self
-                        ),
-                        let image = UIImage(data: data)
-                    else {
-                        return
-                    }
+        .padding()
+        //        .animation(.easeInOut, value: editorData.hasContent)
+        .photosPicker(isPresented: $showImagePicker, selection: $photoItem)
 
-                    self.editorData.insertImage(
-                        image,
-                        rect: .init(
-                            origin: .zero,
-                            size: .init(width: 200, height: 300)
-                        )
+        .onChange(of: photoItem) { oldValue, newValue in
+            guard let newValue else { return }
+
+            withAnimation {
+                useCameraMode = false
+            }
+
+            Task {
+                guard
+                    let data = try? await newValue.loadTransferable(
+                        type: Data.self
+                    ),
+                    let image = UIImage(data: data)
+                else {
+                    return
+                }
+
+                Log.shared.info("self.editorData.insertImage - upload image")
+                self.editorData.insertImage(
+                    image,
+                    rect: .init(
+                        origin: .zero,
+                        size: .init(width: 200, height: 300)
                     )
-                    photoItem = nil
-                }
+                )
+                photoItem = nil
             }
+        }
     }
 
 }
@@ -89,8 +206,9 @@ extension CameraBottomControlsView {
 
     private var captureButton: some View {
         Button {
-            viewModel.capturePhoto()
-
+            withAnimation {
+                viewModel.capturePhoto()
+            }
         } label: {
             Circle()
                 .strokeBorder(.cyan, lineWidth: 5)
@@ -125,7 +243,6 @@ extension CameraBottomControlsView {
                 .cornerRadius(26)
         }
         .buttonStyle(.glass)
-        .padding()
 
     }
 
@@ -139,13 +256,15 @@ extension CameraBottomControlsView {
             }
         }
         .buttonStyle(.glass)
-        .padding()
+
     }
 
     private var showDrawToolsButton: some View {
         Button {
-            showTools.toggle()
-            editorData.showPencilKitTools(showTools)
+            withAnimation {
+                showTools.toggle()
+                editorData.showPencilKitTools(showTools)
+            }
         } label: {
             HStack {
                 Text(showTools ? "Done " : "draw tools")
@@ -156,36 +275,66 @@ extension CameraBottomControlsView {
             }
         }
         .buttonStyle(.glass)
-        .padding()
 
     }
 
     private var cameraModeButton: some View {
         Button {
-            useCameraMode = true
+            withAnimation {
+                useCameraMode = true
+            }
         } label: {
-            Image(systemName: "camera.fill")
-                .cornerRadius(26)
+            Circle()
+                .fill(.white)
+                .frame(width: 50, height: 50)
+                .overlay(
+                    Image(systemName: "camera.fill")
+                        .foregroundStyle(.black)
+                )
         }
-        .buttonStyle(.glass)
-        .padding()
 
     }
 
     private var canvasModeButton: some View {
         Button {
-            useCameraMode = false
+            withAnimation {
+                useCameraMode = false
+            }
         } label: {
-            Image(systemName: "pencil.and.scribble")
-                .cornerRadius(26)
+            Circle()
+                .fill(.white)
+                .frame(width: 50, height: 50)
+                .overlay(
+                    Image(systemName: "pencil.and.scribble")
+                        .foregroundStyle(.black)
+                )
         }
-        .buttonStyle(.glass)
-        .padding()
+
+    }
+
+    private var canvasCaptureButton: some View {
+        Button {
+            withAnimation {
+                showTools = true
+            }
+        } label: {
+            Circle()
+                .strokeBorder(.cyan, lineWidth: 5)
+                .frame(width: 80, height: 80)
+                .overlay(
+                    Circle()
+                        .fill(.white)
+                        .frame(width: 68, height: 68)
+                        .overlay {
+                            Image(systemName: "pencil.and.scribble")
+                        }
+                )
+        }
 
     }
 
     private var saveAsImageButton: some View {
-        Button("As Image", ) {
+        Button {
             Task {
                 let rect = CGRect(
                     origin: .zero,
@@ -204,6 +353,9 @@ extension CameraBottomControlsView {
                     )
                 }
             }
+        } label: {
+            Image(systemName: "square.and.arrow.down")
+                .cornerRadius(26)
         }
         .buttonStyle(.glass)
 
@@ -223,16 +375,16 @@ extension CameraBottomControlsView {
     private var retakeButton: some View {
         Button {
             withAnimation {
+                // TODO: Difference logic here depending on weather its canvas mode or camera mode
                 viewModel.retakePhoto()
                 editorData.reset()
             }
         } label: {
-            Text("Trash")
-                .foregroundColor(.white)
-                .padding()
-                .background(Color.white.opacity(0.2))
-                .cornerRadius(12)
+            Image(systemName: "trash")
+                .cornerRadius(26)
+
         }
+        .buttonStyle(.glass)
     }
 
     private var saveButtonIconName: String {

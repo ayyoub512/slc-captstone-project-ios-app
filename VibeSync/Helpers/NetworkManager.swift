@@ -34,14 +34,16 @@ class NetworkManager: ObservableObject {
     }
 
     func fetchFriends(token: String, forceRefresh: Bool = false) async {
+        Log.shared.info("networkmanager.fetchFriends")
         // Return cached data if still valid
         if !forceRefresh && isCacheValid && !friends.isEmpty {
-            print("Using cached friends list")
+            Log.shared.info("Using cached friends list")
             return
         }
         // Otherwise fetch fresh data
 
         guard let friendsListURL = URL(string: K.shared.friendsListURL) else {
+            Log.shared.error("networkmanager.fetchFriends - Invalide URL configuration")
             self.errorMessage = "Invalide URL configuration"
             return
         }
@@ -72,6 +74,7 @@ class NetworkManager: ObservableObject {
                 !(200...299).contains(httpResponse.statusCode)
             {
                 self.errorMessage = "Server error: \(httpResponse.statusCode)"
+                Log.shared.error(errorMessage ?? "Error fetch friends")
                 working = false
                 return
             }
@@ -84,8 +87,13 @@ class NetworkManager: ObservableObject {
 
             //Updating UI
             self.friends = decodedResponse.friends
+        
+            for friend in friends{
+                Log.shared.debug("Friend: \(friend.name)")
+            }
+            
         } catch {
-            print("Fetch Friends error: \(error)")
+            Log.shared.error("Fetch Friends error: \(error)")
             self.errorMessage = "Failed to load friends"
         }
 

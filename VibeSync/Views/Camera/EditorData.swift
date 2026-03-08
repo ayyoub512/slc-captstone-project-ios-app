@@ -8,6 +8,32 @@
 import PaperKit
 import PencilKit
 import SwiftUI
+import Combine
+
+final class MarkupObserver: NSObject, PaperMarkupViewController.Delegate {
+
+    var onCanvasChanged: (() -> Void)?
+
+    func paperMarkupViewControllerDidChangeMarkup(_ paperMarkupViewController: PaperMarkupViewController) {
+        Log.shared.debug("paperMarkupViewControllerDidChangeMarkup")
+        onCanvasChanged?()
+    }
+    
+    func paperMarkupViewControllerDidBeginDrawing(_ paperMarkupViewController: PaperMarkupViewController) {
+        Log.shared.debug("paperMarkupViewControllerDidBeginDrawing")
+
+    }
+    
+    func paperMarkupViewControllerDidChangeSelection(_ paperMarkupViewController: PaperMarkupViewController) {
+        Log.shared.debug("paperMarkupViewControllerDidChangeSelection")
+
+    }
+    
+    func paperMarkupViewControllerDidChangeContentVisibleFrame(_ paperMarkupViewController: PaperMarkupViewController) {
+        Log.shared.debug("paperMarkupViewControllerDidChangeContentVisibleFrame")
+
+    }
+}
 
 @Observable
 class EditorData {
@@ -15,6 +41,8 @@ class EditorData {
     var toolPicker = PKToolPicker()
     var viewSize: CGSize?
     var hasContent: Bool = false
+
+    private let observer = MarkupObserver()
 
     func initializeController(
         _ rect: CGRect,
@@ -28,6 +56,11 @@ class EditorData {
         newController.markup = PaperMarkup(bounds: rect)
         newController.zoomRange = 0.8...1.5
         
+        newController.delegate = observer
+        observer.onCanvasChanged = { [weak self] in
+            self?.hasContent = true
+        }
+
         self.controller = newController
     }
 
@@ -35,7 +68,6 @@ class EditorData {
 
     func insertText(_ text: NSAttributedString, rect: CGRect) {
         controller?.markup?.insertNewTextbox(attributedText: text, frame: rect)
-        hasContent = true
     }
 
     func insertBackground(_ image: UIImage, rect: CGRect) {
@@ -70,8 +102,6 @@ class EditorData {
         }
 
         controller?.markup?.insertNewImage(cgImage, frame: drawRect)
-        hasContent = true
-        
     }
 
     func insertImage(_ image: UIImage, rect: CGRect) {
@@ -111,13 +141,17 @@ class EditorData {
         guard let context = makeCGContext(size: rect.size, scale: scale),
             let markup = controller?.markup
         else {
-            Log.shared.error("Error - guard let context = makeCGContext(size: rec ")
+            Log.shared.error(
+                "Error - guard let context = makeCGContext(size: rec "
+            )
             return nil
         }
 
         await markup.draw(in: context, frame: rect)
         guard let cgImage = context.makeImage() else {
-            Log.shared.error("Error - guard let cgImage = context.makeImage() else {")
+            Log.shared.error(
+                "Error - guard let cgImage = context.makeImage() else {"
+            )
             return nil
         }
 
