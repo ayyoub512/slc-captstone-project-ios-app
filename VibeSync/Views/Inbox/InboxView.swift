@@ -5,32 +5,29 @@
 //  Created by Ayyoub on 12/2/2026.
 //
 
+import SwiftData
 import SwiftUI
 
 struct InboxView: View {
-    @StateObject private var networkManager = NetworkManager()
-    @EnvironmentObject var auth: AuthService
+
+    @StateObject private var model = InboxViewModel()
     @Environment(NavigationManager.self) var navManager
     @State private var showAddFriendSheet = false
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \FriendModel.id) private var friends: [FriendModel]
 
     var body: some View {
         List {
-            if networkManager.working {
-                ProgressView("Fetching your squad...")
-            } else if let error = networkManager.errorMessage {
-                Text(error).foregroundColor(.red)
-            } else {
-                ForEach(networkManager.friends) { friend in
-                    NavigationLink(value: friend) {
-                        FriendRow(friend: friend)
-                    }
+            ForEach(friends, id: \._id) { friend in
+                NavigationLink(value: friend) {
+                    FriendRow(friend: friend)
                 }
             }
         }
         .navigationDestination(
             for: Friend.self,
             destination: { friend in
-                ChatView(friend: friend)
+                ConversationView(friend: friend)
             }
         )
         .toolbar {
@@ -47,8 +44,12 @@ struct InboxView: View {
             }
 
             ToolbarItem(placement: .principal) {
-                Text("Inbox")
-                    .font(.largeTitle.bold())
+                if model.working {
+                    ProgressView()
+                } else {
+                    Text("Inbox")
+                        .font(.largeTitle.bold())
+                }
             }
 
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -67,7 +68,7 @@ struct InboxView: View {
                         role: .destructive,
                         action: {
                             // Logout logic
-                            auth.logout()
+                            //                            auth.logout()
                         }
                     ) {
                         Label("Logout", systemImage: "power")
@@ -80,23 +81,24 @@ struct InboxView: View {
             }
         }
         .task {
-            if let token = auth.getToken() {
-                await networkManager.fetchFriends(token: token)
+            if model.hasCacheExceededLimit() || friends.isEmpty {
+                await model.fetchFriends(modelContext: self.modelContext)
             }
         }
         .sheet(isPresented: $showAddFriendSheet) {
-            AddFriendView()
-                .padding(.top, 10)
-                .presentationDetents([.medium])
-                .environmentObject(networkManager)
-                .environmentObject(auth)
+            Form {
+                AddFriendView()
+                    .padding(.top, 10)
+            }
+            .presentationDetents([.medium])
         }
     }
+
 }
 
 // A small sub-view to keep the code organized
 struct FriendRow: View {
-    let friend: Friend
+    let friend: FriendModel
     var body: some View {
         HStack {
             Text(friend.name.prefix(1).uppercased())
@@ -119,7 +121,8 @@ struct FriendRow: View {
 #Preview {
     NavigationStack {
         InboxView()
-            .environmentObject(AuthService())  // Injecting the missing object
+            //            .environmentObject(AuthService())  // Injecting the missing object
             .environment(NavigationManager())  // If you use NavManager too
+            .modelContainer(for: [FriendModel.self])
     }
 }

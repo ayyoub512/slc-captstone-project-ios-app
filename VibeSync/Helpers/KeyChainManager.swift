@@ -23,7 +23,7 @@ struct KeyChainManager {
         return keyChain.get(key) ?? ""
     }
     
-    func saveToKeyChain(
+    func save(
         key: String,
         value: String,
         synchronizable: Bool = false

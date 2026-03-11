@@ -10,24 +10,18 @@ import Foundation
 import KeychainSwift
 
 class AuthService: ObservableObject {
+//    static let shared = AuthService()
+    
     @Published var isAuthenticated = false
-    private let keyChain: KeychainSwift = {
-        let kc = KeychainSwift()
-        kc.accessGroup = K.shared.keyChainSharedAccessGroup
-        return kc
-    }()
-
+    private let kcManager = KeyChainManager.shared
+    
     init() {
-        loadToken()
+        checkAuthStatus()
     }
 
-    func loadToken() {
-        self.isAuthenticated =
-            keyChain.get(K.shared.keyChainUserTokenKey) != nil
-    }
-
-    func getToken() -> String? {
-        keyChain.get(K.shared.keyChainUserTokenKey)
+    func checkAuthStatus() {
+        let token = kcManager.get(key: K.shared.keyChainUserTokenKey)
+        self.isAuthenticated = token.isEmpty ? false: true
     }
 
     func updateAuthStatus(isAuthenticated: Bool) {
@@ -36,33 +30,14 @@ class AuthService: ObservableObject {
         }
     }
 
-    func saveToKeyChain(
-        key: String,
-        value: String,
-        synchronizable: Bool = false
-    ) {
-        keyChain.set(value, forKey: key)
-        keyChain.synchronizable = synchronizable
-    }
-
-    func saveToken(_ token: String) {
-        saveToKeyChain(
-            key: K.shared.keyChainUserTokenKey,
-            value: token,
-            synchronizable: true
-        )
-        self.updateAuthStatus(isAuthenticated: true)
-    }
-
     func logout() {
-//        keyChain.delete(K.shared.keyChainUserTokenKey)
-//        keyChain.delete(K.shared.keychainInviteCodeKey)
-        KeyChainManager.shared.clearKeyChain()
+        kcManager.clearKeyChain()
         self.updateAuthStatus(isAuthenticated: false)
     }
 }
 
 
+// TODO: This should not be in auth
 extension AuthService {
     func login(
         email: String,
@@ -102,13 +77,13 @@ extension AuthService {
                 completion(.failure(.invalideCredentials))
                 return
             }
-            self.saveToken(token)
+            self.kcManager.save(key: K.shared.keyChainUserTokenKey, value: token)
 
             guard let inviteCode = loginResponse.inviteCode else {
                 completion(.failure(.invalideCredentials))
                 return
             }
-            self.saveToKeyChain(
+            self.kcManager.save(
                 key: K.shared.keychainInviteCodeKey,
                 value: inviteCode
             )
@@ -117,7 +92,7 @@ extension AuthService {
                 completion(.failure(.invalideCredentials))
                 return
             }
-            self.saveToKeyChain(
+            self.kcManager.save(
                 key: K.shared.keychainUserIDKey,
                 value: userID
             )
@@ -168,13 +143,13 @@ extension AuthService {
                 return
             }
 
-            self.saveToken(token)
+            self.kcManager.save(key: K.shared.keyChainUserTokenKey, value: token)
 
             guard let inviteCode = registerResponse.inviteCode else {
                 completion(.failure(.invalideCredentials))
                 return
             }
-            self.saveToKeyChain(
+            self.kcManager.save(
                 key: K.shared.keychainInviteCodeKey,
                 value: inviteCode
             )
@@ -183,7 +158,7 @@ extension AuthService {
                 completion(.failure(.invalideCredentials))
                 return
             }
-            self.saveToKeyChain(
+            self.kcManager.save(
                 key: K.shared.keychainUserIDKey,
                 value: userID
             )

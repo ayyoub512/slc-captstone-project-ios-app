@@ -8,7 +8,8 @@
 import SwiftUI
 import UserNotifications
 import OSLog
-        
+import SwiftData
+
 @Observable
 class VibeSyncDelegate: NSObject, UIApplicationDelegate {
     var notificationManager = NotificationsManager()
@@ -97,6 +98,7 @@ struct VibeSyncApp: App {
                         
                         NavigationStack(path: $navManager.inboxPath){
                             InboxView()
+                                .modelContainer(for: [FriendModel.self])
                         }
                         .tag(2)
                         
@@ -109,6 +111,7 @@ struct VibeSyncApp: App {
                 } else {
                     NavigationStack {
                         AuthContainerView()
+//                        SigninWithAppleView()
                     }
                 }
             }

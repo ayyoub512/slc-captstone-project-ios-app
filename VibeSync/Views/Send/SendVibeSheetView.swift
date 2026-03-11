@@ -12,6 +12,7 @@ struct SendVibeSheetView: View {
     @Binding var selectedFriendIDs: Set<String>
     @EnvironmentObject var auth: AuthService
     @EnvironmentObject var viewModel: CameraViewModel
+
     var editorData: EditorData
 
     var body: some View {
@@ -58,20 +59,26 @@ struct SendVibeSheetView: View {
 
                     await networkManager.sendVibe(
                         to: Array(selectedFriendIDs),  // Convert Set<String> → [String]
-                        with: auth.getToken() ?? "",
                         image: image
                     )
                 }
             } label: {
-                if networkManager.working {
-                    ProgressView()
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                } else {
-                    Text("Send")
-                        .frame(maxWidth: .infinity)
-                        .padding()
+                HStack(spacing: 8){
+                    Text("send vibe")
+
+                    if networkManager.working{
+                        ProgressView()
+                    }else if networkManager.success != nil {
+                        Image(systemName: "checkmark")
+                    } else{
+                        Image(systemName: "chevron.right")
+                    }
                 }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .fontWeight(.medium)
+                .font(.system(size: 18))
+                
             }.buttonStyle(.glassProminent)
                 .disabled(networkManager.working)
         }

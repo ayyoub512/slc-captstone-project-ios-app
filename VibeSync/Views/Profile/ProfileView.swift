@@ -15,15 +15,30 @@ struct ProfileView: View {
     @State private var isEditingText = false
 
     var body: some View {
-        ZStack {
-            VStack {
-                AddFriendView()
-                    .environmentObject(networkManager)
-                    .environmentObject(auth)
+
+        Form {
+
+            AddFriendView()
+                .environmentObject(networkManager)
+                .environmentObject(auth)
+
+            Section(header: Text("Want to Sign Out").font(.headline)) {
+                Button {
+                    auth.logout()
+                } label: {
+                    HStack (alignment: .center) {
+                        Image(systemName: "arrow.backward.square")
+                        Text("Sign out")
+                    }.frame(width: .infinity)
+
+                }
+                .buttonStyle(.borderless)  // Makes it prominent
+                .tint(Color.red.opacity(0.3))  // Slightly red
+                .foregroundStyle(.red)
 
             }
-
         }
+
         .onTapGesture {
             if isEditingText {
                 print("Clicked away while isEditingText=true")

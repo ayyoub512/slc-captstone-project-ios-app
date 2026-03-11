@@ -74,7 +74,6 @@ struct CameraView: View {
         }
         .onAppear {
             viewModel.checkPermissions()
-            loadFriendsIfNeeded()
         }
         .onDisappear {
             viewModel.stopSession()
@@ -119,12 +118,6 @@ struct CameraView: View {
 
     }
 
-    private func loadFriendsIfNeeded() {
-        Task {
-            guard let token = auth.getToken() else { return }
-            await networkManager.fetchFriends(token: token, forceRefresh: false)
-        }
-    }
 
     private var flipCameraButton: some View {
         Button {

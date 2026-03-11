@@ -10,80 +10,66 @@ import UIKit
 
 struct AddFriendView: View {
     @State private var code: String = ""
-    @EnvironmentObject var networkManager: NetworkManager
-    @EnvironmentObject var auth: AuthService
+    @StateObject var model = AddFriendViewModel()
 
     var body: some View {
-        Form {
-            Section(header: Text("Enter Friend’s Invite Code").font(.headline))
-            {
-                TextField("Enter invite code", text: $code)
-                    .autocapitalization(.allCharacters)
-                    .disableAutocorrection(true)
-                    .padding(.horizontal, 0)  // Form handles padding
 
-                VStack(alignment: .leading){
-                    Button(action: {
-                        submitCode()
-                    }) {
-                        if networkManager.working {
-                            ProgressView()
-                                .frame(maxWidth: .infinity)
-                            
-                        } else {
-                            Text("Add")
-                                .frame(maxWidth: .infinity)
-                        }
-                    }
-                    .buttonStyle(.glassProminent)
-                    
-                    
-                    
-                        
+        Section(header: Text("Enter Friend’s Invite Code").font(.headline)) {
+            TextField("Enter invite code", text: $code)
+                .autocapitalization(.allCharacters)
+                .disableAutocorrection(true)
+                .padding(.horizontal, 0)  // Form handles padding
 
-                    
-                    
-                    
-                    
-                    
-                    if let success = networkManager.success, success {
-                        Text("Added with success")
-                            .font(.footnote)
-                            .padding(.top, 4)
-                            .foregroundStyle(.green)
-                            
-                    }
-                    
-                    if let error = networkManager.errorMessage {
-                        Text(error)
-                            .foregroundStyle(.red)
-                            .font(.footnote)
-                            .padding(.top, 4)
+            VStack(alignment: .leading) {
+                Button(action: {
+                    submitCode()
+                }) {
+                    if model.working {
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+
+                    } else {
+                        Text("Add")
+                            .frame(maxWidth: .infinity)
                     }
                 }
-            }
+                .buttonStyle(.glassProminent)
 
-            Section(
-                header: Text("Share Your Invite Code").font(.headline),
-                footer: Text("Send this code to a friend to add you")
-            ) {
-                VStack(alignment: .leading) {
-                    HStack {
-                        Text("Your invite code is: ")
-                        Spacer()
-                        CopyableText(text: "G3CM2A")
-                    }
+                if let success = model.success, success {
+                    Text("Added with success")
+                        .font(.footnote)
+                        .padding(.top, 4)
+                        .foregroundStyle(.green)
+
+                }
+
+                if let error = model.errorMessage {
+                    Text(error)
+                        .foregroundStyle(.red)
+                        .font(.footnote)
+                        .padding(.top, 4)
                 }
             }
-
         }
+
+        Section(
+            header: Text("Share Your Invite Code").font(.headline),
+            footer: Text("Send this code to a friend to add you")
+        ) {
+            VStack(alignment: .leading) {
+                HStack {
+                    Text("Your invite code is: ")
+                    Spacer()
+                    CopyableText(text: "G3CM2A")
+                }
+            }
+        }
+
     }
 
     private func submitCode() {
         Task {
-            if let token = auth.getToken() {
-                await networkManager.addFriend(with: code, token: token)
-            }
+            await model.addFriend(with: code)
         }
     }
 }
@@ -129,7 +115,10 @@ struct CopyableText: View {
 }
 
 #Preview {
-    AddFriendView()
-        .environmentObject(AuthService())
-        .environmentObject(NetworkManager())
+    
+    Form {
+        AddFriendView()
+            .environmentObject(AuthService())
+            .environmentObject(NetworkManager())
+    }
 }

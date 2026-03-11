@@ -14,6 +14,7 @@ struct VibeMessage: Codable, Identifiable, Hashable {
     let senderID: String
     let receiverID: String
     let imageURL: String
+    let resizedImageURL: String
     let created_at: String // MongoDB date string
 }
 
@@ -23,13 +24,16 @@ struct MessageResponse: Codable {
 }
 
 
-@MainActor
 class ChatViewModel: ObservableObject {
     @Published var messages: [VibeMessage] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
-
-    func fetchMessages(token: String, friendID: String) async {
+    
+    let token: String = {
+        return KeyChainManager.shared.get(key: K.shared.keyChainUserTokenKey)
+    }()
+    
+    func fetchMessages(friendID: String) async {
         guard let url = URL(string: K.shared.getMessagesURL) else {
             self.errorMessage = "Invalide URL configuration"
             return
@@ -41,7 +45,7 @@ class ChatViewModel: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.addValue("Bearer \(self.token)", forHTTPHeaderField: "Authorization")
         
         let body: [String: String] = ["friendID": friendID]
         request.httpBody = try? JSONEncoder().encode(body)
@@ -71,4 +75,6 @@ class ChatViewModel: ObservableObject {
         
         isLoading = false
     }
+    
+    
 }

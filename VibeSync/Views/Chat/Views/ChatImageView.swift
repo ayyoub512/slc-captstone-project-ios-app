@@ -1,0 +1,43 @@
+//
+//  ChatImageView.swift
+//  VibeSync
+//
+//  Created by Ayyoub on 9/3/2026.
+//
+
+import SwiftUI
+
+struct ChatImageView: View {
+    @State var model: ChatImageViewModel
+    let url: String
+
+    init(url: String, key: String) {
+        Log.shared.info("Initializing Chat Image View \(url) : \(key)")
+        _model = State(wrappedValue: ChatImageViewModel(key: key, url: url))
+        self.url = url
+    }
+
+    var body: some View {
+        ZStack {
+            if model.isLoading {
+                ProgressView()
+            } else if let image = model.image {
+                Image(uiImage: image).resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 240, height: 320)
+                    .clipShape(RoundedRectangle(cornerRadius: 22))
+                    .cornerRadius(22)
+                    .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 5)
+            }
+        }
+        .task{
+            Log.shared.info(".task {await model.getImage()} ")
+            await model.getImage()
+        }
+
+    }
+}
+
+#Preview {
+    //    ChatImageView()
+}

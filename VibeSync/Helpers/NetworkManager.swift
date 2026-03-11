@@ -6,104 +6,27 @@
 //
 
 import Combine
-import Foundation
+import SwiftData
 import SwiftUI
+import SwiftData
 
-@MainActor
+
+//@MainActor
 class NetworkManager: ObservableObject {
 
     @Published var friends: [Friend] = []
     @Published var working = false
     @Published var errorMessage: String?
     @Published var success: Bool?
+    
+    let token: String = {
+        return KeyChainManager.shared.get(key: K.shared.keyChainUserTokenKey)
+    }()
 
-    private var lastFetchTime: Date?
-    private let cacheValidityDuration: TimeInterval = 300  // 5 minutes
-
-    // Check if cached data is still valid
-    // Cach is used the cash the fetched friends list
-    private var isCacheValid: Bool {
-        guard let lastFetch = lastFetchTime else { return false }
-        return Date().timeIntervalSince(lastFetch) < cacheValidityDuration
-    }
-
-    // Clear cache (call when user logs out or manually refreshes)
-    func clearCache() {
-        friends = []
-        lastFetchTime = nil
-    }
-
-    func fetchFriends(token: String, forceRefresh: Bool = false) async {
-        Log.shared.info("networkmanager.fetchFriends")
-        // Return cached data if still valid
-        if !forceRefresh && isCacheValid && !friends.isEmpty {
-            Log.shared.info("Using cached friends list")
-            return
-        }
-        // Otherwise fetch fresh data
-
-        guard let friendsListURL = URL(string: K.shared.friendsListURL) else {
-            Log.shared.error("networkmanager.fetchFriends - Invalide URL configuration")
-            self.errorMessage = "Invalide URL configuration"
-            return
-        }
-
-        working = true
-        errorMessage = nil
-
-        do {
-            // Setting up the request
-            var request = URLRequest(url: friendsListURL)
-            request.httpMethod = "GET"
-            request.addValue(
-                "application/json",
-                forHTTPHeaderField: "Content-Type"
-            )
-            request.addValue(
-                "Bearer \(token)",
-                forHTTPHeaderField: "Authorization"
-            )
-
-            // Using await to perform the request
-            let (data, response) = try await URLSession.shared.data(
-                for: request
-            )
-
-            // Checking errors (e.g,  401)
-            if let httpResponse = response as? HTTPURLResponse,
-                !(200...299).contains(httpResponse.statusCode)
-            {
-                self.errorMessage = "Server error: \(httpResponse.statusCode)"
-                Log.shared.error(errorMessage ?? "Error fetch friends")
-                working = false
-                return
-            }
-
-            // Decoding
-            let decodedResponse = try JSONDecoder().decode(
-                FriendListResponse.self,
-                from: data
-            )
-
-            //Updating UI
-            self.friends = decodedResponse.friends
-        
-            for friend in friends{
-                Log.shared.debug("Friend: \(friend.name)")
-            }
-            
-        } catch {
-            Log.shared.error("Fetch Friends error: \(error)")
-            self.errorMessage = "Failed to load friends"
-        }
-
-        working = false
-    }
 
     /// Send vibe to friends
     func sendVibe(
         to recipients: [String],
-        with jwtToken: String,
         image: UIImage
     ) async {
         guard let url = URL(string: K.shared.sendNotificatioURL) else {
@@ -120,7 +43,7 @@ class NetworkManager: ObservableObject {
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
             request.addValue(
-                "Bearer \(jwtToken)",
+                "Bearer \(token)",
                 forHTTPHeaderField: "Authorization"
             )
 
@@ -237,99 +160,12 @@ class NetworkManager: ObservableObject {
         }
     }
 
-    func addFriend(with inviteCode: String, token: String) async {
-        guard let addFriendsURL = URL(string: K.shared.addFriendURL) else {
-            Log.shared.info(
-                "addFriend(with inviteCode error: K.shared.addFriendURL is not found"
-            )
-            self.working = false
-            self.success = false
-            self.errorMessage = "Error adding friend, please try again later!"
-            return
-        }
-
-        self.working = true
-        self.errorMessage = nil
-        self.success = nil
-        
-        do {
-            // Setting up the request
-            var request = URLRequest(url: addFriendsURL)
-            request.httpMethod = "POST"
-            request.addValue(
-                "application/json",
-                forHTTPHeaderField: "Content-Type"
-            )
-            request.addValue(
-                "Bearer \(token)",
-                forHTTPHeaderField: "Authorization"
-            )
-
-            let body: [String: Any] = [
-                "inviteCode": inviteCode
-            ]
-            
-            request.httpBody = try? JSONSerialization.data(
-                withJSONObject: body,
-                options: []
-            )
-            
-            // Using await to perform the request
-            let (data, response) = try await URLSession.shared.data(
-                for: request
-            )
-
-            // Checking errors (e.g,  401)
-            if let httpResponse = response as? HTTPURLResponse,
-                !(200...299).contains(httpResponse.statusCode)
-            {
-                Log.shared.error("Server error: \(httpResponse.statusCode)")
-                self.errorMessage = "Server error: \(httpResponse.statusCode)"
-                self.working = false
-                self.success = false
-                return
-            }
-
-            // Decoding
-            let decodedResponse = try JSONDecoder().decode(
-                AddFriendResponse.self,
-                from: data
-            )
-
-            //Updating UI
-            self.working = false
-            if decodedResponse.success ?? false {
-                self.errorMessage = nil
-                self.success = true
-            }else{
-                self.errorMessage = decodedResponse.message
-                self.success = false
-            }
-
-        } catch {
-            Log.shared.error("Fetch Friends error: \(error)")
-            self.errorMessage = "Failed to add friend: \(error.localizedDescription)"
-            self.success = false
-            self.working = false
-        }
-
-        working = false
-    }
+   
 }
 
-struct Friend: Codable, Identifiable, Hashable {
-    var id: String { _id }  // Map MongoDB _id to SwiftUI id
-    let _id: String
-    let name: String
-    let email: String
-}
-
-struct FriendListResponse: Codable {
-    let message: String
-    let friends: [Friend]
-}
 
 struct AddFriendResponse: Codable {
     let message: String?
     let success: Bool?
 }
+
