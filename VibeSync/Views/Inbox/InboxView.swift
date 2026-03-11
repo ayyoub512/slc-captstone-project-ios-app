@@ -25,7 +25,7 @@ struct InboxView: View {
             }
         }
         .navigationDestination(
-            for: Friend.self,
+            for: FriendModel.self,
             destination: { friend in
                 ConversationView(friend: friend)
             }

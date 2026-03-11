@@ -8,14 +8,13 @@
 import SwiftUI
 
 struct ConversationView: View {
-    let friend: Friend
+    let friend: FriendModel
     @StateObject private var viewModel = ChatViewModel()
     @EnvironmentObject var auth: AuthService
 
-    // You need your own ID to align messages (Sent vs Received)
     let myID: String = KeyChainManager.shared.get(
         key: K.shared.keychainUserIDKey
-    )  // TODO:  make it dynamic
+    )
 
     var body: some View {
         VStack {
@@ -68,7 +67,14 @@ struct ConversationView: View {
 
             
         }
-        .navigationTitle(friend.name)
+        .toolbar{            
+            ToolbarItem(placement: .principal) {
+
+                Text(friend.name)
+                        .font(.largeTitle.bold())
+                
+            }
+        }
         .task {
             await loadContent()
         }

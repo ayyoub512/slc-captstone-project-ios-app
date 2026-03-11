@@ -5,10 +5,10 @@
 //  Created by Ayyoub on 11/2/2026.
 //
 
-import SwiftUI
-import UserNotifications
 import OSLog
 import SwiftData
+import SwiftUI
+import UserNotifications
 
 @Observable
 class VibeSyncDelegate: NSObject, UIApplicationDelegate {
@@ -36,8 +36,10 @@ class VibeSyncDelegate: NSObject, UIApplicationDelegate {
             String(format: "%02.2hhx", data)
         }
         let token = tokenParts.joined()
-        Log.shared.info("App didRegisterForRemoteNotificationsWithDeviceToken: \(token)")
-        
+        Log.shared.info(
+            "App didRegisterForRemoteNotificationsWithDeviceToken: \(token)"
+        )
+
         notificationManager.saveAPN(with: token)
     }
 
@@ -45,7 +47,9 @@ class VibeSyncDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         didFailToRegisterForRemoteNotificationsWithError error: any Error
     ) {
-        Log.shared.info("Error didFailToRegisterForRemoteNotificationsWithError : \(error)")
+        Log.shared.info(
+            "Error didFailToRegisterForRemoteNotificationsWithError : \(error)"
+        )
         Log.shared.info("Error: \(error)")
     }
 }
@@ -63,7 +67,9 @@ extension VibeSyncDelegate: UNUserNotificationCenterDelegate {
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
-        Log.shared.info("UNUserNotificationCenterDelegate userNotificationCenter")
+        Log.shared.info(
+            "UNUserNotificationCenterDelegate userNotificationCenter"
+        )
         return [.banner, .sound, .badge]
     }
 }
@@ -84,45 +90,43 @@ struct VibeSyncApp: App {
                 if authentication.isAuthenticated {
 
                     TabView(selection: $navManager.selectedTab) {
-                        
-                        NavigationStack(path: $navManager.profilePath){
+
+                        NavigationStack(path: $navManager.profilePath) {
                             ProfileView()
                         }
                         .tag(0)
-                        
-                        
+
                         CameraView()
                             .tag(1)
                             .environmentObject(notificationManager)
-                
-                        
-                        NavigationStack(path: $navManager.inboxPath){
+
+                        NavigationStack(path: $navManager.inboxPath) {
                             InboxView()
-                                .modelContainer(for: [FriendModel.self])
+
                         }
                         .tag(2)
-                        
-                        
+
                     }
-                    
+
                     .tabViewStyle(.page(indexDisplayMode: .never))
                     .ignoresSafeArea()
-                    
+
                 } else {
                     NavigationStack {
                         AuthContainerView()
-//                        SigninWithAppleView()
+                        //                        SigninWithAppleView()
                     }
                 }
             }
             .environment(navManager)
             .environmentObject(authentication)
             .environmentObject(notificationManager)
+            .modelContainer(for: [FriendModel.self])
             .onOpenURL { url in
                 // TODO: Handle notification deep link
                 Log.shared.info("Opened a new url \(url.absoluteString) ")
             }
-            
+
         }
     }
 }

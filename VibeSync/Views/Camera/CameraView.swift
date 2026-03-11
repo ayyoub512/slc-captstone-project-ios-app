@@ -1,5 +1,6 @@
 import PhotosUI
 import SwiftUI
+import SwiftData
 
 struct CameraView: View {
     @StateObject private var viewModel = CameraViewModel()
@@ -95,11 +96,10 @@ struct CameraView: View {
         }
         .sheet(isPresented: $showSendMessageSheet) {
             SendVibeSheetView(
-                networkManager: networkManager,
                 selectedFriendIDs: $selectedFriendIDs,
                 editorData: editorData
             )
-            .environmentObject(auth)
+//            .modelContainer(for: [FriendModel.self])
             .presentationDetents([.medium])
         }
         // Notification

@@ -6,23 +6,25 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct SendVibeSheetView: View {
-    @ObservedObject var networkManager: NetworkManager
+    @StateObject var model = SendVibeSheetViewModel()
     @Binding var selectedFriendIDs: Set<String>
-    @EnvironmentObject var auth: AuthService
-    @EnvironmentObject var viewModel: CameraViewModel
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \FriendModel.id) private var friends: [FriendModel]
 
+    
     var editorData: EditorData
 
     var body: some View {
         VStack {
             ScrollView {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))]) {
-                    if let error = networkManager.errorMessage {
+                    if let error = model.errorMessage {
                         Text(error).foregroundColor(.red)
                     } else {
-                        ForEach(networkManager.friends) { friend in
+                        ForEach(friends, id: \._id) { friend in
                             ContactBubble(
                                 friend: friend,
                                 isSelected: selectedFriendIDs.contains(
@@ -57,7 +59,7 @@ struct SendVibeSheetView: View {
                         return
                     }
 
-                    await networkManager.sendVibe(
+                    await model.sendVibe(
                         to: Array(selectedFriendIDs),  // Convert Set<String> → [String]
                         image: image
                     )
@@ -66,9 +68,9 @@ struct SendVibeSheetView: View {
                 HStack(spacing: 8){
                     Text("send vibe")
 
-                    if networkManager.working{
+                    if model.working{
                         ProgressView()
-                    }else if networkManager.success != nil {
+                    }else if model.success != nil {
                         Image(systemName: "checkmark")
                     } else{
                         Image(systemName: "chevron.right")
@@ -80,9 +82,14 @@ struct SendVibeSheetView: View {
                 .font(.system(size: 18))
                 
             }.buttonStyle(.glassProminent)
-                .disabled(networkManager.working)
+                .disabled(model.working)
         }
         .padding()
+        .task {
+            if model.hasCacheExceededLimit() || friends.isEmpty {
+                await model.fetchFriends(modelContext: self.modelContext)
+            }
+        }
     }
 
     private func toggle(_ id: String) {

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ContactBubble: View {
-    let friend: Friend
+    let friend: FriendModel
     let isSelected: Bool
     let onTap: () -> Void
 
@@ -20,7 +20,7 @@ struct ContactBubble: View {
                     .foregroundColor(.white)
                     .frame(width: 56, height: 56)
                     .background(
-                        Circle().fill(isSelected ? Color.blue : Color.red)
+                        Circle().fill(isSelected ? Color.blue : Color.blue.opacity(0.3))
                     )
                     .overlay(
                         Circle()
