@@ -55,6 +55,7 @@ class FriendModel: Codable {
         try container.encode(name, forKey: .name)
         try container.encode(email, forKey: .email)
     }
+    
 }
 
 
@@ -64,3 +65,19 @@ struct AddFriendResponse: Codable {
     let success: Bool?
 }
 
+
+
+struct VibeMessage: Codable, Identifiable, Hashable {
+    var id: String { _id }
+    let _id: String
+    let senderID: String
+    let receiverID: String
+    let imageURL: String
+    let resizedImageURL: String
+    let created_at: String // MongoDB date string
+}
+
+struct MessageResponse: Codable {
+    let message: String
+    let messages: [VibeMessage]
+}

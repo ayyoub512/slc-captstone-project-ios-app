@@ -12,7 +12,7 @@ import UserNotifications
 
 @Observable
 class VibeSyncDelegate: NSObject, UIApplicationDelegate {
-    var notificationManager = NotificationsManager()
+    var notificationManager = APNSNotificationsManager()
 
     func application(
         _ application: UIApplication,
@@ -79,10 +79,10 @@ struct VibeSyncApp: App {
     // Notification
     @UIApplicationDelegateAdaptor private var vibeSyncDelegate: VibeSyncDelegate
 
-    @StateObject var authentication = AuthService()
+    @State var authentication = AuthService.shared
     @State private var navManager = NavigationManager()
 
-    @StateObject private var notificationManager = NotificationsManager()
+    @StateObject private var notificationManager = APNSNotificationsManager()
 
     var body: some Scene {
         WindowGroup {
@@ -109,17 +109,16 @@ struct VibeSyncApp: App {
                     }
 
                     .tabViewStyle(.page(indexDisplayMode: .never))
+//                    .scrollDisabled(!navManager.canSwipeTabs)
                     .ignoresSafeArea()
 
                 } else {
                     NavigationStack {
                         AuthContainerView()
-                        //                        SigninWithAppleView()
                     }
                 }
             }
             .environment(navManager)
-            .environmentObject(authentication)
             .environmentObject(notificationManager)
             .modelContainer(for: [FriendModel.self])
             .onOpenURL { url in

@@ -9,13 +9,15 @@ import Combine
 import Foundation
 import KeychainSwift
 
-class AuthService: ObservableObject {
-//    static let shared = AuthService()
+@Observable
+class AuthService {
+    static let shared = AuthService()
     
-    @Published var isAuthenticated = false
     private let kcManager = KeyChainManager.shared
     
-    init() {
+    var isAuthenticated = false
+    
+    private init() {
         checkAuthStatus()
     }
 
@@ -100,9 +102,7 @@ extension AuthService {
             completion(.success(token))
         }.resume()
     }
-}
-
-extension AuthService {
+  
     func register(
         name: String,
         email: String,
