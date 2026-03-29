@@ -11,11 +11,15 @@ import SwiftUI
 struct SigninWithAppleView: View {
 
     @Environment(\.colorScheme) var colorScheme
-    @AppStorage("email") var email: String = ""
-    @AppStorage("firstName") var firstName: String = ""
-    @AppStorage("lastName") var lastName: String = ""
-    @AppStorage("userId") var userId: String = ""
-    @AppStorage("identityToken") var identityToken: String = ""
+    
+    @AppStorage(K.shared.appleEmail) var email: String = ""
+    @AppStorage(K.shared.appleFirstName) var firstName: String = ""
+    @AppStorage(K.shared.appleLastName) var lastName: String = ""
+    @AppStorage(K.shared.appleUserId) var userId: String = ""
+    @AppStorage(K.shared.appleIdentityToken) var identityToken: String = ""
+    @AppStorage(K.shared.appleUsername) var userName: String = ""
+    
+    @State var authentication = AuthService.shared
     
 
     var body: some View {
@@ -34,29 +38,9 @@ struct SigninWithAppleView: View {
                 } onCompletion: { result in
                     switch result {
                     case .success(let auth):
-                        switch auth.credential {
-                        case let credential as ASAuthorizationAppleIDCredential:
-                            // Only the first time the user sign in
-                            let userID = credential.user
-
-                            // Only on first sign up
-                            let email = credential.email
-                            let firstName = credential.fullName?.givenName
-                            let lastName = credential.fullName?.familyName
-                            let tokenData = credential.identityToken
- 
-                            self.userId = userID
-                            self.email = email ?? ""
-                            self.firstName = firstName ?? ""
-                            self.lastName = lastName ?? ""
-                            if let identityToken = tokenData,
-                               let token = String(data: identityToken, encoding: .utf8){
-                                self.identityToken = token
-                            }
+                        handleAuthorization(auth)
                             
-                        default:
-                            break
-                        }
+                        
                     case .failure(let error):
                         Log.shared.error("Error sign in with apple: \(error)")
                     }
@@ -70,6 +54,34 @@ struct SigninWithAppleView: View {
 
             }.navigationTitle("Sign In")
         }
+    }
+    
+    private func handleAuthorization(_ auth: ASAuthorization){
+        guard let credential = auth.credential as? ASAuthorizationAppleIDCredential else {
+            Log.shared.error("Invalid Sign In With Apple Credential type")
+            return
+        }
+        
+        // Only the first time the user sign in
+        let userID = credential.user
+
+        // Only on first sign up
+        let email = credential.email
+        let firstName = credential.fullName?.givenName
+        let lastName = credential.fullName?.familyName
+        let tokenData = credential.identityToken
+
+        self.userId = userID
+        self.email = email ?? ""
+        self.firstName = firstName ?? ""
+        self.lastName = lastName ?? ""
+        if let identityToken = tokenData,
+           let token = String(data: identityToken, encoding: .utf8){
+            self.identityToken = token
+        }
+        
+        authentication.isAuthenticated = true
+        
     }
 }
 

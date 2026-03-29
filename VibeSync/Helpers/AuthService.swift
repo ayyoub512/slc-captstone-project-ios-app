@@ -8,15 +8,16 @@
 import Combine
 import Foundation
 import KeychainSwift
+import AuthenticationServices
+import SwiftUI
 
 @Observable
 class AuthService {
     static let shared = AuthService()
-    
     private let kcManager = KeyChainManager.shared
     
     var isAuthenticated = false
-    
+        
     private init() {
         checkAuthStatus()
     }
@@ -35,6 +36,40 @@ class AuthService {
     func logout() {
         kcManager.clearKeyChain()
         self.updateAuthStatus(isAuthenticated: false)
+    }
+    
+    
+    // Sign in with apple
+    func checkCredentialStatus(){
+        @AppStorage(K.shared.appleUserId) var userID: String?
+
+        guard let userId = userID else {
+            Log.shared.error("User ID not found. not signed in")
+            return
+        }
+        
+        let provider = ASAuthorizationAppleIDProvider()
+        provider.getCredentialState(forUserID: userId) {  state, error in
+            DispatchQueue.main.async {
+                switch state {
+                case .authorized:
+                    Log.shared.info("User is authorized")
+                    
+                case .revoked:
+                    Log.shared.error("User revoked access")
+                    userID = nil
+                    // UserDefaults.standard.removeObject(forKey: K.shared.appleUserId)
+                    
+                case .notFound:
+                    Log.shared.error("User has never logged in with Apple on this device")
+                case .transferred:
+                    Log.shared.error("Credential transferred")
+                @unknown default:
+                    break
+                }
+            }
+        }
+        
     }
 }
 

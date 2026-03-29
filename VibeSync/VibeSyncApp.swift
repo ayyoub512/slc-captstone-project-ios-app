@@ -9,6 +9,7 @@ import OSLog
 import SwiftData
 import SwiftUI
 import UserNotifications
+import AuthenticationServices
 
 @Observable
 class VibeSyncDelegate: NSObject, UIApplicationDelegate {
@@ -109,7 +110,6 @@ struct VibeSyncApp: App {
                     }
 
                     .tabViewStyle(.page(indexDisplayMode: .never))
-//                    .scrollDisabled(!navManager.canSwipeTabs)
                     .ignoresSafeArea()
 
                 } else {
@@ -118,6 +118,13 @@ struct VibeSyncApp: App {
                     }
                 }
             }
+            .task {
+                authentication.checkCredentialStatus()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: ASAuthorizationAppleIDProvider.credentialRevokedNotification), perform: { _ in
+                Log.shared.error("Crednetial Revoked")
+                UserDefaults.standard.removeObject(forKey: K.shared.appleUserId)
+            })
             .environment(navManager)
             .environmentObject(notificationManager)
             .modelContainer(for: [FriendModel.self])
