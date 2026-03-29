@@ -173,28 +173,28 @@ class EditorData {
         let height = Int(size.height * scale)
 
         let colorSpace = CGColorSpaceCreateDeviceRGB()
-        //let bitmapInfo = CGImageAlphaInfo.premultipliedLast.rawValue
-        let bitmapInfo = CGImageAlphaInfo.noneSkipLast.rawValue // Dont use the Alpha channel
-        
-        guard
-            let context = CGContext(
-                data: nil,
-                width: width,
-                height: height,
-                bitsPerComponent: 8,
-                bytesPerRow: 0,
-                space: colorSpace,
-                bitmapInfo: bitmapInfo
-            )
-        else {
-            return nil
-        }
+        let bitmapInfo = CGImageAlphaInfo.premultipliedLast.rawValue
+
+        guard let context = CGContext(
+            data: nil,
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bytesPerRow: 0,
+            space: colorSpace,
+            bitmapInfo: bitmapInfo
+        ) else { return nil }
 
         context.scaleBy(x: scale, y: scale)
 
-        // Flipping the image
+        // Flip coordinates for CoreGraphics
         context.translateBy(x: 0, y: size.height)
         context.scaleBy(x: 1, y: -1)
+
+        // Fill with white background
+        context.setFillColor(UIColor.white.cgColor)
+        context.fill(CGRect(origin: .zero, size: size))
+
         return context
     }
 }
