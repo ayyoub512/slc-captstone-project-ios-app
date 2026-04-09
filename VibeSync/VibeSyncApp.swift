@@ -29,6 +29,7 @@ class VibeSyncDelegate: NSObject, UIApplicationDelegate {
         return true
     }
 
+    
     func application(
         _ application: UIApplication,
         didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
@@ -77,6 +78,7 @@ extension VibeSyncDelegate: UNUserNotificationCenterDelegate {
 
 @main
 struct VibeSyncApp: App {
+    
     // Notification
     @UIApplicationDelegateAdaptor private var vibeSyncDelegate: VibeSyncDelegate
 
@@ -114,7 +116,8 @@ struct VibeSyncApp: App {
 
                 } else {
                     NavigationStack {
-                        AuthContainerView()
+//                        AuthContainerView()
+                        SigninWithAppleView()
                     }
                 }
             }
