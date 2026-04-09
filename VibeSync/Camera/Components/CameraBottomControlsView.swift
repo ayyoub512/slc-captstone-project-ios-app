@@ -54,6 +54,7 @@ struct CameraBottomControlsView: View {
                     /// * Top: Text, Stickers, Draw tools
                     HStack {
                         textButton
+                        resetButton
                         Spacer()
                         showDrawToolsButton
                     }
@@ -107,13 +108,14 @@ struct CameraBottomControlsView: View {
                 }
 
             } else {
+                
                 /// On Canvas Mode:
                 ///   !Captured
                 if !editorData.hasContent {
                     /// Top: Draw Tools
                     HStack {
+                        resetButton
                         Spacer()
-
                         showDrawToolsButton
                     }
                     .frame(height: 70)
@@ -149,6 +151,7 @@ struct CameraBottomControlsView: View {
                         /// Top: Text, Undo, Redo, Done
                         HStack {
                             textButton
+                            resetButton
                             Spacer()
                             showDrawToolsButton/// will be hide tools now
                         }
@@ -161,6 +164,7 @@ struct CameraBottomControlsView: View {
                         /// Top: Text, Stickers, Draw Tools
                         HStack {
                             textButton
+                            resetButton
                             Spacer()
                             showDrawToolsButton
                         }
@@ -292,6 +296,21 @@ extension CameraBottomControlsView {
                     systemName: showTools
                         ? "checkmark" : "chevron.forward"
                 )
+            }
+        }
+        .buttonStyle(.glass)
+
+    }
+    
+    private var resetButton: some View {
+        Button {
+            withAnimation {
+                editorData.reset()
+            }
+        } label: {
+            HStack {
+                Text("Reset")
+                Image( systemName: "x.circle.fill")
             }
         }
         .buttonStyle(.glass)

@@ -38,13 +38,14 @@ class EditorData {
     var viewSize: CGSize?
     var hasContent: Bool = false
     var resetID = UUID()
+    var canvaSizeRect: CGRect?
 
     private let observer = MarkupObserver()
 
     func initializeController(_ rect: CGRect) {
         Log.shared.debug("initializeController rect: \(rect)")
         guard controller == nil else { return }
-        
+        canvaSizeRect = rect
         makeController(rect)
     }
     
@@ -131,9 +132,27 @@ class EditorData {
     }
 
     func reset() {
+        Log.shared.debug("Resetting EditorData")
+         
+        // 1. Clean up tool picker
+        if let controller = controller {
+         toolPicker.removeObserver(controller)
+         toolPicker.setVisible(false, forFirstResponder: controller.view)
+         controller.view.resignFirstResponder()
+        }
+
+        // 2. Clear controller
         controller = nil
+
+        // 3. Reset state (keep canvaSizeRect!)
         hasContent = false
-        resetID = UUID() /// Uniquly identifies
+        // ✅ DON'T clear canvaSizeRect - keep it for recreation
+        // canvaSizeRect = nil  // ❌ Remove this line
+
+        // 4. Generate new reset ID to force SwiftUI recreation
+        resetID = UUID()
+
+        Log.shared.debug("EditorData reset complete - SwiftUI will recreate view")
     }
 
     // markup to Data/Image

@@ -44,6 +44,7 @@ struct CameraView: View {
                                     size: geo.size,
                                     data: editorData
                                 )
+                                .id(editorData.resetID)
                             }
                         }
                     }
