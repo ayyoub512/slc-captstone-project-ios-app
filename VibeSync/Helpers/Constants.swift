@@ -25,8 +25,19 @@ struct K {
     let keychainInviteCodeKey = "inviteCode"
     let keychainUserIDKey = "userID"
     
+        
+    
+    let appleEmail = "appleEmail"
+    let applefullName = "applefullName"
+    let appleUserId = "appleUserId"
+    let appleIdentityToken = "appleIdentityToken"
+    let appleUsername = "appleUsername"
+    
+    
+    
     // API END POINTS
-    let apiURL = "https://b52d-2001-1970-4c69-b400-842c-e46c-20da-30b4.ngrok-free.app/api"
+    let apiURL = "https://49a4-2001-1970-4c69-b400-884a-287c-addb-36d2.ngrok-free.app/api"
+    var signInWithAppleURL: String { apiURL + "/auth/apple"}
     var logingURL: String { apiURL + "/auth/login" }
     var registerURL: String { apiURL + "/auth/register" }
     var registerDeviceURL: String { apiURL + "/register-device" }

@@ -1,34 +1,34 @@
+////
+////  AuthContainerView.swift
+////  VibeSync
+////
+////  Created by Ayyoub on 2/3/2026.
+////
+//import SwiftUI
 //
-//  AuthContainerView.swift
-//  VibeSync
+//struct AuthContainerView: View {
+//    @State private var showLogin = true
 //
-//  Created by Ayyoub on 2/3/2026.
+//    var body: some View {
+//        VStack {
+//            if showLogin {
+//                LoginView {
+//                    withAnimation {
+//                        showLogin = false
+//                    }
+//                }
+//                .transition(.move(edge: .trailing))
+//            } else {
+//                RegisterView {
+//                    withAnimation {
+//                        showLogin = true
+//                    }
+//                }
+//                .transition(.move(edge: .leading))
+//            }
+//        }
+//        .animation(.easeInOut, value: showLogin)
+////        .padding()
+//    }
+//}
 //
-import SwiftUI
-
-struct AuthContainerView: View {
-    @State private var showLogin = true
-
-    var body: some View {
-        VStack {
-            if showLogin {
-                LoginView {
-                    withAnimation {
-                        showLogin = false
-                    }
-                }
-                .transition(.move(edge: .trailing))
-            } else {
-                RegisterView {
-                    withAnimation {
-                        showLogin = true
-                    }
-                }
-                .transition(.move(edge: .leading))
-            }
-        }
-        .animation(.easeInOut, value: showLogin)
-//        .padding()
-    }
-}
-
