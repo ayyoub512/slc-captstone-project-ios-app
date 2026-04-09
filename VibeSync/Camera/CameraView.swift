@@ -1,20 +1,15 @@
 import PhotosUI
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct CameraView: View {
-    @StateObject private var viewModel = CameraViewModel()
-    @StateObject private var networkManager = NetworkManager()
-//    @EnvironmentObject var auth: AuthService
-
     @EnvironmentObject var notificationManager: APNSNotificationsManager
-    @State private var showNotificationPrompt = false
 
+    @State private var viewModel = CameraViewModel()
+    @State private var showNotificationPrompt = false
     @State private var showSendMessageSheet = false
     @State private var selectedFriendIDs: Set<String> = []
-
     @State private var editorData = EditorData()
-
     @State private var useCameraMode: Bool = true  // [Camera Mode Or Canvas Mode] - By default uses Camera mode
 
     var body: some View {
@@ -100,25 +95,25 @@ struct CameraView: View {
                 selectedFriendIDs: $selectedFriendIDs,
                 editorData: editorData
             )
-//            .modelContainer(for: [FriendModel.self])
             .presentationDetents([.medium])
         }
-        // Notification
         .task {
-//            await notificationManager.getAuthStatus()
-            
-                if !notificationManager.hasPermission {
-                    showNotificationPrompt = true
-                }
-            
+
+            if !notificationManager.hasPermission {
+                showNotificationPrompt = true
+            }
+
         }
         .sheet(isPresented: $showNotificationPrompt) {
-            NotificationPromptView()
+            NotificationPermissionView()
                 .environmentObject(notificationManager)
+        }
+        .sheet(isPresented: $viewModel.askForCameraPermision){
+            CameraPermissionView()
+                .environmentObject(viewModel)
         }
 
     }
-
 
     private var flipCameraButton: some View {
         Button {

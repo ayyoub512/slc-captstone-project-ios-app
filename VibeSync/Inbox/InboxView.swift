@@ -98,6 +98,7 @@ struct InboxView: View {
                 AddFriendView()
                     .padding(.top, 10)
             }
+            .presentationBackground(.brandPrimary)
             .presentationDetents([.medium])
         }
     }

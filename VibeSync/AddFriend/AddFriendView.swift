@@ -118,6 +118,5 @@ struct CopyableText: View {
     
     Form {
         AddFriendView()
-            .environmentObject(NetworkManager())
     }
 }

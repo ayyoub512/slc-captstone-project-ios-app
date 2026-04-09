@@ -82,11 +82,13 @@ struct NoFriendsYetView: View {
                 AddFriendView()
                     .padding(.top, 10)
             }
+            .presentationBackground(.brandPrimary)
             .presentationDetents([.medium])
         }
     }
 }
-
+// znr*RNU2kam*gvn_bmv
+//
 #Preview {
     NoFriendsYetView()
 }

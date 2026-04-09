@@ -6,7 +6,8 @@ class CameraViewModel: NSObject, ObservableObject {
     // MARK: - Published Properties
     @Published var session = AVCaptureSession()
     @Published var capturedImage: UIImage?
-    @Published var showPermissionAlert = false
+    @Published var showPermissionAlert = false // this is for when permission was denied
+    @Published var askForCameraPermision = false // initial ask for permission
     @Published var currentPosition: AVCaptureDevice.Position = .back
     @Published var overlayText: String = "Hello World"
     
@@ -26,19 +27,23 @@ class CameraViewModel: NSObject, ObservableObject {
         case .authorized:
             setupCamera()
         case .notDetermined:
-            AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
-                DispatchQueue.main.async {
-                    if granted {
-                        self?.setupCamera()
-                    } else {
-                        self?.showPermissionAlert = true
-                    }
-                }
-            }
+            askForCameraPermision = true
         case .denied, .restricted:
             showPermissionAlert = true
         @unknown default:
             break
+        }
+    }
+    
+    func askPermission(){
+        AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
+            DispatchQueue.main.async {
+                if granted {
+                    self?.setupCamera()
+                } else {
+                    self?.showPermissionAlert = true
+                }
+            }
         }
     }
 
