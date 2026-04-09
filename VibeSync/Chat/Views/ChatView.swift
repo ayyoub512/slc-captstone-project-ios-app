@@ -25,7 +25,6 @@ struct ChatView: View {
                     ScrollView {
                         LazyVStack(spacing: 15) {
 
-                            
                             if viewModel.messages.count != viewModel.allMessagesCount {
                                 HStack {
                                     Button("Load more") {
@@ -44,9 +43,7 @@ struct ChatView: View {
                                 .onTapGesture {
                                     showLargeImageViewSheet.toggle()
                                 }
-
-                                Text("\(msg.created_at)")
-                                Text("\(msg.id)")
+                                
                             }
                         }
                         .padding(.vertical)

@@ -9,7 +9,7 @@ import SwiftData
 import SwiftUI
 
 struct InboxView: View {
-
+    @State var auth = AuthService.shared
     @StateObject private var model = InboxViewModel()
     @Environment(NavigationManager.self) var navManager
   
@@ -18,22 +18,27 @@ struct InboxView: View {
     @Query(sort: \FriendModel.id) private var friends: [FriendModel]
 
     var body: some View {
-        List {
-            Text("Is router empty: \(navManager.canSwipeTabs)")
-
-            ForEach(friends, id: \._id) { friend in
-                NavigationLink(value: friend) {
-                    FriendRow(friend: friend)
+        Group{
+            if friends.count == 0 {
+                NoFriendsYetView()
+            }else{
+                List {
+                    
+                    ForEach(friends, id: \._id) { friend in
+                        NavigationLink(value: friend) {
+                            FriendRow(friend: friend)
+                        }
+                    }
                 }
+                .navigationDestination(
+                    for: FriendModel.self,
+                    destination: { friend in
+                        ChatView(friend: friend)
+                            .environment(navManager)
+                    }
+                )
             }
         }
-        .navigationDestination(
-            for: FriendModel.self,
-            destination: { friend in
-                ChatView(friend: friend)
-                    .environment(navManager)
-            }
-        )
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: {
@@ -71,8 +76,7 @@ struct InboxView: View {
                     Button(
                         role: .destructive,
                         action: {
-                            // Logout logic
-                            //                            auth.logout()
+                            auth.logout()
                         }
                     ) {
                         Label("Logout", systemImage: "power")

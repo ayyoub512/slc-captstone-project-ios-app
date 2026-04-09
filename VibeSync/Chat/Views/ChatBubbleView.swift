@@ -12,14 +12,24 @@ struct ChatBubbleView: View {
     let isFromMe: Bool
     
     var body: some View {
-        HStack {
-            if isFromMe { Spacer() }
+        VStack{
+            HStack {
+                if isFromMe { Spacer() }
+                
+                ChatImageView(url: message.imageURL, key: message.id)
+                
+                if !isFromMe { Spacer() }
+            }
+            .padding(.horizontal)
             
-            ChatImageView(url: message.imageURL, key: message.id)
-            
-            if !isFromMe { Spacer() }
+            HStack{
+                if isFromMe { Spacer() }
+                
+                Text("\(message.created_at)")
+                    .font(.footnote)
+                    .padding(.horizontal)
+            }
         }
-        .padding(.horizontal)
     }
 }
 
