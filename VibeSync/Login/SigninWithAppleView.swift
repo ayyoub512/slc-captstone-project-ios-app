@@ -13,21 +13,102 @@ struct SigninWithAppleView: View {
     @State var authentication = AuthService.shared
 
     var body: some View {
-        NavigationView {
-            VStack {
-                // if self.userId.isEmpty {
-                SignInButtonView(authentication: authentication)
+            NavigationView {
+                ZStack {
+                    
+                    // Background
+                    LinearGradient(
+                        colors: [
+                            Color(hex: "#6366F1"),
+                            Color(hex: "#7C3AED")
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    .ignoresSafeArea()
 
-                if let err = authentication.signInError {
-                    Text(err)
-                        .foregroundStyle(.red)
+                    VStack(spacing: 40) {
+                        
+                        Spacer()
+                        
+
+                        // App Title / Branding
+                        VStack(spacing: 12) {
+                            Image(systemName: "bolt.heart.fill")
+                                .font(.system(size: 60))
+                                .foregroundStyle(.white.opacity(0.9))
+                            
+                            Text("VibeSync")
+                                .font(.largeTitle.bold())
+                                .foregroundStyle(.white)
+
+                            Text("Share your moments. Stay in sync.")
+                                .font(.subheadline)
+                                .foregroundStyle(.white.opacity(0.85))
+                        }
+
+
+                        // Glass container for button
+                        VStack(spacing: 16) {
+
+                            SignInButtonView(authentication: authentication)
+
+                            if let err = authentication.signInError {
+                                Text(err)
+                                    .font(.footnote)
+                                    .foregroundStyle(.red)
+                                    .multilineTextAlignment(.center)
+                            }
+
+                        }
+                        .padding()
+//                        .background(.ultraThinMaterial)
+//                        .cornerRadius(20)
+//                        .padding(.horizontal)
+
+                        Spacer(minLength: 30)
+                    }
                 }
-
-            }.navigationTitle("Sign In")
+                .navigationBarHidden(true)
+            }
         }
-    }
+    
+//    var body: some View {
+//        NavigationView {
+//            VStack {
+//                // if self.userId.isEmpty {
+//                SignInButtonView(authentication: authentication)
+//
+//                if let err = authentication.signInError {
+//                    Text(err)
+//                        .foregroundStyle(.red)
+//                }
+//
+//            }.navigationTitle("Sign In")
+//        }
+//    }
 
 }
+
+
+extension Color {
+    init(hex: String) {
+        let hex = hex.trimmingCharacters(in: .alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&int)
+        let r, g, b: UInt64
+        (r, g, b) = ((int >> 16) & 255, (int >> 8) & 255, int & 255)
+
+        self.init(
+            .sRGB,
+            red: Double(r) / 255,
+            green: Double(g) / 255,
+            blue: Double(b) / 255,
+            opacity: 1
+        )
+    }
+}
+
 
 struct SignInButtonView: View {
     @State var authentication: AuthService
