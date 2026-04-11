@@ -95,7 +95,8 @@ extension AuthService {
             identityToken: token,
             appleUserID: userID,
             email: email,
-            name: name
+            name: name,
+            mobileApp: true
         )
 
         var request = URLRequest(url: url)
@@ -184,6 +185,7 @@ struct AppleSignInRequest: Codable {
     let appleUserID: String
     let email: String?
     let name: String?
+    let mobileApp: Bool
 }
 
 struct AppleSignInResponse: Codable {

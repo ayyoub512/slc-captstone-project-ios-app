@@ -8,35 +8,90 @@
 import PaperKit
 import SwiftUI
 
+// Update EditorView to show immediate feedback
 struct EditorView: View {
-
     var size: CGSize
     @Bindable var data: EditorData
     var image: UIImage?
 
-    var body: some View {
-        Group {
-            if let controller = data.controller {
-                PaperControllerView(controller: controller)
+    @State private var isProcessing = false
+    @State private var imageToInsert: UIImage?  // ✅ Store image
 
-            } else {
-                ProgressView()
+    var body: some View {
+        ZStack {
+            Group {
+                if let controller = data.controller {
+                    PaperControllerView(controller: controller)
+                } else {
+                    ProgressView("Initializing...")
+                }
+            }
+
+            // ✅ Show processing overlay
+            if isProcessing {
+                ZStack {
+                    Color.black.opacity(0.3)
+                    ProgressView("Processing image...")
+                        .padding()
+                        .background(Color.white.opacity(0.9))
+                        .cornerRadius(12)
+                }
             }
         }
         .onAppear {
-            Log.shared.debug("On appear: Calling .initializeController")
+            Log.shared.debug("EditorView.onAppear")
+
             data.initializeController(.init(origin: .zero, size: size))
             data.viewSize = size
-            if let userImage = image {
-                data.insertBackground(
-                    userImage,
-                    rect: .init(origin: .zero, size: size)
-                )
+            imageToInsert = image  // ✅ Store for later
+        }
+        .onChange(of: data.isControllerReady) { _, isReady in
+            // ✅ Insert image when controller is ready
+            if isReady, let userImage = imageToInsert {
+                isProcessing = true
+                Task {
+                    data.insertBackground(
+                        userImage,
+                        rect: .init(origin: .zero, size: size)
+                    )
+                    try? await Task.sleep(nanoseconds: 200_000_000)
+                    isProcessing = false
+                    imageToInsert = nil
+                }
             }
         }
-
     }
 }
+
+//struct EditorView: View {
+//
+//    var size: CGSize
+//    @Bindable var data: EditorData
+//    var image: UIImage?
+//
+//    var body: some View {
+//        Group {
+//            if let controller = data.controller {
+//                PaperControllerView(controller: controller)
+//
+//            } else {
+//                ProgressView()
+//            }
+//        }
+//        .onAppear {
+//            Log.shared.debug("On appear: Calling .initializeController")
+//            data.initializeController(.init(origin: .zero, size: size))
+//            data.viewSize = size
+//            if let userImage = image {
+//                data.insertBackground(
+//                    userImage,
+//                    rect: .init(origin: .zero, size: size)
+//                )
+//            }
+//        }
+//
+//    }
+//}
 
 // Paper controller View
 private struct PaperControllerView: UIViewControllerRepresentable {
@@ -52,7 +107,5 @@ private struct PaperControllerView: UIViewControllerRepresentable {
     ) {
 
     }
-    
-    
-}
 
+}

@@ -74,8 +74,9 @@ class CameraViewModel: NSObject, ObservableObject {
         }
 
         let settings = AVCapturePhotoSettings()
-        settings.photoQualityPrioritization =
-            photoOutput.maxPhotoQualityPrioritization
+        settings.photoQualityPrioritization = .speed
+//        settings.photoQualityPrioritization =
+//            photoOutput.maxPhotoQualityPrioritization
 
         print("Capturing photo...")
         photoOutput.capturePhoto(with: settings, delegate: self)
@@ -191,25 +192,27 @@ extension CameraViewModel: AVCapturePhotoCaptureDelegate {
     ) {
 
         if let error = error {
-            print("Error capturing photo: \(error.localizedDescription)")
+            Log.shared.error("Error capturing photo: \(error.localizedDescription)")
             return
         }
 
         guard let data = photo.fileDataRepresentation(),
             let image = UIImage(data: data)
         else {
-            print("Failed to process photo data")
+            Log.shared.error("Failed to process photo data")
             return
         }
 
-        print("Photo captured successfully")
+        Log.shared.info("Photo captured successfully")
 
         DispatchQueue.main.async { [weak self] in
+            Log.shared.info("DispatchQueue.main.async { [weak self] in")
             self?.capturedImage = image
         }
 
         // Stop session after capture (save battery)
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            Log.shared.info("DispatchQueue.global(qos: .userInitiated).async { [weak self] in")
             self?.session.stopRunning()
         }
     }

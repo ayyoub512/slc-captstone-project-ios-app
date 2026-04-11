@@ -5,7 +5,7 @@ import SwiftUI
 struct CameraView: View {
     @EnvironmentObject var notificationManager: APNSNotificationsManager
 
-    @State private var viewModel = CameraViewModel()
+    @StateObject private var viewModel = CameraViewModel()
     @State private var showNotificationPermissionPrompt = false
 //    @State private var showCameraPermissionPrompt = false
     @State private var showSendMessageSheet = false
@@ -25,11 +25,13 @@ struct CameraView: View {
                         ZStack {
                             if useCameraMode {
                                 if let image = viewModel.capturedImage {
+                                    let _ = Log.shared.debug("if let image = viewModel.capturedImage")
                                     EditorView(
                                         size: geo.size,
                                         data: editorData,
                                         image: image
-                                    ).id(editorData.resetID)
+                                    )
+                                    .id(editorData.resetID)
                                 } else {
                                     CameraPreviewView(
                                         session: viewModel.session
