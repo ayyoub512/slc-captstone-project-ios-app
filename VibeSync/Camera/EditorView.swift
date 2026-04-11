@@ -42,15 +42,26 @@ struct EditorView: View {
             Log.shared.debug("EditorView.onAppear")
 
             data.initializeController(.init(origin: .zero, size: size))
-            data.viewSize = size
-            imageToInsert = image  // ✅ Store for later
+            Task {
+                    await data.waitForController()
+
+                    if let userImage = image {
+                        await data.insertBackground(
+                            userImage,
+                            rect: .init(origin: .zero, size: size)
+                        )
+                    }
+                }
+            
+//            data.viewSize = size
+//            imageToInsert = image  // ✅ Store for later
         }
         .onChange(of: data.isControllerReady) { _, isReady in
             // ✅ Insert image when controller is ready
             if isReady, let userImage = imageToInsert {
                 isProcessing = true
                 Task {
-                    data.insertBackground(
+                    await data.insertBackground(
                         userImage,
                         rect: .init(origin: .zero, size: size)
                     )

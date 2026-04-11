@@ -55,11 +55,14 @@ class EditorData {
     // Update EditorData
     func initializeController(_ rect: CGRect) {
         Log.shared.debug("initializeController rect: \(rect)")
-        guard controller == nil else { return }
+        guard controller == nil else {
+            Log.shared.error("Intialize Controller error: guard controller == nil else {}")
+            return
+        }
         canvaSizeRect = rect
 
-        Task.detached(priority: .userInitiated) { [weak self] in
-            guard let self = self else { return }
+//        Task.detached(priority: .userInitiated) { [weak self] in
+//            guard let self = self else { return }
 
             let newController = PaperMarkupViewController(
                 supportedFeatureSet: .latest
@@ -67,7 +70,7 @@ class EditorData {
             newController.markup = PaperMarkup(bounds: rect)
             newController.zoomRange = 0.8...1.5
 
-            await MainActor.run {
+//            await MainActor.run {
                 newController.delegate = self.observer
                 self.observer.onCanvasChanged = { [weak self] in
                     self?.hasContent = true
@@ -75,8 +78,8 @@ class EditorData {
                 self.controller = newController
                 self.isControllerReady = true  // ✅ Set flag
                 Log.shared.debug("✅ Controller initialized and ready")
-            }
-        }
+//            }
+//        }
     }
 
     //    func initializeController(_ rect: CGRect) {
@@ -107,6 +110,16 @@ class EditorData {
         controller?.markup?.insertNewTextbox(attributedText: text, frame: rect)
     }
 
+    
+    @MainActor
+    func waitForController() async {
+        while controller == nil {
+            try? await Task.sleep(nanoseconds: 20_000_000)
+            Log.shared.info("waitForController After sleep")
+        }
+    }
+    
+    
     // Update EditorData.insertBackground
     func insertBackground(_ image: UIImage, rect: CGRect) {
         Log.shared.debug("insertBackground START")
@@ -310,9 +323,9 @@ class EditorData {
 
 // Helper to fix orientation
 extension UIImage {
-    func fixedOrientation() -> UIImage? {
+    nonisolated func fixedOrientation() -> UIImage? {
         guard imageOrientation != .up else { return self }
-
+ 
         // ✅ Use CIImage - MUCH faster than UIGraphics
         guard let ciImage = CIImage(image: self) else { return self }
 
@@ -339,24 +352,40 @@ extension UIImage {
         return UIImage(cgImage: cgImage, scale: scale, orientation: .up)
     }
 
-    func resized(to targetSize: CGSize) -> UIImage? {
-        let renderer = UIGraphicsImageRenderer(size: targetSize)
-        return renderer.image { _ in
-            self.draw(in: CGRect(origin: .zero, size: targetSize))
+//    func resized(to targetSize: CGSize) -> UIImage? {
+//        let renderer = UIGraphicsImageRenderer(size: targetSize)
+//        return renderer.image { _ in
+//            self.draw(in: CGRect(origin: .zero, size: targetSize))
+//        }
+//    }
+//
+//    // ✅ Smart resize that maintains aspect ratio
+//    func resizedToFit(maxDimension: CGFloat) -> UIImage {
+//        let scale = maxDimension / max(size.width, size.height)
+//        if scale >= 1 { return self }  // Already small enough
+//
+//        let newSize = CGSize(
+//            width: size.width * scale,
+//            height: size.height * scale
+//        )
+//
+//        return resized(to: newSize) ?? self
+//    }
+    
+    nonisolated func resizedToFit(maxDimension: CGFloat) -> UIImage {
+            let scale = maxDimension / max(size.width, size.height)
+            if scale >= 1 { return self }
+
+            let newSize = CGSize(
+                width: size.width * scale,
+                height: size.height * scale
+            )
+
+            let renderer = UIGraphicsImageRenderer(size: newSize)
+            return renderer.image { _ in
+                self.draw(in: CGRect(origin: .zero, size: newSize))
+            }
         }
-    }
-
-    // ✅ Smart resize that maintains aspect ratio
-    func resizedToFit(maxDimension: CGFloat) -> UIImage {
-        let scale = maxDimension / max(size.width, size.height)
-        if scale >= 1 { return self }  // Already small enough
-
-        let newSize = CGSize(
-            width: size.width * scale,
-            height: size.height * scale
-        )
-
-        return resized(to: newSize) ?? self
     }
 
     //    func fixedOrientation() -> UIImage? {
@@ -367,7 +396,7 @@ extension UIImage {
     //        UIGraphicsEndImageContext()
     //        return normalizedImage
     //    }
-}
+
 
 // Calculating center rect wuth the given rect!
 
