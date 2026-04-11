@@ -149,7 +149,6 @@ struct SignInButtonView: View {
         var email: String = ""
         var fullName: String = ""
 
-        // Only the first time the user sign in
         let userID = credential.user
 
         // Only on first sign up

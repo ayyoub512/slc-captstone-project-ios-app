@@ -23,40 +23,46 @@ struct NotificationPermissionView: View {
                 .font(.largeTitle.bold())
                 .multilineTextAlignment(.center)
 
-            Text("To receive messages and alerts from your friends, please allow notifications. You won't get updates otherwise.")
-                .font(.body)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 20)
+            Text(
+                "To receive messages and alerts from your friends, please allow notifications. You won't get updates otherwise."
+            )
+            .font(.body)
+            .foregroundColor(.secondary)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 20)
 
             Spacer()
 
-            // Request Permission Button
-            Button(action: {
-                Task {
-                    await notifications.request()
-                    if notifications.hasPermission {
-                        UIApplication.shared.registerForRemoteNotifications()
-                        dismiss()
-                    }
-                }
-            }) {
-                Text(notifications.hasPermission ? "Enabled" : "Allow Notifications")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-            }
-            .buttonStyle(.glassProminent)
-            .disabled(notifications.hasPermission)
+                Button(action: {
+                    Task {
+                        await notifications.request()
 
-            // Open Settings if user previously denied notifications
-            if !notifications.hasPermission {
-                Button("Enable in Settings") {
-                    guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
-                    UIApplication.shared.open(url)
+                        if notifications.hasPermission {
+                            UIApplication.shared
+                                .registerForRemoteNotifications()
+                            dismiss()
+                        }
+                    }
+                }) {
+
+                    Text(notifications.hasPermission ? "Allowed" : "Allow Notifications")
+                        .frame(maxWidth: .infinity)
+                        .padding()
                 }
-                .foregroundColor(.cyan)
-                .padding(.top, 4)
+                .buttonStyle(.glassProminent)
+                .disabled(notifications.hasPermission)
+            
+            
+            Button("Enable in Settings") {
+                guard
+                    let url = URL(
+                        string: UIApplication.openSettingsURLString
+                    )
+                else { return }
+                UIApplication.shared.open(url)
             }
+            .foregroundColor(.cyan)
+            .padding(.top, 4)
 
             Spacer()
         }

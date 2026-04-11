@@ -6,7 +6,8 @@ struct CameraView: View {
     @EnvironmentObject var notificationManager: APNSNotificationsManager
 
     @State private var viewModel = CameraViewModel()
-    @State private var showNotificationPrompt = false
+    @State private var showNotificationPermissionPrompt = false
+//    @State private var showCameraPermissionPrompt = false
     @State private var showSendMessageSheet = false
     @State private var selectedFriendIDs: Set<String> = []
     @State private var editorData = EditorData()
@@ -70,7 +71,13 @@ struct CameraView: View {
             }
         }
         .onAppear {
-            viewModel.checkPermissions()
+            viewModel.checkPermissions() // will update viewModel.askForCameraPermision
+            
+            Task{
+                await notificationManager.getAuthorizationStatus()
+                Log.shared.debug("showNotificationPrompt = !notificationManager.hasPermission = \(!notificationManager.hasPermission)")
+                showNotificationPermissionPrompt = !notificationManager.hasPermission
+            }
         }
         .onDisappear {
             viewModel.stopSession()
@@ -97,22 +104,18 @@ struct CameraView: View {
             )
             .presentationDetents([.medium])
         }
-        .task {
-
-            if !notificationManager.hasPermission {
-                showNotificationPrompt = true
-            }
-
-        }
-        .sheet(isPresented: $showNotificationPrompt) {
+        .sheet(isPresented: $showNotificationPermissionPrompt) {
             NotificationPermissionView()
                 .environmentObject(notificationManager)
         }
-        .sheet(isPresented: $viewModel.askForCameraPermision){
+        .sheet(isPresented: $viewModel.askForCameraPermision) {
             CameraPermissionView()
                 .environmentObject(viewModel)
         }
-
+        .onChange(of: notificationManager.hasPermission) { _, newValue in
+            showNotificationPermissionPrompt = !newValue
+        }
+       
     }
 
     private var flipCameraButton: some View {

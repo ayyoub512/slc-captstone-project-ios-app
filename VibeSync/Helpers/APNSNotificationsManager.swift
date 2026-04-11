@@ -12,7 +12,7 @@ import UserNotifications
 
 @MainActor
 class APNSNotificationsManager: ObservableObject {
-    @Published private(set) var hasPermission = true
+    @Published private(set) var hasPermission: Bool = true
     private let keyChain = KeychainSwift()
 
     init() {
@@ -31,8 +31,10 @@ class APNSNotificationsManager: ObservableObject {
     }
 
     func getAuthorizationStatus() async {
-        let status = await UNUserNotificationCenter.current()
+        let status = await UNUserNotificationCenter
+            .current()
             .notificationSettings()
+        
         switch status.authorizationStatus {
         case .authorized, .provisional, .ephemeral:
             hasPermission = true

@@ -25,10 +25,14 @@ class CameraViewModel: NSObject, ObservableObject {
     func checkPermissions() {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
+            askForCameraPermision = false
+            showPermissionAlert = false
             setupCamera()
         case .notDetermined:
             askForCameraPermision = true
+            showPermissionAlert = false
         case .denied, .restricted:
+            askForCameraPermision = true
             showPermissionAlert = true
         @unknown default:
             break
@@ -40,7 +44,10 @@ class CameraViewModel: NSObject, ObservableObject {
             DispatchQueue.main.async {
                 if granted {
                     self?.setupCamera()
+                    self?.showPermissionAlert = false
+                    self?.askForCameraPermision = false
                 } else {
+                    self?.showPermissionAlert = true
                     self?.showPermissionAlert = true
                 }
             }
@@ -163,7 +170,7 @@ class CameraViewModel: NSObject, ObservableObject {
             }
 
             // Add small delay to ensure session is fully running
-            Thread.sleep(forTimeInterval: 0.3)
+            // Thread.sleep(forTimeInterval: 0.3)
 
             self.isConfiguring = false
             print(
