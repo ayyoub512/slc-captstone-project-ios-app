@@ -47,7 +47,10 @@ struct SendVibeSheetView: View {
                     
                     Button {
                         Task {
-                            guard let size = editorData.viewSize else { return }
+                            guard let size = editorData.viewSize else {
+                                Log.shared.error("Error: guard return: guard let size = editorData.viewSize")
+                                return
+                            }
                             let rect = CGRect(
                                 origin: .zero,
                                 size: size

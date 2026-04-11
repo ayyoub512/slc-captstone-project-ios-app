@@ -93,6 +93,8 @@ class SendVibeSheetViewModel: ObservableObject {
 
         self.working = true
         self.errorMessage = nil
+        
+        Log.shared.info("Sending a new vibe")
 
         do {
             var request = URLRequest(url: url)

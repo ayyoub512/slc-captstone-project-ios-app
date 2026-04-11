@@ -53,7 +53,7 @@ struct EditorView: View {
                     }
                 }
             
-//            data.viewSize = size
+            data.viewSize = size
 //            imageToInsert = image  // ✅ Store for later
         }
         .onChange(of: data.isControllerReady) { _, isReady in
