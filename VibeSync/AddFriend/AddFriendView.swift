@@ -60,7 +60,7 @@ struct AddFriendView: View {
                 HStack {
                     Text("Your invite code is: ")
                     Spacer()
-                    CopyableText(text: "G3CM2A")
+                    CopyableText(text: "\(KeyChainManager.shared.get(key: K.shared.keychainInviteCodeKey))")
                 }
             }
         }

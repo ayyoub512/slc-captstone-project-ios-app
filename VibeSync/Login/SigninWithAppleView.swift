@@ -41,7 +41,7 @@ struct SigninWithAppleView: View {
                             Text("VibeSync")
                                 .font(.largeTitle.bold())
                                 .foregroundStyle(.white)
-
+                     
                             Text("Share your moments. Stay in sync.")
                                 .font(.subheadline)
                                 .foregroundStyle(.white.opacity(0.85))

@@ -50,6 +50,7 @@ class AuthService {
 
         guard let userId = userID else {
             Log.shared.error("User ID not found. not signed in")
+//            kcManager.clearKeyChain()
             return
         }
 
@@ -63,7 +64,6 @@ class AuthService {
                 case .revoked:
                     Log.shared.error("User revoked access")
                     userID = nil
-                // UserDefaults.standard.removeObject(forKey: K.shared.appleUserId)
 
                 case .notFound:
                     Log.shared.error(

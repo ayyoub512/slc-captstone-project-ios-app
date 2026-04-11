@@ -124,10 +124,10 @@ struct VibeSyncApp: App {
             .task {
                 authentication.checkCredentialStatus()
             }
-            .onReceive(NotificationCenter.default.publisher(for: ASAuthorizationAppleIDProvider.credentialRevokedNotification), perform: { _ in
-                Log.shared.error("Crednetial Revoked")
-                UserDefaults.standard.removeObject(forKey: K.shared.appleUserId)
-            })
+//            .onReceive(NotificationCenter.default.publisher(for: ASAuthorizationAppleIDProvider.credentialRevokedNotification), perform: { _ in
+//                Log.shared.error("Crednetial Revoked")
+//                UserDefaults.standard.removeObject(forKey: K.shared.appleUserId)
+//            })
             .environment(navManager)
             .environmentObject(notificationManager)
             .modelContainer(for: [FriendModel.self])
