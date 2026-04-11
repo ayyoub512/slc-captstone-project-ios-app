@@ -306,6 +306,7 @@ extension CameraBottomControlsView {
         Button {
             withAnimation {
                 editorData.reset()
+                viewModel.retakePhoto()
             }
         } label: {
             HStack {
