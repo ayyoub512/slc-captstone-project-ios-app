@@ -4,7 +4,7 @@ import SwiftUI
 
 struct CameraView: View {
     @EnvironmentObject var notificationManager: APNSNotificationsManager
-
+    @State var navManager: NavigationManager = NavigationManager.shared
     @StateObject private var viewModel = CameraViewModel()
     @State private var showNotificationPermissionPrompt = false
 //    @State private var showCameraPermissionPrompt = false
@@ -18,7 +18,7 @@ struct CameraView: View {
             Color.black.ignoresSafeArea()
 
             VStack {
-                CameraHeaderView()
+//                CameraHeaderView()
                 Spacer()
                 ZStack {
                     GeometryReader { geo in
@@ -70,6 +70,32 @@ struct CameraView: View {
                     }
                 )
                 .frame(height: 200)
+            }
+        }
+        .toolbar {
+            // LEFT → Profile
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button {
+                    navManager.goToTab(id:0)
+                } label: {
+                    Image(systemName: "chevron.left")
+                }
+            }
+
+            // CENTER → Title
+            ToolbarItem(placement: .principal) {
+                Text("Vibe Sync")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundColor(.white)
+            }
+
+            // RIGHT → Inbox
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    navManager.goToTab(id: 2)
+                } label: {
+                    Image(systemName: "chevron.right")
+                }
             }
         }
         .onAppear {
@@ -136,5 +162,5 @@ struct CameraView: View {
 
 // MARK: - Preview
 #Preview {
-    CameraView()
+//    CameraView()
 }

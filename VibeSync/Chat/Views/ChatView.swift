@@ -104,6 +104,7 @@ struct ChatView: View {
                 .padding()
             }
         }
+        
         .sheet(isPresented: $showLargeImageViewSheet){
             LargeImageView()
                 .presentationDetents([.large])

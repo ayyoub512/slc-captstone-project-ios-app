@@ -67,5 +67,5 @@ struct ProfileView: View {
 
 #Preview {
     ProfileView()
-        .environment(NavigationManager())
+        .environment(NavigationManager.shared)
 }

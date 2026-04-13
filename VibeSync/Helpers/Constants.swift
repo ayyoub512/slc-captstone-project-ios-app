@@ -36,7 +36,8 @@ struct K {
     
     
     // API END POINTS
-    let apiURL = "https://49a4-2001-1970-4c69-b400-884a-287c-addb-36d2.ngrok-free.app/api"
+//    let apiURL =  "https://b0e0-2001-1970-4c69-b400-44f-be7a-6eb6-4fba.ngrok-free.app/api" // "https://vibesync.ayyoub.io/api"
+    let apiURL = "https://vibesync.ayyoub.io/api"
     var signInWithAppleURL: String { apiURL + "/auth/apple"}
     var logingURL: String { apiURL + "/auth/login" }
     var registerURL: String { apiURL + "/auth/register" }
