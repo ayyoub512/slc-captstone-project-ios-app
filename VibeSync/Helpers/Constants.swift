@@ -48,6 +48,6 @@ struct K {
     
     
     // Numbers
-    var cachFriendsDurationMinutes: Double = 500
+    var cachFriendsDurationSeconds: Double = 300
 
 }

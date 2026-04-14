@@ -41,6 +41,8 @@ class AuthService {
     }
 
     func logout(modelContext: ModelContext) {
+        // This is wrong, the logout shouldn't be concerned with the modelContext
+        // TODO: Change this code debt later on.
         Log.shared.debug("Logging out.")
         self.clearCachedData(modelContext: modelContext)
         self.updateAuthStatus(isAuthenticated: false)

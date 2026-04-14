@@ -79,7 +79,7 @@ class InboxViewModel: ObservableObject {
     }
 
     func hasCacheExceededLimit() -> Bool {
-        let timeLimit: TimeInterval = K.shared.cachFriendsDurationMinutes  // 5 min
+        let timeLimit: TimeInterval = K.shared.cachFriendsDurationSeconds
         return Date.now.timeIntervalSince1970 - lastTimeFetchedFriends >= timeLimit
     }
 

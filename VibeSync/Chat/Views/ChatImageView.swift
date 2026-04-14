@@ -17,9 +17,13 @@ struct ChatImageView: View {
     }
 
     var body: some View {
-        ZStack {
+        VStack {
             if model.isLoading {
-                ProgressView()
+                RoundedRectangle(cornerRadius: 22)
+                    .fill(Color.gray.opacity(0.2))
+                    .frame(width: 240, height: 320)
+                    .overlay { ProgressView() }
+                
             } else if let image = model.image {
                 Image(uiImage: image).resizable()
                     .aspectRatio(contentMode: .fill)
@@ -29,7 +33,7 @@ struct ChatImageView: View {
                     .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 5)
             }
         }
-        .task{
+        .task {
             await model.getImage()
         }
 
