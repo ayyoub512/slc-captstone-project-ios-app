@@ -76,7 +76,7 @@ struct InboxView: View {
                     Button(
                         role: .destructive,
                         action: {
-                            auth.logout()
+                            auth.logout(modelContext: modelContext)
                         }
                     ) {
                         Label("Logout", systemImage: "power")
@@ -90,7 +90,10 @@ struct InboxView: View {
         }
         .task {
             if model.hasCacheExceededLimit() || friends.isEmpty {
+                Log.shared.debug("We have to refetch friends")
                 await model.fetchFriends(modelContext: self.modelContext)
+            }else{
+                Log.shared.debug("We dont have to refetch friends, friends: \(friends.count)")
             }
         }
         .sheet(isPresented: $showAddFriendSheet) {

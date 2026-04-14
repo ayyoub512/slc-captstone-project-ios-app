@@ -6,48 +6,111 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ProfileView: View {
+    @Environment(\.modelContext) private var modelContext // the main reason for this is to clear the cached friends list on logout
     @Environment(NavigationManager.self) var navManager
     @State var auth = AuthService.shared
-    @State private var label: String = "Hi"
-    @State private var isEditingText = false
+    private let kcManager = KeyChainManager.shared
+
+    @State private var showEditName = false
+    @State private var editedName = ""
+
+    @State private var viewModel = ProfileViewModel()  // 👈
 
     var body: some View {
+        VStack {
+            VStack(alignment: .center) {
+                Text(
+                    kcManager.get(key: K.shared.keychainApplefullName).prefix(1)
+                        .uppercased()
+                )
+                .font(.system(size: 50, weight: .bold))
+                .foregroundColor(.white)
+                .frame(width: 130, height: 130)
+                .background(Circle().fill(Color.brandPrimary.gradient))
 
-        Form {
-
-            AddFriendView()
-
-            Section(header: Text("Want to Sign Out").font(.headline)) {
-                Button {
-                    auth.logout()
-                } label: {
-                    HStack (alignment: .center) {
-                        Image(systemName: "arrow.backward.square")
-                        Text("Sign out")
-                    }
-
+                HStack(alignment: .center, spacing: 3) {
+                    Text(kcManager.get(key: K.shared.keychainApplefullName))
+                        .font(.title)
+                        .padding(.bottom)
+                    //                    Image(systemName: "pencil")
+                    //                        .foregroundStyle(.secondary)
                 }
-                .buttonStyle(.borderless)  // Makes it prominent
-                .tint(Color.red.opacity(0.3))  // Slightly red
-                .foregroundStyle(.red)
+            }
+            .onTapGesture {
+                //                editedName = kcManager.get(key: K.shared.keychainApplefullName)
+                //                showEditName = true
+            }
+
+            Form {
+                AddFriendView()
+
+                Section {
+                    Button {
+                        auth.logout(modelContext: modelContext)
+                    } label: {
+                        HStack(alignment: .center) {
+                            Image(systemName: "arrow.backward.square")
+                            Text("Sign out")
+                        }
+                    }
+                    .buttonStyle(.borderless)  // Makes it prominent
+                    .tint(Color.red.opacity(0.3))  // Slightly red
+                    .foregroundStyle(.red)
+                }
+
+                Section {
+                    Button(role: .destructive) {
+                        viewModel.showDeleteConfirmation = true
+                    } label: {
+                        HStack {
+                            if viewModel.isDeleting {
+                                ProgressView()
+                                    .tint(.red)
+                            } else {
+                                Image(
+                                    systemName: "person.crop.circle.badge.minus"
+                                )
+                            }
+                            Text("Delete Account")
+                        }
+                    }
+                    .disabled(viewModel.isDeleting)
+
+                    if let error = viewModel.errorMessage {
+                        Text(error)
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    }
+                } footer: {
+                    Text(
+                        "This permanently deletes your account, all messages, and images. This cannot be undone."
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                }
 
             }
-        }
 
-        .onTapGesture {
-            if isEditingText {
-                print("Clicked away while isEditingText=true")
-                isEditingText = false
-            }
         }
-
+        .sheet(isPresented: $showEditName) {
+            EditNameSheet(
+                name: $editedName,
+                onSave: {
+                    handleNameChange(editedName)
+                    showEditName = false
+                }
+            )
+            .presentationDetents([.medium])
+        }
+        .background(Color(.systemGroupedBackground))
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button(action: {
                     withAnimation {
-                        navManager.selectedTab = 1
+                        navManager.goToTab(id: 1)
                     }
                 }) {
                     HStack {
@@ -62,7 +125,62 @@ struct ProfileView: View {
             }
 
         }
+        .confirmationDialog(
+            "Delete Account",
+            isPresented: $viewModel.showDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Delete My Account", role: .destructive) {
+                Task {
+                    let success = await viewModel.deleteAccount()
+                    if success {
+                        auth.logout(modelContext: modelContext)
+                    }
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text(
+                "Are you sure? This will permanently delete all your data and cannot be undone."
+            )
+        }
     }
+}
+
+struct EditNameSheet: View {
+    @Binding var name: String
+    var onSave: () -> Void
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                TextField("Enter name", text: $name)
+                    .autocapitalization(.allCharacters)
+                    .disableAutocorrection(true)
+                    .padding(.horizontal, 0)
+            }
+            .navigationTitle("Edit Name")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Change") {
+                        onSave()
+                    }
+                    .buttonStyle(.glassProminent)
+                }
+
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        onSave()  // or dismiss separately if you prefer
+                    }
+
+                }
+            }
+        }
+    }
+}
+
+func handleNameChange(_ newName: String) {
+    print("Name changed to:", newName)
 }
 
 #Preview {

@@ -13,90 +13,71 @@ struct SigninWithAppleView: View {
     @State var authentication = AuthService.shared
 
     var body: some View {
-            NavigationView {
-                ZStack {
-                    
-                    // Background
-                    LinearGradient(
-                        colors: [
-                            Color(hex: "#6366F1"),
-                            Color(hex: "#7C3AED")
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                    .ignoresSafeArea()
+        NavigationView {
+            ZStack {
 
-                    VStack(spacing: 40) {
-                        
-                        Spacer()
-                        
+                // Background
+                LinearGradient(
+                    colors: [
+                        Color(hex: "#6366F1"),
+                        Color(hex: "#7C3AED"),
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
 
-                        // App Title / Branding
-                        VStack(spacing: 12) {
-                            Image(systemName: "bolt.heart.fill")
-                                .font(.system(size: 60))
-                                .foregroundStyle(.white.opacity(0.9))
-                            
-                            Text("VibeSync")
-                                .font(.largeTitle.bold())
-                                .foregroundStyle(.white)
-                     
-                            Text("Share your moments. Stay in sync.")
-                                .font(.subheadline)
-                                .foregroundStyle(.white.opacity(0.85))
-                        }
+                VStack(spacing: 40) {
 
+                    Spacer()
 
-                        // Glass container for button
-                        VStack(spacing: 16) {
+                    // App Title / Branding
+                    VStack(spacing: 12) {
+                        Image(systemName: "bolt.heart.fill")
+                            .font(.system(size: 60))
+                            .foregroundStyle(.white.opacity(0.9))
 
-                            SignInButtonView(authentication: authentication)
+                        Text("VibeSync")
+                            .font(.largeTitle.bold())
+                            .foregroundStyle(.white)
 
-                            if let err = authentication.signInError {
-                                Text(err)
-                                    .font(.footnote)
-                                    .foregroundStyle(.red)
-                                    .multilineTextAlignment(.center)
-                            }
-
-                        }
-                        .padding()
-//                        .background(.ultraThinMaterial)
-//                        .cornerRadius(20)
-//                        .padding(.horizontal)
-
-                        Spacer(minLength: 30)
+                        Text("Share your moments. Stay in sync.")
+                            .font(.subheadline)
+                            .foregroundStyle(.white.opacity(0.85))
                     }
+
+                    // Glass container for button
+                    VStack(spacing: 16) {
+
+                        SignInButtonView(authentication: authentication)
+
+                        if let err = authentication.signInError {
+                            Text(err)
+                                .font(.footnote)
+                                .foregroundStyle(.red)
+                                .multilineTextAlignment(.center)
+                        }
+
+                    }
+                    .padding()
+                  
+                    Spacer(minLength: 30)
                 }
-                .navigationBarHidden(true)
             }
+            .navigationBarHidden(true)
         }
-    
-//    var body: some View {
-//        NavigationView {
-//            VStack {
-//                // if self.userId.isEmpty {
-//                SignInButtonView(authentication: authentication)
-//
-//                if let err = authentication.signInError {
-//                    Text(err)
-//                        .foregroundStyle(.red)
-//                }
-//
-//            }.navigationTitle("Sign In")
-//        }
-//    }
+    }
 
 }
-
 
 extension Color {
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: .alphanumerics.inverted)
         var int: UInt64 = 0
         Scanner(string: hex).scanHexInt64(&int)
-        let r, g, b: UInt64
+        let r: UInt64
+        let g: UInt64
+        let b: UInt64
         (r, g, b) = ((int >> 16) & 255, (int >> 8) & 255, int & 255)
 
         self.init(
@@ -108,7 +89,6 @@ extension Color {
         )
     }
 }
-
 
 struct SignInButtonView: View {
     @State var authentication: AuthService
@@ -150,6 +130,8 @@ struct SignInButtonView: View {
         var fullName: String = ""
 
         let userID = credential.user
+        // SAVING USER ID WHICH WILL BE COMPARED TO CHECK IF USER IS LOGGED WITH APPLE LATER
+        KeyChainManager.shared.save(key: K.shared.keychainAppleUserId, value: userID)
 
         // Only on first sign up
         if let credEmail = credential.email {

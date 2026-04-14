@@ -14,7 +14,7 @@ class InboxViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var success: Bool?
 
-    @AppStorage("lastFetchedFriends") var lastTimeFetchedFriends: Double = Date
+    @AppStorage(K.shared.appStorageLastFetchedFriends) var lastTimeFetchedFriends: Double = Date
         .now.timeIntervalSince1970
 
     let token: String = {
@@ -79,7 +79,7 @@ class InboxViewModel: ObservableObject {
     }
 
     func hasCacheExceededLimit() -> Bool {
-        let timeLimit: TimeInterval = 500  // 5 min
+        let timeLimit: TimeInterval = K.shared.cachFriendsDurationMinutes  // 5 min
         return Date.now.timeIntervalSince1970 - lastTimeFetchedFriends >= timeLimit
     }
 

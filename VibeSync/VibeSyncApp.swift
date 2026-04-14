@@ -15,72 +15,17 @@ import AuthenticationServices
 @main
 struct VibeSyncApp: App {
     
-    // Notification
     @UIApplicationDelegateAdaptor private var vibeSyncDelegate: VibeSyncDelegate
-    @State var authentication = AuthService.shared
-    @State private var navManager = NavigationManager.shared
-
+    @State private var authManager = AuthService.shared
     @StateObject private var notificationManager = APNSNotificationsManager()
-
+    
     var body: some Scene {
         WindowGroup {
-            Group {
-                if authentication.isAuthenticated {
-                    let _ = Log.shared.debug("Logged in \(KeyChainManager.shared.get(key: K.shared.keyChainUserTokenKey))")
-
-                    TabView(selection: $navManager.selectedTab) {
-
-                        NavigationStack(path: $navManager.profilePath) {
-                            ProfileView()
-                        }
-                        .tag(0)
-
-                        NavigationStack(){
-                            CameraView()
-                        }
-                            .tag(1)
-                            .environmentObject(notificationManager)
-
-                        NavigationStack(path: $navManager.inboxPath) {
-                            InboxView()
-
-                        }
-                        .tag(2)
-
-                    }
-//                    .tabViewStyle(.automatic)
-                    .tabViewStyle(.page(indexDisplayMode: .never))
-                    .ignoresSafeArea()
-                    .simultaneousGesture(
-                        navManager.canSwipeTabs ? nil : DragGesture()
-                    )
-                    .background(
-                        PageSwipeController(isEnabled: navManager.canSwipeTabs)
-                    )
-
-                } else {
-                    NavigationStack {
-//                        AuthContainerView()
-                        SigninWithAppleView()
-                    }
-                }
-            }
-            .task {
-                authentication.checkCredentialStatus()
-            }
-//            .onReceive(NotificationCenter.default.publisher(for: ASAuthorizationAppleIDProvider.credentialRevokedNotification), perform: { _ in
-//                Log.shared.error("Crednetial Revoked")
-//                UserDefaults.standard.removeObject(forKey: K.shared.appleUserId)
-//            })
-            .environment(navManager)
-            .environmentObject(notificationManager)
-            .modelContainer(for: [FriendModel.self])
-            .onOpenURL { url in
-                // TODO: Handle notification deep link
-                Log.shared.info("Opened a new url \(url.absoluteString) ")
-            }
-
+            RootView()
+                .environment(authManager)
+                .environmentObject(notificationManager)
         }
+        .modelContainer(for: [FriendModel.self])
     }
 }
 

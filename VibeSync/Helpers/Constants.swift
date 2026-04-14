@@ -15,7 +15,7 @@ struct K {
     static let shared = K()
     let teamId = "DMADXVV944"
     let bundleIdentifier = "io.ayyoub.vibe-sync"
-    
+
     // Key Chain
     var keyChainSharedAccessGroup: String {
         return "\(teamId).\(bundleIdentifier).shared"
@@ -24,21 +24,18 @@ struct K {
     let keychainAPNKey = "deviceAPNToken"
     let keychainInviteCodeKey = "inviteCode"
     let keychainUserIDKey = "userID"
+
+    // Apple
+    let keychainApplefullName = "applefullName"
+    let keychainAppleUserId = "appleUserId"
     
-        
-    
-    let appleEmail = "appleEmail"
-    let applefullName = "applefullName"
-    let appleUserId = "appleUserId"
-    let appleIdentityToken = "appleIdentityToken"
-    let appleUsername = "appleUsername"
-    
-    
-    
+    // App Storage
+    let appStorageLastFetchedFriends = "lastFetchedFriends" // Time since last fetched friends - refresh every ~5 minutes
+
     // API END POINTS
-//    let apiURL =  "https://b0e0-2001-1970-4c69-b400-44f-be7a-6eb6-4fba.ngrok-free.app/api" // "https://vibesync.ayyoub.io/api"
-    let apiURL = "https://vibesync.ayyoub.io/api"
-    var signInWithAppleURL: String { apiURL + "/auth/apple"}
+    let apiURL = "https://ac5f-2001-1970-4c69-b400-44f-be7a-6eb6-4fba.ngrok-free.app/api"  // "https://vibesync.ayyoub.io/api"
+    // let apiURL = "https://vibesync.ayyoub.io/api"
+    var signInWithAppleURL: String { apiURL + "/auth/apple" }
     var logingURL: String { apiURL + "/auth/login" }
     var registerURL: String { apiURL + "/auth/register" }
     var registerDeviceURL: String { apiURL + "/register-device" }
@@ -47,5 +44,10 @@ struct K {
     var getMessagesURL: String { apiURL + "/getMessagesByFriend" }
     var addFriendURL: String { apiURL + "/addFriend" }
     var getLatestMessageURL: String { apiURL + "/getNewestMessageByFriends" }
+    var deleteUserDataURL: String {apiURL + "/delete-user-data"}
+    
+    
+    // Numbers
+    var cachFriendsDurationMinutes: Double = 500
 
 }

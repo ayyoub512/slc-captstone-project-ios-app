@@ -9,22 +9,23 @@ import AuthenticationServices
 import Combine
 import Foundation
 import KeychainSwift
+import SwiftData
 import SwiftUI
 
 @Observable
 class AuthService {
     static let shared = AuthService()
-    
+
     private let kcManager = KeyChainManager.shared
     private let installManager = AppReinstallManager.shared
 
     var isAuthenticated = false
-    var signInError:String?
+    var signInError: String?
 
     private init() {
         // Clear keychain if the app was installed so it doesnt auto logging
         installManager.handleFreshInstall()
-        
+
         checkAuthStatus()
     }
 
@@ -39,18 +40,32 @@ class AuthService {
         }
     }
 
-    func logout() {
-        kcManager.clearKeyChain()
+    func logout(modelContext: ModelContext) {
+        Log.shared.debug("Logging out.")
+        self.clearCachedData(modelContext: modelContext)
         self.updateAuthStatus(isAuthenticated: false)
     }
 
-    // Sign in with apple
-    func checkCredentialStatus() {
-        @AppStorage(K.shared.appleUserId) var userID: String?
+    func clearCachedData(modelContext: ModelContext) {
+        Log.shared.debug("Removing all cached data.")
+        // Clearing key chain
+        kcManager.clearKeyChain()
+        // Clear all cached data: friends list & image
+        do {
+            try modelContext.delete(model: FriendModel.self)
+            Log.shared.info("Deteted cached friends")
+        } catch {
+            Log.shared.error("Failed to clear FriendModel: \(error)")
+        }
+    }
 
-        guard let userId = userID else {
-            Log.shared.error("User ID not found. not signed in")
-//            kcManager.clearKeyChain()
+    // Sign in with apple
+    func checkCredentialStatus(modelContext: ModelContext) {
+        var userId: String = kcManager.get(key: K.shared.keychainAppleUserId)
+
+        if userId.isEmpty {
+            Log.shared.error("User ID not found. not signed in with Apple")
+            kcManager.clearKeyChain()
             return
         }
 
@@ -63,16 +78,22 @@ class AuthService {
 
                 case .revoked:
                     Log.shared.error("User revoked access")
-                    userID = nil
+                    userId = ""
+                    self.logout(modelContext: modelContext)  // I am not sure if its right to do this.
 
                 case .notFound:
                     Log.shared.error(
                         "User has never logged in with Apple on this device"
                     )
+                    self.logout(modelContext: modelContext)
+
                 case .transferred:
                     Log.shared.error("Credential transferred")
+                    self.logout(modelContext: modelContext)
+
                 @unknown default:
-                    break
+                    self.logout(modelContext: modelContext)
+
                 }
             }
         }
@@ -103,7 +124,7 @@ extension AuthService {
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try? JSONEncoder().encode(body)
-        
+
         do {
             let (data, response) = try await URLSession.shared.data(
                 for: request
@@ -144,15 +165,22 @@ extension AuthService {
                 signInError = "User ID fetch error. Please try again"
                 return
             }
-            
+
             self.kcManager.save(
                 key: K.shared.keychainUserIDKey,
                 value: userID
             )
 
+            if let fullName = decoded.name {
+                self.kcManager.save(
+                    key: K.shared.keychainApplefullName,
+                    value: fullName
+                )
+            }
+
             self.updateAuthStatus(isAuthenticated: true)
             self.signInError = nil
-            
+
         } catch {
             print("Apple login error:", error)
         }
@@ -194,4 +222,5 @@ struct AppleSignInResponse: Codable {
     let error: String?
     let inviteCode: String?
     let userID: String?
+    let name: String?
 }
