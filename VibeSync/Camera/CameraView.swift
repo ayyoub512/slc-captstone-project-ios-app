@@ -7,7 +7,7 @@ struct CameraView: View {
     @State var navManager: NavigationManager = NavigationManager.shared
     @StateObject private var viewModel = CameraViewModel()
     @State private var showNotificationPermissionPrompt = false
-//    @State private var showCameraPermissionPrompt = false
+    //    @State private var showCameraPermissionPrompt = false
     @State private var showSendMessageSheet = false
     @State private var selectedFriendIDs: Set<String> = []
     @State private var editorData = EditorData()
@@ -15,17 +15,19 @@ struct CameraView: View {
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
 
+            Color.brandPrimary.ignoresSafeArea()
             VStack {
-//                CameraHeaderView()
+
                 Spacer()
                 ZStack {
                     GeometryReader { geo in
                         ZStack {
                             if useCameraMode {
                                 if let image = viewModel.capturedImage {
-                                    let _ = Log.shared.debug("if let image = viewModel.capturedImage")
+                                    let _ = Log.shared.debug(
+                                        "if let image = viewModel.capturedImage"
+                                    )
                                     EditorView(
                                         size: geo.size,
                                         data: editorData,
@@ -45,6 +47,7 @@ struct CameraView: View {
                                 .id(editorData.resetID)
                             }
                         }
+                        .cornerRadius(20)
                     }
 
                     if viewModel.capturedImage == nil && useCameraMode {
@@ -76,7 +79,7 @@ struct CameraView: View {
             // LEFT → Profile
             ToolbarItem(placement: .navigationBarLeading) {
                 Button {
-                    navManager.goToTab(id:0)
+                    navManager.goToTab(id: 0)
                 } label: {
                     Image(systemName: "chevron.left")
                 }
@@ -99,12 +102,15 @@ struct CameraView: View {
             }
         }
         .onAppear {
-            viewModel.checkPermissions() // will update viewModel.askForCameraPermision
-            
-            Task{
+            viewModel.checkPermissions()  // will update viewModel.askForCameraPermision
+
+            Task {
                 await notificationManager.getAuthorizationStatus()
-                Log.shared.debug("showNotificationPrompt = !notificationManager.hasPermission = \(!notificationManager.hasPermission)")
-                showNotificationPermissionPrompt = !notificationManager.hasPermission
+                Log.shared.debug(
+                    "showNotificationPrompt = !notificationManager.hasPermission = \(!notificationManager.hasPermission)"
+                )
+                showNotificationPermissionPrompt = !notificationManager
+                    .hasPermission
             }
         }
         .onDisappear {
@@ -143,7 +149,7 @@ struct CameraView: View {
         .onChange(of: notificationManager.hasPermission) { _, newValue in
             showNotificationPermissionPrompt = !newValue
         }
-       
+
     }
 
     private var flipCameraButton: some View {
@@ -162,5 +168,7 @@ struct CameraView: View {
 
 // MARK: - Preview
 #Preview {
-//    CameraView()
+    //    NavigationStack {
+    //        CameraView()
+    //    }
 }

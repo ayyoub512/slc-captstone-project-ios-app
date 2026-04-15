@@ -14,7 +14,6 @@ import AuthenticationServices
 
 @main
 struct VibeSyncApp: App {
-    
     @UIApplicationDelegateAdaptor private var vibeSyncDelegate: VibeSyncDelegate
     @State private var authManager = AuthService.shared
     @StateObject private var notificationManager = APNSNotificationsManager()

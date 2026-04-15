@@ -48,23 +48,11 @@ class APNSNotificationsManager: ObservableObject {
     func saveAPN(with apn: String) {
         self.sendDeviceTokenToServer(with: apn)
         keyChain.set(apn, forKey: K.shared.keychainAPNKey)
-        
-//        if hasAPNsChanged(with: apn) {
-//            // Either first app run, or APNs has indeed changed.
-//            print("New APN! Lets save it")
-//            keyChain.set(apn, forKey: K.shared.keychainAPNKey)
-//            self.sendDeviceTokenToServer(with: apn)
-//            
-//        } else {
-//            print("APN hasn't changed since last time it was saved")
-//        }
-
     }
 
     func hasAPNsChanged(with token: String) -> Bool {
         return keyChain.get(K.shared.keychainAPNKey) != token
     }
-
     
     /// Send APNS token to server
     func sendDeviceTokenToServer(with token: String) {

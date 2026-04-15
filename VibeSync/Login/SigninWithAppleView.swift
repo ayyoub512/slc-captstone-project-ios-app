@@ -9,59 +9,76 @@ import AuthenticationServices
 import SwiftUI
 
 struct SigninWithAppleView: View {
-
     @State var authentication = AuthService.shared
+    @State private var animate = false
 
     var body: some View {
         NavigationView {
             ZStack {
-
-                // Background
                 LinearGradient(
                     colors: [
-                        Color(hex: "#6366F1"),
-                        Color(hex: "#7C3AED"),
+                        Color.gray.opacity(0.85),
+                        Color.brandPrimary.opacity(0.9),
+                        Color.brandPrimary.opacity(1),
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
                 .ignoresSafeArea()
 
-                VStack(spacing: 40) {
+                // Moving light layer
+                RadialGradient(
+                    colors: [
+                        Color.white.opacity(0.18),
+                        Color.clear,
+                    ],
+                    center: animate ? .topTrailing : .topLeading,
+                    startRadius: 50,
+                    endRadius: 300
+                )
+                .blur(radius: 30)
+                .animation(
+                    .easeInOut(duration: 12)
+                        .repeatForever(autoreverses: true),
+                    value: animate
+                )
+                .onAppear {
+                    animate = true
+                }
+
+                VStack(spacing: 20) {
 
                     Spacer()
 
-                    // App Title / Branding
-                    VStack(spacing: 12) {
-                        Image(systemName: "bolt.heart.fill")
-                            .font(.system(size: 60))
-                            .foregroundStyle(.white.opacity(0.9))
+                    // App Icon
+                    Image("logoWhiteSmall")
+                        .resizable()
+                        .frame(width: 100, height: 100)
+                        .cornerRadius(22)
 
-                        Text("VibeSync")
-                            .font(.largeTitle.bold())
-                            .foregroundStyle(.white)
+                    Text("Vibe Sync")
+                        .foregroundStyle(.white.gradient)
+                        .font(.largeTitle.bold())
 
-                        Text("Share your moments. Stay in sync.")
-                            .font(.subheadline)
-                            .foregroundStyle(.white.opacity(0.85))
+                    Text("Live pics from your friends,\n on your home screen")
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(.white.gradient)
+                        .font(.title3.bold())
+
+                    Spacer()
+
+                    
+                    if let err = authentication.signInError {
+                        Text(err)
+                            .font(.footnote)
+                            .foregroundStyle(.red)
+                            .multilineTextAlignment(.center)
                     }
+                    
+                    SignInButtonView(authentication: authentication)
+                        .padding(.bottom, 60)
 
-                    // Glass container for button
-                    VStack(spacing: 16) {
-
-                        SignInButtonView(authentication: authentication)
-
-                        if let err = authentication.signInError {
-                            Text(err)
-                                .font(.footnote)
-                                .foregroundStyle(.red)
-                                .multilineTextAlignment(.center)
-                        }
-
-                    }
-                    .padding()
-                  
-                    Spacer(minLength: 30)
+                    
                 }
             }
             .navigationBarHidden(true)
@@ -109,14 +126,14 @@ struct SignInButtonView: View {
                 Log.shared.error("Error sign in with apple: \(error)")
             }
         }
-        .signInWithAppleButtonStyle(
-            colorScheme == .dark ? .white : .black
-        )
+        .signInWithAppleButtonStyle(.white)
         .frame(height: 50)
         .padding()
         .cornerRadius(8)
     }
 
+    
+    // TODO: Move this to a ViewModel
     private func handleAuthorization(_ auth: ASAuthorization) {
         guard
             let credential = auth.credential
@@ -131,7 +148,10 @@ struct SignInButtonView: View {
 
         let userID = credential.user
         // SAVING USER ID WHICH WILL BE COMPARED TO CHECK IF USER IS LOGGED WITH APPLE LATER
-        KeyChainManager.shared.save(key: K.shared.keychainAppleUserId, value: userID)
+        KeyChainManager.shared.save(
+            key: K.shared.keychainAppleUserId,
+            value: userID
+        )
 
         // Only on first sign up
         if let credEmail = credential.email {

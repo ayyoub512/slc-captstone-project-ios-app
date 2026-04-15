@@ -28,13 +28,12 @@ struct K {
     // Apple
     let keychainApplefullName = "applefullName"
     let keychainAppleUserId = "appleUserId"
-    
+
     // App Storage
-    let appStorageLastFetchedFriends = "lastFetchedFriends" // Time since last fetched friends - refresh every ~5 minutes
+    let appStorageLastFetchedFriends = "lastFetchedFriends"  // Time since last fetched friends - refresh every ~5 minutes
 
     // API END POINTS
-    let apiURL = "https://ac5f-2001-1970-4c69-b400-44f-be7a-6eb6-4fba.ngrok-free.app/api"  // "https://vibesync.ayyoub.io/api"
-    // let apiURL = "https://vibesync.ayyoub.io/api"
+    let apiURL = "https://vibesync.ayyoub.io/api"
     var signInWithAppleURL: String { apiURL + "/auth/apple" }
     var logingURL: String { apiURL + "/auth/login" }
     var registerURL: String { apiURL + "/auth/register" }
@@ -44,9 +43,8 @@ struct K {
     var getMessagesURL: String { apiURL + "/getMessagesByFriend" }
     var addFriendURL: String { apiURL + "/addFriend" }
     var getLatestMessageURL: String { apiURL + "/getNewestMessageByFriends" }
-    var deleteUserDataURL: String {apiURL + "/delete-user-data"}
-    
-    
+    var deleteUserDataURL: String { apiURL + "/delete-user-data" }
+
     // Numbers
     var cachFriendsDurationSeconds: Double = 300
 
