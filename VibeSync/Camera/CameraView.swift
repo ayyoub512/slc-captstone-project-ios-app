@@ -123,20 +123,26 @@ struct CameraView: View {
                 showNotificationPermissionPrompt = !notificationManager
                     .hasPermission
 
-                viewModel.checkPermissions()  // will update viewModel.askForCameraPermision
+                if useCameraMode{
+                    viewModel.checkPermissions()  // will update viewModel.askForCameraPermision
+                }
             }
         }
         .onDisappear {
             viewModel.stopSession()
         }
         .onChange(of: scenePhase) {_, phase in
-            switch phase {
-            case .background, .inactive:
+            if phase == .background || phase == .inactive {
                 viewModel.stopSession()
-//            case .active:
-//                viewModel.checkPermissions()
-            @unknown default:
-                break
+            }
+        }
+        .onChange(of: useCameraMode) {_, newUseCameraMode in
+            if !newUseCameraMode {
+                viewModel.stopSession()
+                
+                navManager.forceSwipeEnabled = false
+            }else{
+                viewModel.checkPermissions() // I use this to start the camera session - tbh can do better by refactoring this
             }
         }
         .alert(

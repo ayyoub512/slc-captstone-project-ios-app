@@ -15,7 +15,7 @@ struct EditorView: View {
     var image: UIImage?
 
     @State private var isProcessing = false
-    @State private var imageToInsert: UIImage?  // ✅ Store image
+    @State private var imageToInsert: UIImage?
 
     var body: some View {
         ZStack {
@@ -54,7 +54,6 @@ struct EditorView: View {
                 }
             
             data.viewSize = size
-//            imageToInsert = image  // ✅ Store for later
         }
         .onChange(of: data.isControllerReady) { _, isReady in
             // ✅ Insert image when controller is ready
@@ -81,6 +80,7 @@ private struct PaperControllerView: UIViewControllerRepresentable {
     var controller: PaperMarkupViewController
     func makeUIViewController(context: Context) -> PaperMarkupViewController {
         //        controller.contentView?.backgroundColor = .red
+        
         return controller
     }
 

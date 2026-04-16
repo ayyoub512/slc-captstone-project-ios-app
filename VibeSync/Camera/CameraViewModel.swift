@@ -22,14 +22,6 @@ class CameraViewModel: NSObject, ObservableObject {
         super.init()
     }
 
-//    deinit {
-//        Log.shared.debug("CameraViewModel deinit - cleaning up")
-//        self.stopSession()
-//
-//    }
-
-    // MARK: - Lifecycle Methods
-
 
     // MARK: - Public Methods
     func checkPermissions() {
