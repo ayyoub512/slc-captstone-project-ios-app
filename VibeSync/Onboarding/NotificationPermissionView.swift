@@ -33,36 +33,36 @@ struct NotificationPermissionView: View {
 
             Spacer()
 
-                Button(action: {
+            Button(action: {
+                switch notifications.authorizationStation {
+                case .notDetermined:
                     Task {
                         await notifications.request()
-
-                        if notifications.hasPermission {
-                            UIApplication.shared
-                                .registerForRemoteNotifications()
-                            dismiss()
-                        }
                     }
-                }) {
+                case .denied:
+                    guard
+                        let url = URL(
+                            string: UIApplication.openSettingsURLString
+                        )
+                    else { return }
+                    UIApplication.shared.open(url)
 
-                    Text(notifications.hasPermission ? "Allowed" : "Allow Notifications")
-                        .frame(maxWidth: .infinity)
-                        .padding()
+                // case .authorized, .provisional, .ephemeral:
+                default:
+                    Task {
+                        // Save the token
+                        UIApplication.shared
+                            .registerForRemoteNotifications()
+                        dismiss()
+                    }
                 }
-                .buttonStyle(.glassProminent)
-                .disabled(notifications.hasPermission)
-            
-            
-            Button("Enable in Settings") {
-                guard
-                    let url = URL(
-                        string: UIApplication.openSettingsURLString
-                    )
-                else { return }
-                UIApplication.shared.open(url)
+            }) {
+
+                Text( notifications.hasPermission ? "Allowed" : "Allow Notifications")
+                .frame(maxWidth: .infinity)
+                .padding()
             }
-            .foregroundColor(.cyan)
-            .padding(.top, 4)
+            .buttonStyle(.glassProminent)
 
             Spacer()
         }

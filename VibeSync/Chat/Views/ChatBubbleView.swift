@@ -16,7 +16,7 @@ struct ChatBubbleView: View {
             HStack {
                 if isFromMe { Spacer() }
                 
-                ChatImageView(url: message.imageURL, key: message.id)
+                ChatImageView(for: message)
                 
                 if !isFromMe { Spacer() }
             }

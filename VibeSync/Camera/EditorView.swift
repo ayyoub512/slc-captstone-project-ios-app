@@ -46,7 +46,7 @@ struct EditorView: View {
                     await data.waitForController()
 
                     if let userImage = image {
-                        await data.insertBackground(
+                        data.insertBackground(
                             userImage,
                             rect: .init(origin: .zero, size: size)
                         )
@@ -61,7 +61,7 @@ struct EditorView: View {
             if isReady, let userImage = imageToInsert {
                 isProcessing = true
                 Task {
-                    await data.insertBackground(
+                    data.insertBackground(
                         userImage,
                         rect: .init(origin: .zero, size: size)
                     )
@@ -74,35 +74,7 @@ struct EditorView: View {
     }
 }
 
-//struct EditorView: View {
-//
-//    var size: CGSize
-//    @Bindable var data: EditorData
-//    var image: UIImage?
-//
-//    var body: some View {
-//        Group {
-//            if let controller = data.controller {
-//                PaperControllerView(controller: controller)
-//
-//            } else {
-//                ProgressView()
-//            }
-//        }
-//        .onAppear {
-//            Log.shared.debug("On appear: Calling .initializeController")
-//            data.initializeController(.init(origin: .zero, size: size))
-//            data.viewSize = size
-//            if let userImage = image {
-//                data.insertBackground(
-//                    userImage,
-//                    rect: .init(origin: .zero, size: size)
-//                )
-//            }
-//        }
-//
-//    }
-//}
+
 
 // Paper controller View
 private struct PaperControllerView: UIViewControllerRepresentable {

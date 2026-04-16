@@ -16,7 +16,12 @@ struct CameraView: View {
     var body: some View {
         ZStack {
 
-            Color.brandPrimary.ignoresSafeArea()
+//            Color.white.gradient.ignoresSafeArea()
+            Color(
+                .black
+            )
+            .ignoresSafeArea()
+            
             VStack {
 
                 Spacer()

@@ -33,7 +33,12 @@ struct CameraPermissionView: View {
 
             // Request Permission Button
             Button{
-                cameraViewModel.askPermission()
+                if cameraViewModel.showPermissionAlert {
+                    guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+                    UIApplication.shared.open(url)
+                }else{
+                    cameraViewModel.askPermission()
+                }
             }label: {
                 Text("Allow Camera")
                     .frame(maxWidth: .infinity)
@@ -42,15 +47,15 @@ struct CameraPermissionView: View {
             .buttonStyle(.glassProminent)
 
 
-            // Open Settings if user previously denied notifications
-            if cameraViewModel.showPermissionAlert {
-                Button("Enable in Settings") {
-                    guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
-                    UIApplication.shared.open(url)
-                }
-                .foregroundColor(.cyan)
-                .padding(.top, 4)
-            }
+//            // Open Settings if user previously denied notifications
+//            if cameraViewModel.showPermissionAlert {
+//                Button("Enable in Settings") {
+//                    guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+//                    UIApplication.shared.open(url)
+//                }
+//                .foregroundColor(.cyan)
+//                .padding(.top, 4)
+//            }
 
             Spacer()
         }

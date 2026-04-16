@@ -9,7 +9,6 @@ import PhotosUI
 import SwiftUI
 
 struct CameraBottomControlsView: View {
-    @StateObject private var imageSaver = ImageSaver()
     @ObservedObject var viewModel: CameraViewModel
 
     @State private var showTools: Bool = false
@@ -427,19 +426,6 @@ extension CameraBottomControlsView {
 
         }
         .buttonStyle(.glass)
-    }
-
-    private var saveButtonIconName: String {
-        switch imageSaver.saveState {
-        case .idle:
-            return "square.and.arrow.down"
-        case .saving:
-            return "hourglass"
-        case .success:
-            return "checkmark"
-        case .failure:
-            return "xmark"
-        }
     }
 
 }
