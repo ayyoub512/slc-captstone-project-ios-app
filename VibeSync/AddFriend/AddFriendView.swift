@@ -14,56 +14,78 @@ struct AddFriendView: View {
 
     var body: some View {
 
-        Section(header: Text("Enter Friend’s Invite Code").font(.headline)) {
-            TextField("Enter invite code", text: $code)
-                .autocapitalization(.allCharacters)
-                .disableAutocorrection(true)
-                .padding(.horizontal, 0)  // Form handles padding
+        VStack(spacing: 30) {
 
-            VStack(alignment: .leading) {
-                Button(action: {
+            // MARK: - Add Friend Card
+            VStack(alignment: .leading, spacing: 14) {
+
+                Text("Enter Friend’s Invite Code")
+                    .font(.headline)
+
+                TextField("Enter invite code", text: $code)
+                    .textInputAutocapitalization(.characters)
+                    .autocorrectionDisabled()
+                    .padding(12)
+                    .background(Color(.secondarySystemBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+
+                Button {
                     submitCode()
-                }) {
-                    if model.working {
-                        ProgressView()
-                            .frame(maxWidth: .infinity)
+                } label: {
+                    HStack {
+                        Spacer()
 
-                    } else {
-                        Text("Add")
-                            .frame(maxWidth: .infinity)
+                        if model.working {
+                            ProgressView()
+                        } else {
+                            Text("Add Friend")
+                        }
+
+                        Spacer()
                     }
                 }
-                .buttonStyle(.glassProminent)
+                .buttonStyle(.borderedProminent)
 
-                if let success = model.success, success {
-                    Text("Added with success")
+                if model.success == true {
+                    Label("Added successfully", systemImage: "checkmark.circle.fill")
                         .font(.footnote)
-                        .padding(.top, 4)
                         .foregroundStyle(.green)
-
                 }
 
                 if let error = model.errorMessage {
-                    Text(error)
-                        .foregroundStyle(.red)
+                    Label(error, systemImage: "exclamationmark.triangle.fill")
                         .font(.footnote)
-                        .padding(.top, 4)
+                        .foregroundStyle(.red)
                 }
             }
-        }
 
-        Section(
-            header: Text("Share Your Invite Code").font(.headline),
-            footer: Text("Send this code to a friend to add you")
-        ) {
-            VStack(alignment: .leading) {
+
+            // MARK: - Share Invite Code Card
+            VStack(alignment: .leading, spacing: 10) {
+
+                Text("Share Your Invite Code")
+                    .font(.headline)
+
                 HStack {
-                    Text("Your invite code is: ")
+                    Text("Your invite code")
+                        .foregroundStyle(.secondary)
+
                     Spacer()
-                    CopyableText(text: "\(KeyChainManager.shared.get(key: K.shared.keychainInviteCodeKey))")
+
+                    let invite = KeyChainManager.shared.get(
+                        key: K.shared.keychainInviteCodeKey
+                    )
+
+                    CopyableText(text: invite)
                 }
+
+                Text("Send this code to a friend to add you")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
+            
         }
+        
 
     }
 

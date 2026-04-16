@@ -12,18 +12,18 @@ struct InboxView: View {
     @State var auth = AuthService.shared
     @StateObject private var model = InboxViewModel()
     @Environment(NavigationManager.self) var navManager
-  
+
     @State private var showAddFriendSheet = false
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \FriendModel.id) private var friends: [FriendModel]
 
     var body: some View {
-        Group{
+        Group {
             if friends.count == 0 {
                 NoFriendsYetView()
-            }else{
+            } else {
                 List {
-                    
+
                     ForEach(friends, id: \._id) { friend in
                         NavigationLink(value: friend) {
                             FriendRow(friend: friend)
@@ -92,17 +92,23 @@ struct InboxView: View {
             if model.hasCacheExceededLimit() || friends.isEmpty {
                 Log.shared.debug("We have to refetch friends")
                 await model.fetchFriends(modelContext: self.modelContext)
-            }else{
-                Log.shared.debug("We dont have to refetch friends, friends: \(friends.count)")
+            } else {
+                Log.shared.debug(
+                    "We dont have to refetch friends, friends: \(friends.count)"
+                )
             }
         }
         .sheet(isPresented: $showAddFriendSheet) {
-            Form {
-                AddFriendView()
-                    .padding(.top, 10)
+            ZStack{
+                Color.white.ignoresSafeArea()
+                
+                VStack {
+                    AddFriendView()
+                    .padding()
+                }
             }
-            .presentationBackground(.brandPrimary)
             .presentationDetents([.medium])
+            
         }
     }
 
@@ -131,9 +137,9 @@ struct FriendRow: View {
 }
 
 #Preview {
-//    NavigationStack {
-//        InboxView()
-//            .environment(NavigationManager())  // If you use NavManager too
-//            .modelContainer(for: [FriendModel.self])
-//    }
+    //    NavigationStack {
+    //        InboxView()
+    //            .environment(NavigationManager())  // If you use NavManager too
+    //            .modelContainer(for: [FriendModel.self])
+    //    }
 }

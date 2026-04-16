@@ -5,11 +5,11 @@
 //  Created by Ayyoub on 3/3/2026.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct ProfileView: View {
-    @Environment(\.modelContext) private var modelContext // the main reason for this is to clear the cached friends list on logout
+    @Environment(\.modelContext) private var modelContext  // the main reason for this is to clear the cached friends list on logout
     @Environment(NavigationManager.self) var navManager
     @State var auth = AuthService.shared
     private let kcManager = KeyChainManager.shared
@@ -17,55 +17,74 @@ struct ProfileView: View {
     @State private var showEditName = false
     @State private var editedName = ""
 
-    @State private var viewModel = ProfileViewModel()  // 👈
+    @State private var viewModel = ProfileViewModel()
 
     var body: some View {
-        VStack {
-            VStack(alignment: .center) {
-                Text(
-                    kcManager.get(key: K.shared.keychainApplefullName).prefix(1)
-                        .uppercased()
-                )
-                .font(.system(size: 50, weight: .bold))
-                .foregroundColor(.white)
-                .frame(width: 130, height: 130)
-                .background(Circle().fill(Color.brandPrimary.gradient))
+        ScrollView {
+            VStack(spacing: 20) {
 
-                HStack(alignment: .center, spacing: 3) {
+                // MARK: - Profile Header
+                VStack(spacing: 14) {
+
+                    Text(
+                        kcManager.get(key: K.shared.keychainApplefullName)
+                            .prefix(1)
+                            .uppercased()
+                    )
+                    .font(.system(size: 42, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 96, height: 96)
+                    .background(
+                        Circle()
+                            .fill(Color.brandPrimary.gradient)
+                    )
+
                     Text(kcManager.get(key: K.shared.keychainApplefullName))
-                        .font(.title)
-                        .padding(.bottom)
-                    //                    Image(systemName: "pencil")
-                    //                        .foregroundStyle(.secondary)
+                        .font(.title2.weight(.semibold))
+                        .foregroundStyle(.primary)
+
                 }
-            }
-            .onTapGesture {
-                //                editedName = kcManager.get(key: K.shared.keychainApplefullName)
-                //                showEditName = true
-            }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    // edit name
+                }
 
-            Form {
-                AddFriendView()
+                // MARK: - Add Friend
 
-                Section {
-                    Button {
-                        auth.logout(modelContext: modelContext)
-                    } label: {
-                        HStack(alignment: .center) {
-                            Image(systemName: "arrow.backward.square")
-                            Text("Sign out")
-                        }
+                VStack {
+                    AddFriendView()
+                        .padding()
+                }
+                .background(.white)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                
+
+                
+                // MARK: - Sign Out
+                Button {
+                    auth.logout(modelContext: modelContext)
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "arrow.backward.square")
+                        Text("Sign out")
+                        Spacer()
                     }
-                    .buttonStyle(.borderless)  // Makes it prominent
-                    .tint(Color.red.opacity(0.3))  // Slightly red
                     .foregroundStyle(.red)
+                    .padding()
+                    .background(.thinMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
                 }
+                
 
-                Section {
+                // MARK: - Delete Account
+                VStack(alignment: .leading, spacing: 10) {
+
                     Button(role: .destructive) {
                         viewModel.showDeleteConfirmation = true
                     } label: {
-                        HStack {
+                        HStack(spacing: 12) {
                             if viewModel.isDeleting {
                                 ProgressView()
                                     .tint(.red)
@@ -74,8 +93,14 @@ struct ProfileView: View {
                                     systemName: "person.crop.circle.badge.minus"
                                 )
                             }
+
                             Text("Delete Account")
+                            Spacer()
                         }
+                        .foregroundStyle(.red)
+                        .padding()
+                        .background(.thinMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
                     .disabled(viewModel.isDeleting)
 
@@ -83,18 +108,24 @@ struct ProfileView: View {
                         Text(error)
                             .font(.caption)
                             .foregroundStyle(.red)
+                            .padding(.horizontal, 4)
                     }
-                } footer: {
+
                     Text(
                         "This permanently deletes your account, all messages, and images. This cannot be undone."
                     )
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                    .padding(.horizontal, 4)
                 }
 
             }
+            .padding(.horizontal, 12)
+
 
         }
+        .background(Color(.systemGroupedBackground).ignoresSafeArea())
+
         .sheet(isPresented: $showEditName) {
             EditNameSheet(
                 name: $editedName,
