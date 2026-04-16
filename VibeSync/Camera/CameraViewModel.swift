@@ -2,15 +2,16 @@ import AVFoundation
 import Combine
 import SwiftUI
 
+@MainActor
 class CameraViewModel: NSObject, ObservableObject {
     // MARK: - Published Properties
     @Published var session = AVCaptureSession()
     @Published var capturedImage: UIImage?
-    @Published var showPermissionAlert = false // this is for when permission was denied
-    @Published var askForCameraPermision = false // initial ask for permission
+    @Published var showPermissionAlert = false  // this is for when permission was denied
+    @Published var askForCameraPermision = false  // initial ask for permission
     @Published var currentPosition: AVCaptureDevice.Position = .back
-    @Published var overlayText: String = "Hello World"
-    
+    @Published var overlayText: String = "Hello"
+
     // MARK: - Private Properties
     private var photoOutput = AVCapturePhotoOutput()
     private var currentInput: AVCaptureDeviceInput?
@@ -20,6 +21,15 @@ class CameraViewModel: NSObject, ObservableObject {
     override init() {
         super.init()
     }
+
+//    deinit {
+//        Log.shared.debug("CameraViewModel deinit - cleaning up")
+//        self.stopSession()
+//
+//    }
+
+    // MARK: - Lifecycle Methods
+
 
     // MARK: - Public Methods
     func checkPermissions() {
@@ -38,8 +48,8 @@ class CameraViewModel: NSObject, ObservableObject {
             break
         }
     }
-    
-    func askPermission(){
+
+    func askPermission() {
         AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
             DispatchQueue.main.async {
                 if granted {
@@ -75,8 +85,8 @@ class CameraViewModel: NSObject, ObservableObject {
 
         let settings = AVCapturePhotoSettings()
         settings.photoQualityPrioritization = .speed
-//        settings.photoQualityPrioritization =
-//            photoOutput.maxPhotoQualityPrioritization
+        //        settings.photoQualityPrioritization =
+        //            photoOutput.maxPhotoQualityPrioritization
 
         print("Capturing photo...")
         photoOutput.capturePhoto(with: settings, delegate: self)
@@ -93,6 +103,7 @@ class CameraViewModel: NSObject, ObservableObject {
 
     func stopSession() {
         if session.isRunning {
+            Log.shared.info("Stopping Camera Session")
             DispatchQueue.global(qos: .userInitiated).async { [weak self] in
                 self?.session.stopRunning()
             }
@@ -100,11 +111,14 @@ class CameraViewModel: NSObject, ObservableObject {
     }
 
     private func setupCamera(position: AVCaptureDevice.Position = .back) {
+        
         // Prevent concurrent configuration
         guard !isConfiguring else {
             print("Camera already configuring")
             return
         }
+        
+        
 
         isConfiguring = true
 
@@ -181,8 +195,6 @@ class CameraViewModel: NSObject, ObservableObject {
     }
 }
 
-
-
 // MARK: - AVCapturePhotoCaptureDelegate
 extension CameraViewModel: AVCapturePhotoCaptureDelegate {
     func photoOutput(
@@ -192,7 +204,9 @@ extension CameraViewModel: AVCapturePhotoCaptureDelegate {
     ) {
 
         if let error = error {
-            Log.shared.error("Error capturing photo: \(error.localizedDescription)")
+            Log.shared.error(
+                "Error capturing photo: \(error.localizedDescription)"
+            )
             return
         }
 
@@ -212,7 +226,9 @@ extension CameraViewModel: AVCapturePhotoCaptureDelegate {
 
         // Stop session after capture (save battery)
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            Log.shared.info("DispatchQueue.global(qos: .userInitiated).async { [weak self] in")
+            Log.shared.info(
+                "DispatchQueue.global(qos: .userInitiated).async { [weak self] in"
+            )
             self?.session.stopRunning()
         }
     }

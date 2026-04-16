@@ -4,26 +4,26 @@ import SwiftUI
 
 struct CameraView: View {
     @EnvironmentObject var notificationManager: APNSNotificationsManager
-    @State var navManager: NavigationManager = NavigationManager.shared
     @StateObject private var viewModel = CameraViewModel()
+    @State var navManager: NavigationManager = NavigationManager.shared
+    
     @State private var showNotificationPermissionPrompt = false
-    //    @State private var showCameraPermissionPrompt = false
     @State private var showSendMessageSheet = false
     @State private var selectedFriendIDs: Set<String> = []
     @State private var editorData = EditorData()
     @State private var useCameraMode: Bool = true  // [Camera Mode Or Canvas Mode] - By default uses Camera mode
 
+    
+    @Environment(\.scenePhase) private var scenePhase
+
     var body: some View {
         ZStack {
-
-//            Color.white.gradient.ignoresSafeArea()
             Color(
                 .black
             )
             .ignoresSafeArea()
             
             VStack {
-
                 Spacer()
                 ZStack {
                     GeometryReader { geo in
@@ -107,8 +107,6 @@ struct CameraView: View {
             }
         }
         .onAppear {
-            viewModel.checkPermissions()  // will update viewModel.askForCameraPermision
-
             Task {
                 await notificationManager.getAuthorizationStatus()
                 Log.shared.debug(
@@ -116,10 +114,22 @@ struct CameraView: View {
                 )
                 showNotificationPermissionPrompt = !notificationManager
                     .hasPermission
+
+                viewModel.checkPermissions()  // will update viewModel.askForCameraPermision
             }
         }
         .onDisappear {
             viewModel.stopSession()
+        }
+        .onChange(of: scenePhase) {_, phase in
+            switch phase {
+            case .background, .inactive:
+                viewModel.stopSession()
+//            case .active:
+//                viewModel.checkPermissions()
+            @unknown default:
+                break
+            }
         }
         .alert(
             "Camera Access Required",
