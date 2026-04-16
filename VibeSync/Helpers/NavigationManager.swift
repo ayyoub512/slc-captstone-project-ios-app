@@ -17,11 +17,11 @@ class NavigationManager {
     var inboxPath = NavigationPath()
     var profilePath = NavigationPath()  // allows for progrmmation navigation
 
-    var forceSwipeEnabled: Bool? = nil  // used from chat view
+    var forceSwipeEnabled = false  // used from chat view
 
     // Only allow swipe between tabs at root
     var canSwipeTabs: Bool {
-        if let forceSwipeEnabled {
+        if forceSwipeEnabled {
             return forceSwipeEnabled
         }
         

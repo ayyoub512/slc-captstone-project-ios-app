@@ -38,11 +38,11 @@ struct RootView: View {
                         .tag(2)
                         
                     }
-                    .simultaneousGesture(
-                        DragGesture().onEnded { _ in
-                            keyboardManager.dismiss()
-                        }
-                    )
+//                    .simultaneousGesture(
+//                        DragGesture().onEnded { _ in
+//                            keyboardManager.dismiss()
+//                        }
+//                    )
                     .onChange(of: navManager.selectedTab) { _, _ in
                         keyboardManager.dismiss()
                     }
