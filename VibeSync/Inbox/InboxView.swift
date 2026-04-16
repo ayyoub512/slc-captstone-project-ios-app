@@ -69,19 +69,12 @@ struct InboxView: View {
 
                     Button(action: {
                         // Future: navigate to profile
+                        navManager.goToTab(id: 0)
                     }) {
                         Label("Profile", systemImage: "person.crop.circle")
                     }
 
-                    Button(
-                        role: .destructive,
-                        action: {
-                            auth.logout(modelContext: modelContext)
-                        }
-                    ) {
-                        Label("Logout", systemImage: "power")
-                    }
-
+           
                 } label: {
                     Image(systemName: "ellipsis")
                         .font(.title2)

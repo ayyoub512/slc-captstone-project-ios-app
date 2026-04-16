@@ -196,7 +196,7 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "78A4E664-B601-4797-9211-A0E8F4A2C879"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "VibeSync/AddFriend/AddFriendView.swift"

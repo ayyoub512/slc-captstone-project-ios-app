@@ -124,6 +124,7 @@ struct ProfileView: View {
 
 
         }
+        .scrollDismissesKeyboard(.interactively)
         .background(Color(.systemGroupedBackground).ignoresSafeArea())
 
         .sheet(isPresented: $showEditName) {

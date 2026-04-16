@@ -11,7 +11,9 @@ import UIKit
 struct AddFriendView: View {
     @State private var code: String = ""
     @StateObject var model = AddFriendViewModel()
-
+    
+    @FocusState private var isCodeFocused: Bool
+    
     var body: some View {
 
         VStack(spacing: 30) {
@@ -23,6 +25,7 @@ struct AddFriendView: View {
                     .font(.headline)
 
                 TextField("Enter invite code", text: $code)
+                    .focused($isCodeFocused)
                     .textInputAutocapitalization(.characters)
                     .autocorrectionDisabled()
                     .padding(12)
@@ -84,6 +87,10 @@ struct AddFriendView: View {
                     .foregroundStyle(.secondary)
             }
             
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            isCodeFocused = false
         }
         
 

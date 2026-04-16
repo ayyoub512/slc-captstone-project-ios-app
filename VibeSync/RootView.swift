@@ -14,8 +14,9 @@ struct RootView: View {
 
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var notificationManager: APNSNotificationsManager
-    @AppStorage("weatherOnboardingComplete") var weatherOnboardingComplete = false
 
+    @StateObject private var keyboardManager = KeyboardManager()
+    
     var body: some View {
         Group {
             if authManager.isAuthenticated {
@@ -37,6 +38,14 @@ struct RootView: View {
                         .tag(2)
                         
                     }
+                    .simultaneousGesture(
+                        DragGesture().onEnded { _ in
+                            keyboardManager.dismiss()
+                        }
+                    )
+                    .onChange(of: navManager.selectedTab) { _, _ in
+                        keyboardManager.dismiss()
+                    }
                     .tabViewStyle(.page(indexDisplayMode: .never))
                     .ignoresSafeArea()
                     .simultaneousGesture(
@@ -56,6 +65,7 @@ struct RootView: View {
             authManager.checkCredentialStatus(modelContext: modelContext)
         }
         .environment(navManager)
+        .environmentObject(keyboardManager)
 
     }
 }

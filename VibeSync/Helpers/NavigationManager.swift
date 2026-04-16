@@ -10,16 +10,22 @@ import SwiftUI
 
 @Observable
 class NavigationManager {
-    static let shared = NavigationManager() 
+    static let shared = NavigationManager()
     private init() {}
 
     var selectedTab: Int = 1  // 0: Profile, 1: Camera, 2: Inbox
     var inboxPath = NavigationPath()
     var profilePath = NavigationPath()  // allows for progrmmation navigation
 
+    var forceSwipeEnabled: Bool? = nil  // used from chat view
+
     // Only allow swipe between tabs at root
     var canSwipeTabs: Bool {
-        profilePath.isEmpty && inboxPath.isEmpty
+        if let forceSwipeEnabled {
+            return forceSwipeEnabled
+        }
+        
+        return profilePath.isEmpty && inboxPath.isEmpty
     }
 
     func goToTab(id: Int) {

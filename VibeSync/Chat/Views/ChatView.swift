@@ -78,7 +78,8 @@ struct ChatView: View {
                 }
 
                 Button {
-                    // new vibe action
+                    navManager.goToTab(id: 1)
+                    navManager.forceSwipeEnabled = true // since I disabled can swipe on chat view
                 } label: {
                     Image(systemName: "pencil")
                     Text("New Vibe")
