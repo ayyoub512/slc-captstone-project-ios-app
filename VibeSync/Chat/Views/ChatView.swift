@@ -36,9 +36,7 @@ struct ChatView: View {
                             isFromMe: msg.senderID == myID
                         )
                         .id(msg.id)
-//                        .onTapGesture {
-//                            showLargeImageViewSheet.toggle()
-//                        }
+
                     }
                 }
                 .padding(.vertical)

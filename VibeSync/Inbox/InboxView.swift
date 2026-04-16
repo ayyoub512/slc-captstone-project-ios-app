@@ -23,7 +23,6 @@ struct InboxView: View {
                 NoFriendsYetView()
             } else {
                 List {
-
                     ForEach(friends, id: \._id) { friend in
                         NavigationLink(value: friend) {
                             FriendRow(friend: friend)

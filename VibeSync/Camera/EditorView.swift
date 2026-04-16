@@ -27,7 +27,7 @@ struct EditorView: View {
                 }
             }
 
-            // ✅ Show processing overlay
+        
             if isProcessing {
                 ZStack {
                     Color.black.opacity(0.3)

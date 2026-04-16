@@ -86,8 +86,12 @@ struct CameraView: View {
                 Button {
                     navManager.goToTab(id: 0)
                 } label: {
-                    Image(systemName: "chevron.left")
+//                    Image(systemName: "chevron.left")
+                    Image(systemName: "person.circle")
+
                 }
+                .buttonStyle(.plain)
+
             }
 
             // CENTER → Title
@@ -102,8 +106,12 @@ struct CameraView: View {
                 Button {
                     navManager.goToTab(id: 2)
                 } label: {
-                    Image(systemName: "chevron.right")
+//                    Image(systemName: "chevron.right")
+                    Image(systemName: "message.fill")
+
                 }
+                .buttonStyle(.plain)
+
             }
         }
         .onAppear {
