@@ -14,6 +14,8 @@ struct ChatImageView: View {
     @State private var showImageFullScreen = false
 
     init(for message: VibeMessage) {
+//        Log.shared.debug("[ChatImageView - init]: \(message)")
+
         _model = State(
             wrappedValue: ChatImageViewModel(
                 key: message.id,

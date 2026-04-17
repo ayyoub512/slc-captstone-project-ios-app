@@ -31,8 +31,13 @@ struct K {
 
     // App Storage
     let appStorageLastFetchedFriends = "lastFetchedFriends"  // Time since last fetched friends - refresh every ~5 minutes
+    let hasOnboarded = "hasOnboarded"
+    let onboardingProfileName = "onboardingProfileName"
+    let onBoardingProfileImageURL = "onBoardingProfileImageURL"
+
 
     // API END POINTS
+    //    let apiURL = "https://3fed-2001-1970-4c69-b400-8173-86cb-96ed-3e6d.ngrok-free.app"
     let apiURL = "https://vibesync.ayyoub.io/api"
     var signInWithAppleURL: String { apiURL + "/auth/apple" }
     var logingURL: String { apiURL + "/auth/login" }

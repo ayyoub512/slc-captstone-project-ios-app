@@ -17,43 +17,19 @@ struct RootView: View {
 
     @StateObject private var keyboardManager = KeyboardManager()
     
+    @AppStorage(K.shared.hasOnboarded) var hasSeenOnboarding: Bool = false
+    
+    
     var body: some View {
         Group {
             if authManager.isAuthenticated {
-                    TabView(selection: $navManager.selectedTab) {
-                        NavigationStack(path: $navManager.profilePath) {
-                            ProfileView()
-                        }
-                        .tag(0)
-                        
-                        NavigationStack {
-                            CameraView()
-                        }
-                        .tag(1)
-                        
-                        NavigationStack(path: $navManager.inboxPath) {
-                            InboxView()
-                            
-                        }
-                        .tag(2)
-                        
-                    }
-//                    .simultaneousGesture(
-//                        DragGesture().onEnded { _ in
-//                            keyboardManager.dismiss()
-//                        }
-//                    )
-                    .onChange(of: navManager.selectedTab) { _, _ in
-                        keyboardManager.dismiss()
-                    }
-                    .tabViewStyle(.page(indexDisplayMode: .never))
-                    .ignoresSafeArea()
-                    .simultaneousGesture(
-                        navManager.canSwipeTabs ? nil : DragGesture()
-                    )
-                    .background(
-                        PageSwipeController(isEnabled: navManager.canSwipeTabs)
-                    )
+                
+                if !hasSeenOnboarding{
+                    WelcomeView()
+                    
+                }else{
+                    mainAppyView
+                }
 
             } else {
                 NavigationStack {
@@ -68,7 +44,41 @@ struct RootView: View {
         .environmentObject(keyboardManager)
 
     }
+    
+    var mainAppyView: some View {
+        TabView(selection: $navManager.selectedTab) {
+            NavigationStack(path: $navManager.profilePath) {
+                ProfileView()
+            }
+            .tag(0)
+            
+            NavigationStack {
+                CameraView()
+            }
+            .tag(1)
+            
+            NavigationStack(path: $navManager.inboxPath) {
+                InboxView()
+                
+            }
+            .tag(2)
+            
+        }
+        .onChange(of: navManager.selectedTab) { _, _ in
+            keyboardManager.dismiss()
+        }
+        .tabViewStyle(.page(indexDisplayMode: .never))
+        .ignoresSafeArea()
+        .simultaneousGesture(
+            navManager.canSwipeTabs ? nil : DragGesture()
+        )
+        .background(
+            PageSwipeController(isEnabled: navManager.canSwipeTabs)
+        )
+    }
 }
+
+
 
 #Preview {
     RootView()

@@ -9,6 +9,7 @@ import Combine
 import Foundation
 import KeychainSwift
 import UserNotifications
+import UIKit
 
 @MainActor
 class APNSNotificationsManager: ObservableObject {
@@ -104,3 +105,4 @@ class APNSNotificationsManager: ObservableObject {
     }
 
 }
+

@@ -7,49 +7,48 @@
 
 import SwiftUI
 
-import SwiftUI
+enum OnboardingStep: Hashable {
+    case name
+    case photo
+    case cameraPermission
+    case notificationPermission
+}
 
 struct WelcomeView: View {
+    @State private var step: OnboardingStep = .name
+    @State private var path: [OnboardingStep] = [.name]
+
     var body: some View {
-        VStack(spacing: 24) {
+        NavigationStack(path: $path) {
 
-            Spacer()
+            ProfileNameSetupView {
+                path.append(.photo)
+            }
+            .navigationDestination(for: OnboardingStep.self) { step in
+                switch step {
 
-            // App Icon
-            Image("AppIcon") // replace with your asset name
-                .resizable()
-                .frame(width: 100, height: 100)
-                .cornerRadius(22)
+                case .name:
+                    ProfileNameSetupView {
+                        path.append(.photo)
+                    }
 
-            // Title
-            Text("Vibe Sync")
-                .font(.system(size: 34, weight: .bold))
+                case .photo:
+                    ProfilePhotoSetupView { _ in
+                        path.append(.cameraPermission)
+                    }
 
-            // Subtitle (2 lines)
-            Text("Live pics from your friends, on your home screen")
-                .font(.system(size: 16))
-                .multilineTextAlignment(.center)
-                .foregroundColor(.gray)
-                .padding(.horizontal, 40)
+                case .cameraPermission:
+                    OnboardingCameraPermissionView {
+                        path.append(.notificationPermission)
+                    }
 
-            Spacer()
-
-            // Button
-            Button(action: {
-                print("Get Started tapped")
-            }) {
-                Text("Get Started")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.black)
-                    .cornerRadius(12)
-                    .padding(.horizontal, 24)
+                case .notificationPermission:
+                    OnboardingNotificationPermissionView{
+                        
+                    }
+                }
             }
 
-            Spacer()
-                .frame(height: 20)
         }
     }
 }

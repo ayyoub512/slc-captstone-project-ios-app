@@ -80,6 +80,9 @@ class ChatViewModel {
 
             self.allMessage = decoded.messages
             self.appendNextPageMessages()
+            
+            Log.shared.debug("\(decoded.messages.count)")
+            Log.shared.debug("\(decoded.messages)")
 
         } catch let decodingError as DecodingError {
             print("Decoding Error: \(decodingError)")

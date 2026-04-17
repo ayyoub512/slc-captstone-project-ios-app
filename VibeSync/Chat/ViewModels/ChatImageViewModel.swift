@@ -19,7 +19,6 @@ class ChatImageViewModel {
     init(key: String, url: String) {
         self.imageKey = key
         self.imageUrl = url
-
     }
 
     func getImage() async {
@@ -36,7 +35,7 @@ class ChatImageViewModel {
             try await downloadImage()
         } catch {
             isLoading = false
-            Log.shared.error("Image download failed: \(error)")
+            Log.shared.error("[ChatImageViewModel - getImage]: \(error)")
         }
 
     }
@@ -47,7 +46,7 @@ class ChatImageViewModel {
         }
 
         guard let url = URL(string: imageUrl) else {
-            Log.shared.error("ChatImageViewModel: Cant get imageURL")
+            Log.shared.error("[ChatImageViewModel - downloadImage]: Cant get imageURL")
             await MainActor.run {
                 isLoading = false
             }
@@ -72,7 +71,6 @@ class ChatImageViewModel {
             throw URLError(.cannotDecodeContentData)
         }
 
-        Log.shared.debug("Caching downloaded image \(imageUrl)")
         self.cacheManager.add(key: self.imageKey, value: downloadImage)
 
         await MainActor.run {

@@ -1,0 +1,69 @@
+//
+//  OnboardingNotificationPermissionViewModel.swift
+//  VibeSync
+//
+//  Created by Ayyoub on 17/4/2026.
+//
+
+import Combine
+import Foundation
+import KeychainSwift
+import UserNotifications
+import UIKit
+
+
+// TODO: refactore so there is uses the already made APNsnotifixationmanager class
+@Observable
+class OnboardingNotificationPermissionViewModel {
+    private(set) var hasPermission: Bool?
+    private(set) var authorizationStation: UNAuthorizationStatus?
+    
+    private let keyChain = KeychainSwift()
+
+    init() {
+        Task {
+            await getAuthorizationStatus()
+        }
+    }
+
+    func request() async {
+        do {
+            self.hasPermission = try await UNUserNotificationCenter.current()
+                .requestAuthorization(options: [.alert, .badge, .sound])
+        } catch {
+            Log.shared.error("Error: \(error)")
+        }
+    }
+
+    func getAuthorizationStatus() async {
+        Log.shared.debug("[OnboardingNotificationPermissionViewModel - getAuthorizationStatus] Checking notification status")
+        let status = await UNUserNotificationCenter
+            .current()
+            .notificationSettings()
+        
+        authorizationStation = status.authorizationStatus
+        
+        switch status.authorizationStatus {
+        case .authorized, .provisional, .ephemeral:
+            hasPermission = true
+        case .denied:
+            hasPermission = false
+        case .notDetermined:
+            break
+
+        default:
+            hasPermission = false
+        }
+        
+        Log.shared.debug("[OnboardingNotificationPermissionViewModel - getAuthorizationStatus] authorizationStation: \(authorizationStation, default: "idk")")
+    }
+    
+    func openSettings(){
+        guard
+            let url = URL(
+                string: UIApplication.openSettingsURLString
+            )
+        else { return }
+        UIApplication.shared.open(url)
+    }
+}

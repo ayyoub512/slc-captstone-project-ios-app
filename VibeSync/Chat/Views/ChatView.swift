@@ -101,12 +101,10 @@ struct ChatView: View {
         }
         .task {
             await loadContent()
-            print("Messages count: \(viewModel.messages.count)")
         }
     }
 
     private func loadContent() async {
-        print("Geeting all photos in this conversation")
         await viewModel.fetchMessages(friendID: friend.id)
     }
 }
