@@ -8,16 +8,15 @@
 import Combine
 import Foundation
 import KeychainSwift
-import UserNotifications
 import UIKit
-
+import UserNotifications
 
 // TODO: refactore so there is uses the already made APNsnotifixationmanager class
 @Observable
 class OnboardingNotificationPermissionViewModel {
     private(set) var hasPermission: Bool?
     private(set) var authorizationStation: UNAuthorizationStatus?
-    
+
     private let keyChain = KeychainSwift()
 
     init() {
@@ -36,13 +35,13 @@ class OnboardingNotificationPermissionViewModel {
     }
 
     func getAuthorizationStatus() async {
-        Log.shared.debug("[OnboardingNotificationPermissionViewModel - getAuthorizationStatus] Checking notification status")
-        let status = await UNUserNotificationCenter
+        let status =
+            await UNUserNotificationCenter
             .current()
             .notificationSettings()
-        
+
         authorizationStation = status.authorizationStatus
-        
+
         switch status.authorizationStatus {
         case .authorized, .provisional, .ephemeral:
             hasPermission = true
@@ -54,11 +53,9 @@ class OnboardingNotificationPermissionViewModel {
         default:
             hasPermission = false
         }
-        
-        Log.shared.debug("[OnboardingNotificationPermissionViewModel - getAuthorizationStatus] authorizationStation: \(authorizationStation, default: "idk")")
     }
-    
-    func openSettings(){
+
+    func openSettings() {
         guard
             let url = URL(
                 string: UIApplication.openSettingsURLString

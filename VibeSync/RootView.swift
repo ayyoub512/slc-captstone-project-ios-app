@@ -28,7 +28,7 @@ struct RootView: View {
                     WelcomeView()
                     
                 }else{
-                    mainAppyView
+                    mainAppView
                 }
 
             } else {
@@ -45,7 +45,7 @@ struct RootView: View {
 
     }
     
-    var mainAppyView: some View {
+    var mainAppView: some View {
         TabView(selection: $navManager.selectedTab) {
             NavigationStack(path: $navManager.profilePath) {
                 ProfileView()

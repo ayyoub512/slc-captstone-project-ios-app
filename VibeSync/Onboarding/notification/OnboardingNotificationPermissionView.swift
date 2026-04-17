@@ -13,71 +13,104 @@ struct OnboardingNotificationPermissionView: View {
     var onContinue: () -> Void
 
     var body: some View {
-        VStack(spacing: 24) {
-            Spacer()
-                .frame(height: 20)
-
-            VStack(spacing: 12) {
-                Text("Enable Notifications")
-                    .font(.system(size: 28, weight: .semibold))
+        ZStack{
+                LinearGradient(
+                    colors: [
+                        Color.blue.opacity(0.08),
+                        Color.purple.opacity(0.05),
+                        Color(.systemBackground)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                ).ignoresSafeArea()
+            
+            
+            VStack(spacing: 24) {
+                Spacer()
+                    .frame(height: 20)
+                
+                VStack(spacing: 12) {
+                    Text("Enable Notifications")
+                        .font(.system(size: 28, weight: .semibold))
+                        .multilineTextAlignment(.center)
+                    
+                    Text(
+                        "To receive messages and alerts from your friends, please allow notifications. You won't get updates otherwise."
+                    )
+                    .font(.system(size: 15))
                     .multilineTextAlignment(.center)
-
-                Text(
-                    "To receive messages and alerts from your friends, please allow notifications. You won't get updates otherwise."
-                )
-                .font(.system(size: 15))
-                .multilineTextAlignment(.center)
-                .foregroundColor(.gray)
-            }
-
-            Spacer()
-
-            Image(systemName: "bell.fill")
-                .font(.system(size: 80))
-                .foregroundStyle(.brandPrimary)
-                .symbolEffect(.pulse, options: .repeating)
-
-            Spacer()
-
-            if let hasPermission = model.hasPermission {
-                if !hasPermission {
+                    .foregroundColor(.gray)
+                }
+                
+                Spacer()
+                
+                Image(systemName: "bell.fill")
+                    .font(.system(size: 80))
+                    .foregroundStyle(.brandPrimary)
+                    .symbolEffect(.pulse, options: .repeating)
+                
+                Spacer()
+                
+                if let hasPermission = model.hasPermission {
+                    if !hasPermission {
+                        Button {
+                            model.openSettings()
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "gearshape.fill")
+                                
+                                Text("Allow in settings")
+                            }
+                            .fontWeight(.bold)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.brandPrimary)
+                            .foregroundColor(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
+                    }else{
+                        // Its all good, I will just add this button here in case
+                        Button {
+                            onContinue()
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "checkmark")
+                                
+                                Text("Finish")
+                            }
+                            .fontWeight(.bold)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.brandPrimary)
+                            .foregroundColor(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
+                    }
+                    
+                } else {
                     Button {
-                        model.openSettings()
+                        Task {
+                            await model.request()
+                            await model.getAuthorizationStatus()
+                        }
+                        
                     } label: {
                         HStack(spacing: 8) {
-                            Image(systemName: "gearshape.fill")
-
-                            Text("Allow in settings")
+                            Image(systemName: "bell.fill")
+                            
+                            Text("Allow notification")
                         }
+                        .fontWeight(.bold)
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(Color.brandPrimary)
                         .foregroundColor(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
+                    
                 }
-
-            } else {
-                Button {
-                    Task {
-                        await model.request()
-                        await model.getAuthorizationStatus()
-                    }
-
-                } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: "bell.fill")
-
-                        Text("Allow notification")
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.brandPrimary)
-                    .foregroundColor(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                }
-
             }
+            .padding()
         }
         .onChange(
             of: model.hasPermission,
@@ -108,7 +141,7 @@ struct OnboardingNotificationPermissionView: View {
                 await model.getAuthorizationStatus()
             }
         }
-        .padding()
+       
     }
 }
 

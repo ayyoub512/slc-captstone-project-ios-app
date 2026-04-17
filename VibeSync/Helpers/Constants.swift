@@ -35,7 +35,6 @@ struct K {
     let onboardingProfileName = "onboardingProfileName"
     let onBoardingProfileImageURL = "onBoardingProfileImageURL"
 
-
     // API END POINTS
     //    let apiURL = "https://3fed-2001-1970-4c69-b400-8173-86cb-96ed-3e6d.ngrok-free.app"
     let apiURL = "https://vibesync.ayyoub.io/api"
@@ -48,6 +47,7 @@ struct K {
     var getMessagesURL: String { apiURL + "/getMessagesByFriend" }
     var addFriendURL: String { apiURL + "/addFriend" }
     var getLatestMessageURL: String { apiURL + "/getNewestMessageByFriends" }
+    var updateProfileURL: String { apiURL + "/update-profile" }
     var deleteUserDataURL: String { apiURL + "/delete-user-data" }
 
     // Numbers

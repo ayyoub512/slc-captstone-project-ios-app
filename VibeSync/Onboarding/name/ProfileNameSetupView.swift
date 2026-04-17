@@ -40,10 +40,15 @@ struct ProfileNameSetupView: View {
                 .multilineTextAlignment(.center)
                 .autocorrectionDisabled()
                 .padding(14)
-                .background(Color(.secondarySystemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                )
+                .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 4)
                 .padding(.horizontal, 24)
-
+            
             Spacer()
 
             // Button
@@ -55,21 +60,32 @@ struct ProfileNameSetupView: View {
                     Text("Continue")
                     Image(systemName: "arrow.right")
                 }
+                .fontWeight(.bold)
                 .frame(maxWidth: .infinity)
                 .padding()
                 .background(
-                    name.isEmpty ? Color.gray.opacity(0.4) : Color.blue
+                    name.isEmpty ? Color.gray.opacity(0.4) : Color.brandPrimary
                 )
                 .foregroundColor(.white)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }
             .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
-            .padding(.horizontal, 24)
 
             Spacer()
                 .frame(height: 20)
         }
-        .background(Color(.systemBackground))
+        .padding(.horizontal, 24)
+        .background(
+            LinearGradient(
+                colors: [
+                    Color.blue.opacity(0.08),
+                    Color.purple.opacity(0.05),
+                    Color(.systemBackground)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 isFocused = true
