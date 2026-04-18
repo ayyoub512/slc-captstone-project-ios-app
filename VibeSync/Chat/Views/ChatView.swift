@@ -20,10 +20,13 @@ struct ChatView: View {
 
     var body: some View {
         ScrollViewReader { proxy in
+
             ScrollView {
                 VStack(spacing: 15) {
 
-                    if viewModel.messages.count != viewModel.allMessagesCount {
+                    if viewModel.messages.count
+                        != viewModel.allMessagesCount
+                    {
                         Button("Load more") {
                             viewModel.appendNextPageMessages()
                         }
@@ -36,24 +39,21 @@ struct ChatView: View {
                             isFromMe: msg.senderID == myID
                         )
                         .id(msg.id)
-
                     }
                 }
                 .padding(.vertical)
                 .padding(.bottom, 80)
-                .onChange(of: viewModel.messages) {
-                    guard let last = viewModel.messages.last,
-                          viewModel.haLoadedFirstPage()
-                    else { return }
-                    
-                    // Small delay to let the fixed-size frames settle - this helped me avoid scroll freeze
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        withAnimation {
-                            proxy.scrollTo(last.id, anchor: .bottom)
-                        }
-                    }
-                }
             }
+            // ✅ Bug 1 fix: onChange moved here, outside the ScrollView content
+            .onChange(of: viewModel.messages) {
+                guard let last = viewModel.messages.last else { return }
+                scrollToBottom(proxy: proxy, id: last.id)
+            }
+            .onChange(of: viewModel.lastLoadedMessageID) {
+                guard let last = viewModel.messages.last else { return }
+                scrollToBottom(proxy: proxy, id: last.id)
+            }
+
         }
         .overlay(alignment: .bottom) {
             VStack(spacing: 4) {
@@ -77,7 +77,7 @@ struct ChatView: View {
 
                 Button {
                     navManager.goToTab(id: 1)
-                    navManager.forceSwipeEnabled = true // since I disabled can swipe on chat view
+                    navManager.forceSwipeEnabled = true  // since I disabled can swipe on chat view
                 } label: {
                     Image(systemName: "pencil")
                     Text("New Vibe")
@@ -106,6 +106,14 @@ struct ChatView: View {
 
     private func loadContent() async {
         await viewModel.fetchMessages(friendID: friend.id)
+    }
+
+    private func scrollToBottom(proxy: ScrollViewProxy, id: String) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            withAnimation {
+                proxy.scrollTo(id, anchor: .bottom)
+            }
+        }
     }
 }
 

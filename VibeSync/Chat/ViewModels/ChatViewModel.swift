@@ -14,11 +14,13 @@ class ChatViewModel {
     var messages: [VibeMessage] = []
     var isLoading = false
     var errorMessage: String?
-    
+
+    var lastLoadedMessageID: String?
+
     var allMessagesCount: Int {
         allMessage.count
     }
-    
+
     private var allMessage: [VibeMessage] = []
     private let pageSize = 6
     private var currentIndex = 0
@@ -29,7 +31,7 @@ class ChatViewModel {
 
     func appendNextPageMessages() {
         guard currentIndex < allMessage.count else { return }
-    
+
         let nextIndex = min(currentIndex + pageSize, allMessage.count)
         let slice = Array(allMessage[currentIndex..<nextIndex].reversed())
 
@@ -80,23 +82,27 @@ class ChatViewModel {
 
             self.allMessage = decoded.messages
             self.appendNextPageMessages()
-            
-            Log.shared.debug("\(decoded.messages.count)")
-            Log.shared.debug("\(decoded.messages)")
+
+            self.lastLoadedMessageID = messages.last?.id
 
         } catch let decodingError as DecodingError {
-            print("Decoding Error: \(decodingError)")
+            Log.shared.error("[ERROR: ChatViewModel - fetchMessages] Decoding Error: \(decodingError)")
             self.errorMessage = "Data format error from server."
         } catch {
-            print("Network Error: \(error)")
+            Log.shared.error("[ERROR: ChatViewModel - fetchMessages] Network Error: \(error)")
             self.errorMessage = "Check your internet connection."
         }
 
         isLoading = false
     }
 
-    
+    // Notify view that a specific image finished loading so it can re-scroll
+    func notifyImageLoaded(messageID: String) {
+        guard messageID == messages.last?.id else { return }
+        lastLoadedMessageID = messageID
+    }
+
     func haLoadedFirstPage() -> Bool {
-        return messages.count == pageSize
+        return !messages.isEmpty
     }
 }

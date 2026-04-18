@@ -38,7 +38,6 @@ struct ChatImageView: View {
                     .aspectRatio(contentMode: .fill)
                     .frame(width: 240, height: 320)
                     .clipShape(RoundedRectangle(cornerRadius: 22))
-                    .cornerRadius(22)
                     .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 5)
                     .onLongPressGesture(minimumDuration: 0.4) {
                         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
@@ -49,6 +48,7 @@ struct ChatImageView: View {
                     }
             }
         }
+        .frame(width: 240, height: 320) // stable layout immediately
         .task {
             await model.getImage()
         }
@@ -62,3 +62,5 @@ struct ChatImageView: View {
 #Preview {
     //    ChatImageView()
 }
+
+

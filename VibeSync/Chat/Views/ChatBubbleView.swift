@@ -25,11 +25,27 @@ struct ChatBubbleView: View {
             HStack{
                 if isFromMe { Spacer() }
                 
-                Text("\(message.created_at)")
+                Text("\(message.created_at.formattedMessageDate)")
                     .font(.footnote)
                     .padding(.horizontal)
             }
         }
+    }
+}
+
+extension String {
+    var formattedMessageDate: String {
+        let iso = ISO8601DateFormatter()
+        iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        guard let date = iso.date(from: self) else { return self }
+        let formatter = DateFormatter()
+        formatter.dateStyle = .none
+        formatter.timeStyle = .short
+        // Show date too if not today
+        if !Calendar.current.isDateInToday(date) {
+            formatter.dateStyle = .short
+        }
+        return formatter.string(from: date)
     }
 }
 

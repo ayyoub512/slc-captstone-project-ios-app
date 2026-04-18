@@ -28,6 +28,9 @@ struct VibeImageFullScreenView: View {
                     Image(uiImage: img)
                         .resizable()
                         .scaledToFit()
+                }else {
+                    ProgressView("Loading...")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
                 
                 Text(message.created_at)
