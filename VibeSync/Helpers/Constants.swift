@@ -34,10 +34,12 @@ struct K {
     let hasOnboarded = "hasOnboarded"
     let onboardingProfileName = "onboardingProfileName"
     let onBoardingProfileImageURL = "onBoardingProfileImageURL"
+    let cachedUserName = "cachedUserName"
+    let profileCachedImageFileName = "profile.jpg"
 
     // API END POINTS
-    //    let apiURL = "https://3fed-2001-1970-4c69-b400-8173-86cb-96ed-3e6d.ngrok-free.app"
-    let apiURL = "https://vibesync.ayyoub.io/api"
+     let apiURL = "https://d3ea-217-65-135-27.ngrok-free.app/api"
+//    let apiURL = "https://vibesync.ayyoub.io/api"
     var signInWithAppleURL: String { apiURL + "/auth/apple" }
     var logingURL: String { apiURL + "/auth/login" }
     var registerURL: String { apiURL + "/auth/register" }
@@ -49,6 +51,7 @@ struct K {
     var getLatestMessageURL: String { apiURL + "/getNewestMessageByFriends" }
     var updateProfileURL: String { apiURL + "/update-profile" }
     var deleteUserDataURL: String { apiURL + "/delete-user-data" }
+    var getProfileURL: String { apiURL + "/get-profile" }
 
     // Numbers
     var cachFriendsDurationSeconds: Double = 300

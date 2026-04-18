@@ -13,6 +13,7 @@ struct Friend: Codable, Identifiable, Hashable {
     let _id: String
     let name: String
     let email: String
+    let imageURL: String?
 }
 
 struct FriendListResponse: Codable {
@@ -80,4 +81,13 @@ struct VibeMessage: Codable, Identifiable, Hashable {
 struct MessageResponse: Codable {
     let message: String
     let messages: [VibeMessage]
+}
+
+
+/// Profile
+struct ProfileResponse: Codable {
+    let name: String?
+    let email: String?
+    let profileImageURL: String?
+    let profileResizedImageURL: String?
 }
