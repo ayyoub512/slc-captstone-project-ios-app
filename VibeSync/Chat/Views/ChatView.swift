@@ -62,7 +62,7 @@ struct ChatView: View {
 
             VStack(alignment: .trailing, spacing: 16) {
                 Spacer()
-                
+
                 if viewModel.isLoading {
                     ProgressView("Getting messages...")
                 }
@@ -90,7 +90,7 @@ struct ChatView: View {
                     Label("New Vibe", systemImage: "pencil")
                 }
                 .buttonStyle(.glass)
-                
+
             }
 
         }
@@ -100,14 +100,34 @@ struct ChatView: View {
         }
         .toolbar {
             ToolbarItem(placement: .principal) {
-                Text(friend.name).font(.largeTitle.bold())
+                Text(friend.name).font(.title.bold())
             }
+            
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    openFriendProfile()
+                } label: {
+                    Image(systemName: "gearshape")
+                }
+            }
+            
         }
         .task {
             await loadContent()
         }
+        .navigationDestination(for: InboxRoute.self) { route in
+            switch route {
+            case .friendProfile(let id):
+                FriendProfileView(for: id)
+            }
+        }
+        
     }
 
+    private func openFriendProfile() {
+        navManager.inboxPath.append(InboxRoute.friendProfile(friend.id))
+    }
+    
     private func loadContent() async {
         await viewModel.fetchMessages(friendID: friend.id)
     }
@@ -121,12 +141,14 @@ struct ChatView: View {
     }
 }
 
-//#Preview {
-//    ChatView(
-//        friend: FriendModel(
-//            id: "69acec918787829a579f684a",
-//            name: "Ayyoub",
-//            email: "hi@ayyoub.io"
-//        )
-//    )
-//}
+#Preview {
+    ChatView(
+        friend: FriendModel(
+            id: "69e40d70de036a0af6561124",
+            name: "John Doe",
+            resizedProfileImage:
+                "https://scalar.usc.edu/works/norwegians-in-texas/media/TexasNorwegians_P0308_01.jpg"
+        )
+    )
+    .environment(NavigationManager.shared)
+}

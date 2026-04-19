@@ -7,6 +7,8 @@
 
 import Foundation
 import SwiftData
+// Buttons style -- placing it here for now
+import SwiftUI
 
 struct Friend: Codable, Identifiable, Hashable {
     var id: String { _id }  // Map MongoDB _id to SwiftUI id
@@ -47,26 +49,28 @@ class FriendModel: Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         _id = try container.decode(String.self, forKey: ._id)
         name = try container.decode(String.self, forKey: .name)
-        resizedProfileImage = try container.decodeIfPresent(String.self, forKey: .resizedProfileImage)
+        resizedProfileImage = try container.decodeIfPresent(
+            String.self,
+            forKey: .resizedProfileImage
+        )
     }
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(_id, forKey: ._id)
         try container.encode(name, forKey: .name)
-        try container.encodeIfPresent(resizedProfileImage, forKey: .resizedProfileImage)
+        try container.encodeIfPresent(
+            resizedProfileImage,
+            forKey: .resizedProfileImage
+        )
     }
-    
+
 }
-
-
 
 struct AddFriendResponse: Codable {
     let message: String?
     let success: Bool?
 }
-
-
 
 struct VibeMessage: Codable, Identifiable, Hashable {
     var id: String { _id }
@@ -75,7 +79,7 @@ struct VibeMessage: Codable, Identifiable, Hashable {
     let receiverID: String
     let imageURL: String
     let resizedImageURL: String
-    let createdAt: String // MongoDB date string
+    let createdAt: String  // MongoDB date string
     let updatedAt: String
 }
 
@@ -84,6 +88,15 @@ struct MessageResponse: Codable {
     let messages: [VibeMessage]
 }
 
+// Get friend's profile response /friendship-profile
+struct FriendProfileResponse: Codable {
+    let id: String
+    let name: String?
+    let profileImageURL: URL?
+    let profileResizedImageURL: URL?
+    let messageCount: Int
+    let friendSince: String
+}
 
 /// Profile
 struct ProfileResponse: Codable {
@@ -93,10 +106,6 @@ struct ProfileResponse: Codable {
     let profileResizedImageURL: String?
 }
 
-
-
-// Buttons style -- placing it here for now
-import SwiftUI
 struct ScaleButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label

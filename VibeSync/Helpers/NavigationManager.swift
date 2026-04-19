@@ -44,3 +44,7 @@ class NavigationManager {
     //            inboxPath.append(id)
     //        }
 }
+
+enum InboxRoute: Hashable {
+    case friendProfile(String)
+}
