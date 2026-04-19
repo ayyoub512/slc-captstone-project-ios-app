@@ -65,7 +65,7 @@ class SendVibeSheetViewModel: ObservableObject {
 
                 if let existing = try modelContext.fetch(descriptor).first {
                     existing.name = friend.name
-                    existing.email = friend.email
+                    existing.resizedProfileImage = friend.resizedProfileImage
                 } else {
                     modelContext.insert(friend)
                 }

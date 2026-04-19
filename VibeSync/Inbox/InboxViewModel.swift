@@ -22,7 +22,7 @@ class InboxViewModel: ObservableObject {
     }()
 
     func fetchFriends(modelContext: ModelContext) async {
-        Log.shared.info("Fetching friends from API")
+        Log.shared.info("[INFO: InboxViewModel - fetchFriends] Fetching friends from API")
         guard let friendsListURL = URL(string: K.shared.friendsListURL) else {
             return
         }
@@ -65,7 +65,7 @@ class InboxViewModel: ObservableObject {
 
                 if let existing = try modelContext.fetch(descriptor).first {
                     existing.name = friend.name
-                    existing.email = friend.email
+                    existing.resizedProfileImage = friend.resizedProfileImage
                 } else {
                     modelContext.insert(friend)
                 }

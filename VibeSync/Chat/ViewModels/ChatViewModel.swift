@@ -22,8 +22,8 @@ class ChatViewModel {
     }
 
     private var allMessage: [VibeMessage] = []
-    private let pageSize = 6
-    private var currentIndex = 0
+    let pageSize = 6
+    private(set) var currentIndex = 0
 
     let token: String = {
         return KeyChainManager.shared.get(key: K.shared.keyChainUserTokenKey)
@@ -37,6 +37,8 @@ class ChatViewModel {
 
         messages.insert(contentsOf: slice, at: 0)
         currentIndex = nextIndex
+        
+        Log.shared.info("[INFO: ChatViewModel - appendNextPageMessages] messages.count \(messages.count)")
     }
 
     func fetchMessages(friendID: String) async {

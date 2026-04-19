@@ -89,7 +89,7 @@ class AddFriendViewModel: ObservableObject {
             }
             
         } catch {
-            Log.shared.error("Fetch Friends error: \(error)")
+            Log.shared.error("addFriend Friends error: \(error)")
             self.errorMessage =
             "Failed to add friend: \(error.localizedDescription)"
             self.success = false

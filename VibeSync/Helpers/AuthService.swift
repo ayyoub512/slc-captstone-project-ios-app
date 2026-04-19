@@ -73,15 +73,24 @@ class AuthService {
 
         let provider = ASAuthorizationAppleIDProvider()
         provider.getCredentialState(forUserID: userId) { state, error in
+            if let error = error {
+                Log.shared.error("[ERROR: AuthService - checkCredentialStatus] Credential state error: \(error)")
+                return
+            }
+            
             DispatchQueue.main.async {
                 switch state {
                 case .authorized:
                     Log.shared.info("User is authorized")
 
                 case .revoked:
+                    #if targetEnvironment(simulator)
+                    Log.shared.error("User revoked access")
+                    #else
                     Log.shared.error("User revoked access")
                     userId = ""
                     self.logout(modelContext: modelContext)  // I am not sure if its right to do this.
+                    #endif
 
                 case .notFound:
                     Log.shared.error(
@@ -136,6 +145,8 @@ extension AuthService {
                 (200...299).contains(http.statusCode)
             else {
                 signInError = "Server error. Please try again"
+                Log.shared.error("[ERROR: AuthService - signInWithApple] Server statuc code error. Please try again")
+
                 return
             }
 
@@ -146,9 +157,12 @@ extension AuthService {
 
             guard let authToken = decoded.token else {
                 signInError = "Auth token error. Please try again"
+                Log.shared.error("[ERROR: AuthService - signInWithApple] Auth token error. Please try again")
+
                 return
             }
 
+            Log.shared.info("[INFO: AuthService - signInWithApple] User logged in, saving token to keychain, token: \(authToken)")
             KeyChainManager.shared.save(
                 key: K.shared.keyChainUserTokenKey,
                 value: authToken
@@ -156,6 +170,7 @@ extension AuthService {
 
             guard let inviteCode = decoded.inviteCode else {
                 signInError = "Invite code generation failed. Please try again"
+                Log.shared.error("[ERROR: AuthService - signInWithApple] Invite code generation failed. Please try again")
                 return
             }
             self.kcManager.save(
@@ -165,6 +180,8 @@ extension AuthService {
 
             guard let userID = decoded.userID else {
                 signInError = "User ID fetch error. Please try again"
+                Log.shared.error("[ERROR: AuthService - signInWithApple] User ID fetch error. Please try again")
+
                 return
             }
 
@@ -184,7 +201,7 @@ extension AuthService {
             self.signInError = nil
 
         } catch {
-            print("Apple login error:", error)
+            Log.shared.error("[ERROR: AuthService - signInWithApple] \(error)")
         }
 
     }

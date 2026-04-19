@@ -12,6 +12,9 @@ struct VibeImageFullScreenView: View {
     var message: VibeMessage
     @State private var model: VibeImageFullScreenViewModel
 
+    @State private var reportManager = ReportManager()
+    @State private var showSuccessAlert = false
+
     init(message: VibeMessage) {
         self.message = message
         _model = State(
@@ -22,41 +25,91 @@ struct VibeImageFullScreenView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            VStack {
-                if let img = model.image {
-                    Image(uiImage: img)
-                        .resizable()
-                        .scaledToFit()
-                }else {
-                    ProgressView("Loading...")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
-                
-                Text(message.created_at)
+        ZStack {
+            Color.black.ignoresSafeArea()
+
+            // IMAGE
+            if let img = model.image {
+                Image(uiImage: img)
+                    .resizable()
+                    .scaledToFit()
+                    .ignoresSafeArea()
+            } else {
+                ProgressView()
+                    .tint(.white)
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+
+            // TOP BAR
+            VStack {
+                HStack {
                     Button {
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
+                            .foregroundStyle(.white)
+                            .padding(10)
+                            .background(.black.opacity(0.4))
+                            .clipShape(Circle())
                     }
-                }
 
-                ToolbarItem(placement: .topBarLeading) {
+                    Spacer()
+
                     Button {
                         model.saveImage()
                     } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: saveIconName)
-                            Text("Save Photo")
-                        }
+                        Image(systemName: saveIconName)
+                            .foregroundStyle(.white)
+                            .padding(10)
+                            .background(.black.opacity(0.4))
+                            .clipShape(Circle())
                     }
                 }
+                .padding()
+
+                Spacer()
             }
 
+            // BOTTOM ACTIONS
+            VStack {
+                Spacer()
+
+                Button {
+                    Task {
+                        await reportManager.reportMessage(
+                            messageId: message._id
+                        )
+                    }
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "flag")
+                        Text("Report")
+                    }
+                    .foregroundStyle(.white)
+                    .padding()
+                    .background(Color.red.opacity(0.9))
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .padding(.horizontal)
+                }
+                .padding(.bottom, 30)
+            }
+        }
+        .onChange(of: reportManager.state) { _, state in
+            if case .success = state {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    reportManager.state = .idle
+                }
+            }
+        }
+
+        .onChange(of: reportManager.state) { _, state in
+            if case .success = state {
+                showSuccessAlert = true
+            }
+        }
+        .alert("Report submitted", isPresented: $showSuccessAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Report submitted. Our team will review it.")
         }
     }
 
@@ -83,7 +136,8 @@ struct VibeImageFullScreenView: View {
             receiverID: "345",
             imageURL: "https://vibesync.ayyoub.io/imgs/camera.png",
             resizedImageURL: "https://vibesync.ayyoub.io/imgs/camera.png",
-            created_at: "2026-04-15T14:32:10.123Z"
+            createdAt: "2026-04-15T14:32:10.123Z",
+            updatedAt: ""
         )
     )
 }

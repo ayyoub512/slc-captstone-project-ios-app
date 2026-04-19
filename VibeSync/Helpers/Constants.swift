@@ -38,7 +38,7 @@ struct K {
     let profileCachedImageFileName = "profile.jpg"
 
     // API END POINTS
-     let apiURL = "https://d3ea-217-65-135-27.ngrok-free.app/api"
+     let apiURL = "https://ef30-2001-1970-4c69-b400-d0ff-2f78-f258-3947.ngrok-free.app/api"
 //    let apiURL = "https://vibesync.ayyoub.io/api"
     var signInWithAppleURL: String { apiURL + "/auth/apple" }
     var logingURL: String { apiURL + "/auth/login" }
@@ -52,6 +52,7 @@ struct K {
     var updateProfileURL: String { apiURL + "/update-profile" }
     var deleteUserDataURL: String { apiURL + "/delete-user-data" }
     var getProfileURL: String { apiURL + "/get-profile" }
+    var reportURL: String {apiURL + "/report"}
 
     // Numbers
     var cachFriendsDurationSeconds: Double = 300

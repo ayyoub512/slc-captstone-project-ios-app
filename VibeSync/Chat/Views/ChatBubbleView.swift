@@ -25,7 +25,7 @@ struct ChatBubbleView: View {
             HStack{
                 if isFromMe { Spacer() }
                 
-                Text("\(message.created_at.formattedMessageDate)")
+                Text("\(message.createdAt.formattedMessageDate)")
                     .font(.footnote)
                     .padding(.horizontal)
             }

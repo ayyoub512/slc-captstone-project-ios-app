@@ -18,26 +18,31 @@ struct InboxView: View {
     @Query(sort: \FriendModel.id) private var friends: [FriendModel]
 
     var body: some View {
-        Group {
+        List {
             if friends.count == 0 {
                 NoFriendsYetView()
+                    .listRowSeparator(.hidden)
+                    .frame(maxWidth: .infinity, minHeight: 400)
             } else {
-                List {
-                    ForEach(friends, id: \._id) { friend in
-                        NavigationLink(value: friend) {
-                            FriendRow(friend: friend)
-                        }
+
+                ForEach(friends, id: \._id) { friend in
+                    NavigationLink(value: friend) {
+                        FriendRow(friend: friend)
                     }
                 }
-                .navigationDestination(
-                    for: FriendModel.self,
-                    destination: { friend in
-                        ChatView(friend: friend)
-                            .environment(navManager)
-                    }
-                )
+
             }
         }
+        .refreshable {
+            await model.fetchFriends(modelContext: self.modelContext)
+        }
+        .navigationDestination(
+            for: FriendModel.self,
+            destination: { friend in
+                ChatView(friend: friend)
+                    .environment(navManager)
+            }
+        )
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: {
@@ -73,7 +78,6 @@ struct InboxView: View {
                         Label("Profile", systemImage: "person.crop.circle")
                     }
 
-           
                 } label: {
                     Image(systemName: "ellipsis")
                         .font(.title2)
@@ -91,16 +95,16 @@ struct InboxView: View {
             }
         }
         .sheet(isPresented: $showAddFriendSheet) {
-            ZStack{
+            ZStack {
                 Color.white.ignoresSafeArea()
-                
+
                 VStack {
                     AddFriendView()
-                    .padding()
+                        .padding()
                 }
             }
             .presentationDetents([.medium])
-            
+
         }
     }
 
@@ -111,18 +115,30 @@ struct FriendRow: View {
     let friend: FriendModel
     var body: some View {
         HStack {
-            Text(friend.name.prefix(1).uppercased())
-                .font(.system(size: 20, weight: .bold))
-                .foregroundColor(.white)
+            if let imgURL = friend.resizedProfileImage,
+                let url = URL(string: imgURL)
+            {
+
+                AsyncImage(url: url) { image in
+                    image
+                        .resizable()
+                        .scaledToFill()
+                } placeholder: {
+                    ProgressView()
+                }
                 .frame(width: 44, height: 44)
-                .background(Circle().fill(Color.orange.gradient))
+                .clipShape(Circle())
+            } else {
+                Text(friend.name.prefix(1).uppercased())
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.white)
+                    .frame(width: 44, height: 44)
+                    .background(Circle().fill(Color.orange.gradient))
+            }
 
             VStack(alignment: .leading) {
                 Text(friend.name)
                     .font(.headline)
-                Text(friend.email)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
             }
         }
     }

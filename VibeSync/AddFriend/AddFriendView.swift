@@ -46,8 +46,22 @@ struct AddFriendView: View {
 
                         Spacer()
                     }
+                    .font(.headline.weight(.semibold))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(Color.brandPrimary)
+                    )
+                    .shadow(
+                        color: Color.brandPrimary.opacity(0.25),
+                        radius: 8,
+                        x: 0,
+                        y: 4
+                    )
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(ScaleButtonStyle())
 
                 if model.success == true {
                     Label("Added successfully", systemImage: "checkmark.circle.fill")

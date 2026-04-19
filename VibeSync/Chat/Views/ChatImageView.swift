@@ -27,13 +27,7 @@ struct ChatImageView: View {
 
     var body: some View {
         VStack {
-            if model.isLoading {
-                RoundedRectangle(cornerRadius: 22)
-                    .fill(Color.gray.opacity(0.2))
-                    .frame(width: 240, height: 320)
-                    .overlay { ProgressView() }
-
-            } else if let image = model.image {
+            if let image = model.image {
                 Image(uiImage: image).resizable()
                     .aspectRatio(contentMode: .fill)
                     .frame(width: 240, height: 320)
@@ -46,6 +40,14 @@ struct ChatImageView: View {
                     .onTapGesture {
                         showImageFullScreen = true
                     }
+            }else{
+//                if model.isLoading {
+                    RoundedRectangle(cornerRadius: 22)
+                        .fill(Color.gray.opacity(0.2))
+                        .frame(width: 240, height: 320)
+                        .overlay { ProgressView() }
+
+//                }
             }
         }
         .frame(width: 240, height: 320) // stable layout immediately

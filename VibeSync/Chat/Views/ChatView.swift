@@ -19,76 +19,80 @@ struct ChatView: View {
     )
 
     var body: some View {
-        ScrollViewReader { proxy in
-
-            ScrollView {
-                VStack(spacing: 15) {
-
-                    if viewModel.messages.count
-                        != viewModel.allMessagesCount
-                    {
-                        Button("Load more") {
-                            viewModel.appendNextPageMessages()
+        ZStack {
+            if viewModel.messages.count > 0 {
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        if viewModel.messages.count
+                            != viewModel.allMessagesCount
+                        {
+                            Button {
+                                viewModel.appendNextPageMessages()
+                            } label: {
+                                Text("Load More")
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                                    .padding(.vertical, 20)
+                                    .padding(.horizontal, 10)
+                                    .background(.brandPrimary)
+                                    .clipShape(Capsule())
+                            }
                         }
-                        .buttonStyle(.bordered)
+
+                        ForEach(viewModel.messages) { msg in
+                            Group {
+                                ChatBubbleView(
+                                    message: msg,
+                                    isFromMe: msg.senderID == myID
+                                )
+                                .id(msg.id)
+
+                            }
+                        }
+                    }.onAppear {
+                        guard viewModel.pageSize != viewModel.messages.count,
+                            let last = viewModel.messages.last
+                        else { return }
+                        scrollToBottom(proxy: proxy, id: last.id)
+
                     }
 
-                    ForEach(viewModel.messages) { msg in
-                        ChatBubbleView(
-                            message: msg,
-                            isFromMe: msg.senderID == myID
-                        )
-                        .id(msg.id)
-                    }
                 }
-                .padding(.vertical)
-                .padding(.bottom, 80)
-            }
-            // ✅ Bug 1 fix: onChange moved here, outside the ScrollView content
-            .onChange(of: viewModel.messages) {
-                guard let last = viewModel.messages.last else { return }
-                scrollToBottom(proxy: proxy, id: last.id)
-            }
-            .onChange(of: viewModel.lastLoadedMessageID) {
-                guard let last = viewModel.messages.last else { return }
-                scrollToBottom(proxy: proxy, id: last.id)
             }
 
-        }
-        .overlay(alignment: .bottom) {
-            VStack(spacing: 4) {
+            VStack(alignment: .trailing, spacing: 16) {
+                Spacer()
+                
                 if viewModel.isLoading {
                     ProgressView("Getting messages...")
                 }
 
                 if let error = viewModel.errorMessage {
-                    HStack {
-                        Image(systemName: "exclamationmark.triangle")
-                        Text(error)
-                            .font(.callout)
-                    }
-                    .foregroundStyle(.red)
+                    VStack(spacing: 12) {
+                        HStack {
+                            Image(systemName: "exclamationmark.triangle")
+                            Text(error)
+                                .font(.callout)
+                        }
+                        .foregroundStyle(.red)
 
-                    Button("Retry") {
-                        Task { await loadContent() }
+                        Button("Retry") {
+                            Task { await loadContent() }
+                        }
+                        .buttonStyle(.glass)
                     }
-                    .buttonStyle(.glass)
                 }
 
                 Button {
                     navManager.goToTab(id: 1)
-                    navManager.forceSwipeEnabled = true  // since I disabled can swipe on chat view
+                    navManager.forceSwipeEnabled = true
                 } label: {
-                    Image(systemName: "pencil")
-                    Text("New Vibe")
-                        .padding(.vertical, 3)
-                        .padding(.horizontal, 2)
+                    Label("New Vibe", systemImage: "pencil")
                 }
-                .frame(maxWidth: .infinity)
                 .buttonStyle(.glass)
-                .padding(.horizontal)
-                .padding(.bottom)
+                
             }
+
         }
         .sheet(isPresented: $showLargeImageViewSheet) {
             LargeImageView()
@@ -117,12 +121,12 @@ struct ChatView: View {
     }
 }
 
-#Preview {
-    ChatView(
-        friend: FriendModel(
-            id: "69acec918787829a579f684a",
-            name: "Ayyoub",
-            email: "hi@ayyoub.io"
-        )
-    )
-}
+//#Preview {
+//    ChatView(
+//        friend: FriendModel(
+//            id: "69acec918787829a579f684a",
+//            name: "Ayyoub",
+//            email: "hi@ayyoub.io"
+//        )
+//    )
+//}
