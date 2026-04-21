@@ -12,7 +12,7 @@ struct FriendProfileView: View {
     @State private var reportManager = ReportManager()
     @State private var showSuccessAlert = false
     @State private var showRemoveFriendDialog = false
-    
+    @Environment(NavigationManager.self) private var navManager
     var friendId: String
 
     init(for friendId: String) {
@@ -81,7 +81,6 @@ struct FriendProfileView: View {
                         .foregroundColor(.red)
                         .padding()
                 }
-                
 
                 // MARK: - Stats
                 HStack(spacing: 12) {
@@ -119,12 +118,12 @@ struct FriendProfileView: View {
                             }
                         }
                     )
-//                    ActionRow(
-//                        icon: "nosign",
-//                        label: "Block User",
-//                        color: .red,
-//                        action: {}
-//                    )
+                    //                    ActionRow(
+                    //                        icon: "nosign",
+                    //                        label: "Block User",
+                    //                        color: .red,
+                    //                        action: {}
+                    //                    )
                     ActionRow(
                         icon: "person.badge.minus",
                         label: "Remove Friend",
@@ -142,27 +141,50 @@ struct FriendProfileView: View {
             isPresented: $showRemoveFriendDialog,
             titleVisibility: .visible
         ) {
-            
+
             Button("Permanently Delete", role: .destructive) {
                 Task {
-                    AppState.shared.needsFriendRefresh = true
                     await model.removeFriend()
+
+                    await MainActor.run {
+                        // Clear the path first so the stack pops cleanly
+                        NavigationManager.shared.inboxPath = NavigationPath()
+                        NavigationManager.shared.profilePath = NavigationPath()
+                        
+                        AppState.shared.needsFriendRefresh = true
+                        
+                        // Then switch tab
+                        NavigationManager.shared.goToTab(id: 2)
+                    }
                 }
             }
 
-            Button("Cancel", role: .cancel) { }
-            
-        } message: {
-            Text("""
-            Removing this friend will permanently delete your entire chat history with them.
+            Button("Cancel", role: .cancel) {}
 
-            All messages sent and received will be erased and cannot be recovered.
-            """)
+        } message: {
+            Text(
+                """
+                Removing this friend will permanently delete your entire chat history with them.
+
+                All messages sent and received will be erased and cannot be recovered.
+                """
+            )
         }
         .background(Color(.systemGroupedBackground).ignoresSafeArea())
         .onChange(of: reportManager.state) { _, state in
             if case .success = state {
                 showSuccessAlert = true
+            }
+        }
+        .overlay {
+            if case .loading = model.state {
+                ZStack {
+                    Color.black.opacity(0.3).ignoresSafeArea()
+                    ProgressView("please wait...")
+                        .padding()
+                        .background(.ultraThinMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
             }
         }
         .alert("Report submitted", isPresented: $showSuccessAlert) {
@@ -201,7 +223,11 @@ private struct StatCard: View {
                     )
                 )
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .frame(
+            maxWidth: .infinity,
+            maxHeight: .infinity,
+            alignment: .topLeading
+        )
         .padding(16)
         .background(Color(.systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 14))

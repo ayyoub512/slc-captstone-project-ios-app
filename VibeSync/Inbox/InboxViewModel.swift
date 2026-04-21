@@ -70,6 +70,10 @@ class InboxViewModel {
                 from: data
             )
 
+            // To later compare the fetched friends list from the one that is cached and rmeove any stall data
+            let serverIDs = Set(decoded.friends.map { $0._id })
+            let localFriends = try modelContext.fetch(FetchDescriptor<FriendModel>())
+            
             // Upserting
             for friend in decoded.friends {
                 let descriptor = FetchDescriptor<FriendModel>(
@@ -85,6 +89,11 @@ class InboxViewModel {
                     modelContext.insert(friend)
                 }
             }
+            
+            for local in localFriends where !serverIDs.contains(local._id) {
+                modelContext.delete(local)
+            }
+            
             Log.shared.info("[INFO: InboxViewModel - fetchFriends] friends: \(decoded.friends.count)")
 
             lastTimeFetchedFriends = Date.now.timeIntervalSince1970

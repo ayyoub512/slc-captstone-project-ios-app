@@ -5,7 +5,8 @@ import SwiftUI
 struct CameraView: View {
     @EnvironmentObject var notificationManager: APNSNotificationsManager
     @StateObject private var viewModel = CameraViewModel()
-    @State var navManager: NavigationManager = NavigationManager.shared
+    @Environment(NavigationManager.self) private var navManager
+
     
     @State private var showNotificationPermissionPrompt = false
     @State private var showSendMessageSheet = false
