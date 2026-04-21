@@ -30,9 +30,6 @@ struct CameraView: View {
                         ZStack {
                             if useCameraMode {
                                 if let image = viewModel.capturedImage {
-                                    let _ = Log.shared.debug(
-                                        "if let image = viewModel.capturedImage"
-                                    )
                                     EditorView(
                                         size: geo.size,
                                         data: editorData,
@@ -43,6 +40,11 @@ struct CameraView: View {
                                     CameraPreviewView(
                                         session: viewModel.session
                                     )
+                                    .onTapGesture {
+                                        Task{
+                                            viewModel.flipCamera()
+                                        }
+                                    }
                                 }
                             } else {
                                 EditorView(
@@ -57,12 +59,13 @@ struct CameraView: View {
 
                     if viewModel.capturedImage == nil && useCameraMode {
                         VStack {
+                            Spacer()
+                            
                             HStack {
                                 Spacer()
                                 flipCameraButton
                                     .padding(16)
                             }
-                            Spacer()
                         }
                     }
                 }
@@ -106,7 +109,6 @@ struct CameraView: View {
                 Button {
                     navManager.goToTab(id: 2)
                 } label: {
-//                    Image(systemName: "chevron.right")
                     Image(systemName: "message.fill")
 
                 }
@@ -117,9 +119,6 @@ struct CameraView: View {
         .onAppear {
             Task {
                 await notificationManager.getAuthorizationStatus()
-                Log.shared.debug(
-                    "showNotificationPrompt = !notificationManager.hasPermission = \(!notificationManager.hasPermission)"
-                )
                 showNotificationPermissionPrompt = !notificationManager
                     .hasPermission
 
@@ -158,7 +157,7 @@ struct CameraView: View {
                 }
             }
         } message: {
-            Text("Please enable camera access in Settings to capture vibes.")
+            Text("Please enable camera access in Settings to capture photos.")
         }
         .sheet(isPresented: $showSendMessageSheet) {
             SendVibeSheetView(
@@ -183,7 +182,9 @@ struct CameraView: View {
 
     private var flipCameraButton: some View {
         Button {
-            viewModel.flipCamera()
+            Task{
+                viewModel.flipCamera()
+            }
         } label: {
             Image(systemName: "arrow.triangle.2.circlepath.camera.fill")
                 .foregroundColor(.white)

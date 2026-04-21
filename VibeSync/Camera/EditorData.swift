@@ -56,7 +56,7 @@ class EditorData {
         Log.shared.debug("initializeController rect: \(rect)")
         guard controller == nil else {
             Log.shared.error(
-                "Intialize Controller error: guard controller == nil else {}"
+                "[WARNING: EditorData intializeController] Intialize Controller error: guard controller == nil else {}"
             )
             return
         }
@@ -74,7 +74,6 @@ class EditorData {
         }
         self.controller = newController
         self.isControllerReady = true  //  Set flag
-        Log.shared.debug(" Controller initialized and ready")
     }
     private func makeController(_ rect: CGRect) {
         let newController = PaperMarkupViewController(
@@ -101,14 +100,12 @@ class EditorData {
     func waitForController() async {
         while controller == nil {
             try? await Task.sleep(nanoseconds: 20_000_000)
-            Log.shared.info("waitForController After sleep")
+            Log.shared.info("[WARNING: EditorData waitForController]  waitForController After sleep")
         }
     }
 
     // Update EditorData.insertBackground
     func insertBackground(_ image: UIImage, rect: CGRect) {
-        Log.shared.debug("insertBackground START")
-
         Task.detached(priority: .userInitiated) { [weak self] in
             guard let self = self else { return }
 
@@ -120,7 +117,7 @@ class EditorData {
             guard let normalizedImage = resizedImage.fixedOrientation(),
                 let cgImage = normalizedImage.cgImage
             else {
-                await Log.shared.error("Failed to process image")
+                await Log.shared.error("F[WARNING: EditorData - insertBackground]  Failed to process image")
                 return
             }
 
@@ -149,7 +146,6 @@ class EditorData {
                     cgImage,
                     frame: drawRect
                 )
-                Log.shared.debug("insertBackground COMPLETE")
             }
         }
     }
@@ -182,7 +178,6 @@ class EditorData {
     }
 
     func reset() {
-        Log.shared.debug("Resetting EditorData")
 
         // 1. Clean up tool picker
         if let controller = controller {
@@ -196,15 +191,10 @@ class EditorData {
 
         // 3. Reset state (keep canvaSizeRect!)
         hasContent = false
-        // DON'T clear canvaSizeRect - keep it for recreation
         // canvaSizeRect = nil  //
 
         // 4. Generate new reset ID to force SwiftUI recreation
         resetID = UUID()
-
-        Log.shared.debug(
-            "EditorData reset complete - SwiftUI will recreate view"
-        )
     }
 
     // markup to Data/Image
@@ -213,7 +203,7 @@ class EditorData {
             let markup = controller?.markup
         else {
             Log.shared.error(
-                "Error - guard let context = makeCGContext(size: rec "
+                "[WARNING: EditorData - exportAsImage]: guard let context = makeCGContext(size: rec "
             )
             return nil
         }
@@ -221,7 +211,7 @@ class EditorData {
         await markup.draw(in: context, frame: rect)
         guard let cgImage = context.makeImage() else {
             Log.shared.error(
-                "Error - guard let cgImage = context.makeImage() else {"
+                "[WARNING: EditorData - exportAsImage] - guard let cgImage = context.makeImage() else {"
             )
             return nil
         }

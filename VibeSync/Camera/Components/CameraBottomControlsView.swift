@@ -32,7 +32,7 @@ struct CameraBottomControlsView: View {
                  - Captured
                      * Top: Text, Stickers, Draw tools
                      * Bottom: Undo, Send, Save
-            
+
              On Canvas Mode:
                 - !Captured
                      * Top: Draw Tools
@@ -86,9 +86,9 @@ struct CameraBottomControlsView: View {
                     /// !Captured
                     /// * Top: Flip Camera, Zoom, Flash
                     HStack {
-                        Text("Undo, Flip, zoom, flash")
-                            .foregroundStyle(.gray)
-                            .font(.footnote)
+                        //                        Text("Undo, Flip, zoom, flash")
+                        //                            .foregroundStyle(.gray)
+                        //                            .font(.footnote)
                     }
                     .frame(height: 70)
 
@@ -107,7 +107,7 @@ struct CameraBottomControlsView: View {
                 }
 
             } else {
-                
+
                 /// On Canvas Mode:
                 ///   !Captured
                 if !editorData.hasContent {
@@ -290,7 +290,7 @@ extension CameraBottomControlsView {
             }
         } label: {
             HStack {
-                Text(showTools ? "Done " : "draw tools")
+                Text(showTools ? "done " : "draw tools")
                 Image(
                     systemName: showTools
                         ? "checkmark" : "chevron.forward"
@@ -300,7 +300,7 @@ extension CameraBottomControlsView {
         .buttonStyle(.glass)
 
     }
-    
+
     private var resetButton: some View {
         Button {
             withAnimation {
@@ -309,8 +309,8 @@ extension CameraBottomControlsView {
             }
         } label: {
             HStack {
-                Text("Reset")
-                Image( systemName: "x.circle.fill")
+                Text("reset")
+                Image(systemName: "x.circle.fill")
             }
         }
         .buttonStyle(.glass)
@@ -394,23 +394,25 @@ extension CameraBottomControlsView {
                 }
             }
         } label: {
-            Image(systemName: "square.and.arrow.down")
-                .cornerRadius(26)
+            HStack {
+                Image(systemName: "square.and.arrow.down")
+                Text("save")
+            }
         }
         .buttonStyle(.glass)
 
     }
 
     // TODO: Future feature might to make use of this
-    private var saveAsDataButton: some View {
-        Button("As Data", ) {
-            Task {
-                if let markupData = await editorData.exportAsData() {
-                    print(markupData)
-                }
-            }
-        }
-    }
+    //    private var saveAsDataButton: some View {
+    //        Button("As Data", ) {
+    //            Task {
+    //                if let markupData = await editorData.exportAsData() {
+    ////                    print(markupData)
+    //                }
+    //            }
+    //        }
+    //    }
 
     private var retakeButton: some View {
         Button {

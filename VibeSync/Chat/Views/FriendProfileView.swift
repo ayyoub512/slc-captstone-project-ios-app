@@ -82,11 +82,6 @@ struct FriendProfileView: View {
                         .padding()
                 }
                 
-                if case .success = model.state {
-                    Text("Friend and conversation deleted")
-                        .foregroundColor(.green)
-                        .padding()
-                }
 
                 // MARK: - Stats
                 HStack(spacing: 12) {
@@ -103,6 +98,7 @@ struct FriendProfileView: View {
                         value: model.friendSince?.formattedDateString ?? "0"
                     )
                 }
+                .frame(maxWidth: .infinity, alignment: .top)
                 .padding(.horizontal, 16)
                 .padding(.bottom, 28)
 
@@ -123,12 +119,12 @@ struct FriendProfileView: View {
                             }
                         }
                     )
-                    ActionRow(
-                        icon: "nosign",
-                        label: "Block User",
-                        color: .red,
-                        action: {}
-                    )
+//                    ActionRow(
+//                        icon: "nosign",
+//                        label: "Block User",
+//                        color: .red,
+//                        action: {}
+//                    )
                     ActionRow(
                         icon: "person.badge.minus",
                         label: "Remove Friend",
@@ -204,7 +200,7 @@ private struct StatCard: View {
                     )
                 )
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding(16)
         .background(Color(.systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 14))

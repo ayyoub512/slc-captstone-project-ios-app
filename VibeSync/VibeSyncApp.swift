@@ -39,7 +39,6 @@ class VibeSyncDelegate: NSObject, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication
             .LaunchOptionsKey: Any]? = nil
     ) -> Bool {
-        Log.shared.info("didFinishLaunchingWithOptions")
         UNUserNotificationCenter.current().delegate = self
 
         // TODO: I must ensure that I get the authorization to send notification from user FIRST before doing this
@@ -58,7 +57,7 @@ class VibeSyncDelegate: NSObject, UIApplicationDelegate {
         }
         let token = tokenParts.joined()
         Log.shared.info(
-            "App didRegisterForRemoteNotificationsWithDeviceToken: \(token)"
+            "[INFO: VibeSyncApp - VibeSyncDelegate] App didRegisterForRemoteNotificationsWithDeviceToken: \(token)"
         )
 
         notificationManager.saveAPN(with: token)
@@ -69,9 +68,8 @@ class VibeSyncDelegate: NSObject, UIApplicationDelegate {
         didFailToRegisterForRemoteNotificationsWithError error: any Error
     ) {
         Log.shared.info(
-            "Error didFailToRegisterForRemoteNotificationsWithError : \(error)"
+            "[ERROR: VibeSyncApp - VibeSyncDelegate] Error didFailToRegisterForRemoteNotificationsWithError : \(error)"
         )
-        Log.shared.info("Error: \(error)")
     }
 }
 
@@ -80,17 +78,17 @@ extension VibeSyncDelegate: UNUserNotificationCenterDelegate {
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse
     ) async {
-        Log.shared.info("UNUserNotificationCenterDelegate didReceive")
-        Log.shared.info("\(response.notification.request.content)")
+//        Log.shared.info("UNUserNotificationCenterDelegate didReceive")
+//        Log.shared.info("\(response.notification.request.content)")
     }
 
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
-        Log.shared.info(
-            "UNUserNotificationCenterDelegate userNotificationCenter"
-        )
+//        Log.shared.info(
+//            "UNUserNotificationCenterDelegate userNotificationCenter"
+//        )
         return [.banner, .sound, .badge]
     }
 }

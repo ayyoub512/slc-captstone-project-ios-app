@@ -60,9 +60,6 @@ class APNSNotificationsManager: ObservableObject {
     
     /// Send APNS token to server
     func sendDeviceTokenToServer(with token: String) {
-        // Let's make sure it hasn't change yet
-        Log.shared.info("Saving app push notification token to server")
-
         guard let url = URL(string: K.shared.registerDeviceURL)
         else { return }
 
@@ -72,7 +69,7 @@ class APNSNotificationsManager: ObservableObject {
 
         guard let jwtToken = keyChain.get(K.shared.keyChainUserTokenKey) else {
             Log.shared.info(
-                "No jwt token is stored in chain to be used for APNs server device registeration"
+                "[ERROR: APNSNotificationsManager - sendDeviceTokenToServer] No jwt token is stored in chain to be used for APNs server device registeration"
             )
             return
         }
@@ -92,14 +89,13 @@ class APNSNotificationsManager: ObservableObject {
         )
 
         URLSession.shared.dataTask(with: request) { data, response, error in
-            Log.shared.info("sendDeviceTokenToServer Request was made")
             if let error = error {
-                Log.shared.error("Error sending device token: \(error)")
+                Log.shared.error("[ERROR: APNSNotificationsManager - sendDeviceTokenToServer] Error sending device token: \(error)")
                 return
             }
 
             if let response = response as? HTTPURLResponse {
-                Log.shared.info("Device token sent. Status code: \(response.statusCode)")
+                Log.shared.info("[INFO: APNSNotificationsManager - sendDeviceTokenToServer] Device token sent. Status code: \(response.statusCode)")
             }
         }.resume()
     }

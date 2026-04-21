@@ -22,7 +22,6 @@ class SendVibeSheetViewModel: ObservableObject {
     }()
 
     func fetchFriends(modelContext: ModelContext) async {
-        Log.shared.info("Fetching friends from API")
         guard let friendsListURL = URL(string: K.shared.friendsListURL) else {
             return
         }
@@ -72,9 +71,10 @@ class SendVibeSheetViewModel: ObservableObject {
             }
 
             lastTimeFetchedFriends = Date.now.timeIntervalSince1970
+            Log.shared.info("[INFO: SendVibeSheetViewModel - fetchFriend] Fetched \(decodedResponse.friends.count) friends")
 
         } catch let error {
-            Log.shared.error("Fetch Friends error: \(error)")
+            Log.shared.error("[ERROR: SendVibeSheetViewModel - fetchFriend] Fetch Friends error: \(error)")
         }
     }
     
@@ -85,7 +85,7 @@ class SendVibeSheetViewModel: ObservableObject {
         image: UIImage
     ) async {
         guard let url = URL(string: K.shared.sendNotificatioURL) else {
-            Log.shared.error(" Invalid URL")
+            Log.shared.error("[ERROR: SendVibeSheetViewModel - sendVibe] Invalid URL")
             self.errorMessage = "Invalid server URL"
             self.working = false
             return
@@ -94,8 +94,6 @@ class SendVibeSheetViewModel: ObservableObject {
         self.working = true
         self.errorMessage = nil
         
-        Log.shared.info("Sending a new vibe")
-
         do {
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
@@ -132,10 +130,10 @@ class SendVibeSheetViewModel: ObservableObject {
                 bodyData.append("\r\n".data(using: .utf8)!)
 
                 Log.shared.info(
-                    "Sending to \(recipients.count) recipients: \(recipients)"
+                    "[INFO: SendVibeSheetViewModel - sendVibe] Sending to \(recipients.count) recipients: \(recipients)"
                 )
             } catch {
-                Log.shared.error("Failed to serialize receivers: \(error)")
+                Log.shared.error("[ERROR: SendVibeSheetViewModel - sendVibe] Failed to serialize receivers: \(error)")
 
                 self.errorMessage = "Failed to prepare recipients data"
                 self.working = false
@@ -157,9 +155,8 @@ class SendVibeSheetViewModel: ObservableObject {
                 bodyData.append(imageData)
                 bodyData.append("\r\n".data(using: .utf8)!)
 
-                Log.shared.info("Image size: \(imageData.count) bytes")
             } else {
-                Log.shared.error("Failed to convert image to JPEG")
+                Log.shared.error("[ERROR: SendVibeSheetViewModel - sendVibe] Failed to convert image to JPEG")
                 await MainActor.run {
                     self.errorMessage = "Failed to process image"
                     self.working = false
@@ -179,15 +176,8 @@ class SendVibeSheetViewModel: ObservableObject {
             )
 
             if let httpResponse = response as? HTTPURLResponse {
-                Log.shared.info("Status code: \(httpResponse.statusCode)")
 
                 if (200...299).contains(httpResponse.statusCode) {
-                    if let responseBody = try? JSONSerialization.jsonObject(
-                        with: data
-                    ) {
-                        Log.shared.info("Response: \(responseBody)")
-                    }
-
                     self.success = true
                     self.working = false
 
@@ -195,7 +185,7 @@ class SendVibeSheetViewModel: ObservableObject {
                     if let responseBody = try? JSONSerialization.jsonObject(
                         with: data
                     ) {
-                        Log.shared.error("Error response: \(responseBody)")
+                        Log.shared.error("[ERROR: SendVibeSheetViewModel - sendVibe] Error response: \(responseBody)")
                     }
 
                     self.errorMessage =
@@ -207,7 +197,7 @@ class SendVibeSheetViewModel: ObservableObject {
             }
 
         } catch {
-            Log.shared.info("Send vibe error: \(error)")
+            Log.shared.info("[ERROR: SendVibeSheetViewModel - sendVibe] Send vibe error: \(error)")
 
             self.errorMessage =
                 "Failed to send vibe: \(error.localizedDescription)"

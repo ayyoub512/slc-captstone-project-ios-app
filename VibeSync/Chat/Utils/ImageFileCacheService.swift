@@ -33,9 +33,9 @@ class ImageFileCacheService {
                     withIntermediateDirectories: true,
                     attributes: nil
                 )
-                print("Created Photo Cache Folder!")
+                Log.shared.info("[INFO: ImageFileCacheService - createFolderIfNeeded] Created Photo Cache Folder!")
             } catch let error {
-                print("Error creating photo cache folder: \(error)")
+                Log.shared.error("[ERROR: ImageFileCacheService - createFolderIfNeeded] Error creating photo cache folder: \(error)")
             }
         }
     }
@@ -67,7 +67,7 @@ class ImageFileCacheService {
             try data.write(to: url)
             evictIfNeeded()
         } catch let error {
-            print("Error saving photo to file manager. \(error)")
+            Log.shared.error("[ERROR: ImageFileCacheService - add] Error saving photo to file manager. \(error)")
         }
     }
 
@@ -186,7 +186,7 @@ class ImageFileCacheService {
 
     func cleanup() {
         evictIfNeeded()
-        print("Cache size after cleanup: \(currentCacheSizeFormatted())")
+        Log.shared.info("[INFO: ImageFileCacheService - cleanup] Cache size after cleanup: \(currentCacheSizeFormatted())")
     }
 
     // MARK: - Diagnostics

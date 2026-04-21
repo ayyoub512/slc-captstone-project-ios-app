@@ -1,19 +1,11 @@
-//
-//  widgetBundle.swift
-//  widget
-//
-//  Created by Ayyoub on 16/2/2026.
-//
-
-import WidgetKit
 import SwiftUI
-
+import WidgetKit
 
 @main
-struct widgetBundle: WidgetBundle {
+struct VibeWidgetBundle: WidgetBundle {
     var body: some Widget {
-        widget()
-        widgetControl()
-//        widgetLiveActivity()
+        VibeWidget()
+        // widgetControl() — remove, it's tutorial boilerplate
+        // widgetLiveActivity() — keep commented until you need it
     }
 }

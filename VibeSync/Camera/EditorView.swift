@@ -39,8 +39,6 @@ struct EditorView: View {
             }
         }
         .onAppear {
-            Log.shared.debug("EditorView.onAppear")
-
             data.initializeController(.init(origin: .zero, size: size))
             Task {
                     await data.waitForController()
@@ -56,7 +54,6 @@ struct EditorView: View {
             data.viewSize = size
         }
         .onChange(of: data.isControllerReady) { _, isReady in
-            // ✅ Insert image when controller is ready
             if isReady, let userImage = imageToInsert {
                 isProcessing = true
                 Task {

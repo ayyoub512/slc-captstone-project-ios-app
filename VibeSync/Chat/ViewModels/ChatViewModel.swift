@@ -70,7 +70,7 @@ class ChatViewModel {
             if let httpResponse = response as? HTTPURLResponse,
                 !(200...299).contains(httpResponse.statusCode)
             {
-                print("Error \(httpResponse)")
+                Log.shared.error("[ERROR: ChatViewModel - fetchMessages] Error \(httpResponse)")
                 self.errorMessage = "Server Error: \(httpResponse.statusCode)"
                 isLoading = false
                 return

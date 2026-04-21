@@ -19,18 +19,15 @@ struct InboxView: View {
 
     var body: some View {
         List {
-            if friends.count == 0 {
-                NoFriendsYetView()
-                    .listRowSeparator(.hidden)
-                    .frame(maxWidth: .infinity, minHeight: 400)
-            } else {
-
-                ForEach(friends, id: \._id) { friend in
-                    NavigationLink(value: friend) {
-                        FriendRow(friend: friend)
-                    }
+            ForEach(friends, id: \._id) { friend in
+                NavigationLink(value: friend) {
+                    FriendRow(friend: friend)
                 }
-
+            }
+        }
+        .overlay {
+            if friends.isEmpty {
+                NoFriendsYetView()
             }
         }
         .refreshable {
@@ -90,7 +87,7 @@ struct InboxView: View {
                 await model.fetchFriends(modelContext: self.modelContext)
             } else {
                 Log.shared.debug(
-                    "We dont have to refetch friends, friends: \(friends.count)"
+                    "[INFO: InboxView - InboxView] We dont have to refetch friends, friends: \(friends.count)"
                 )
             }
         }
@@ -118,13 +115,16 @@ struct FriendRow: View {
             if let imgURL = friend.resizedProfileImage,
                 let url = URL(string: imgURL)
             {
-
                 AsyncImage(url: url) { image in
                     image
                         .resizable()
                         .scaledToFill()
                 } placeholder: {
-                    ProgressView()
+                    Text(friend.name.prefix(1).uppercased())
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(width: 44, height: 44)
+                        .background(Circle().fill(Color.orange.gradient))
                 }
                 .frame(width: 44, height: 44)
                 .clipShape(Circle())

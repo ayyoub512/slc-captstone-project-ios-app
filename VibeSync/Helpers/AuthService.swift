@@ -81,25 +81,25 @@ class AuthService {
             DispatchQueue.main.async {
                 switch state {
                 case .authorized:
-                    Log.shared.info("User is authorized")
+                    break
 
                 case .revoked:
                     #if targetEnvironment(simulator)
-                    Log.shared.error("User revoked access")
+                    Log.shared.error("[ERROR: AuthService - checkCredentialStatus] User revoked access")
                     #else
-                    Log.shared.error("User revoked access")
+                    Log.shared.error("[ERROR: AuthService - checkCredentialStatus] User revoked access")
                     userId = ""
                     self.logout(modelContext: modelContext)  // I am not sure if its right to do this.
                     #endif
 
                 case .notFound:
                     Log.shared.error(
-                        "User has never logged in with Apple on this device"
+                        "[ERROR: AuthService - checkCredentialStatus] User has never logged in with Apple on this device"
                     )
                     self.logout(modelContext: modelContext)
 
                 case .transferred:
-                    Log.shared.error("Credential transferred")
+                    Log.shared.error("[ERROR: AuthService - checkCredentialStatus]  Credential transferred")
                     self.logout(modelContext: modelContext)
 
                 @unknown default:

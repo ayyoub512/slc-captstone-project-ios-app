@@ -64,14 +64,14 @@ class CameraViewModel: NSObject, ObservableObject {
 
     func capturePhoto() {
         guard session.isRunning else {
-            print("capturePhoto - Session is not running. Returning")
+            Log.shared.error("[ERROR: CameraViewModel - flipCamera] capturePhoto - Session is not running. Returning")
             return
         }
         guard let connection = photoOutput.connection(with: .video),
             connection.isActive,
             connection.isEnabled
         else {
-            print("capturePhoto - Connection is not active .video")
+            Log.shared.error("[ERROR: CameraViewModel - flipCamera] capturePhoto - Connection is not active .video")
             return
         }
 
@@ -80,7 +80,7 @@ class CameraViewModel: NSObject, ObservableObject {
         //        settings.photoQualityPrioritization =
         //            photoOutput.maxPhotoQualityPrioritization
 
-        print("Capturing photo...")
+        Log.shared.info("[INFO: CameraViewModel - flipCamera] Capturing photo...")
         photoOutput.capturePhoto(with: settings, delegate: self)
     }
 
@@ -95,7 +95,7 @@ class CameraViewModel: NSObject, ObservableObject {
 
     func stopSession() {
         if session.isRunning {
-            Log.shared.info("Stopping Camera Session")
+            Log.shared.info("[INFO: CameraViewModel - capturePhoto] Stopping Camera Session")
             DispatchQueue.global(qos: .userInitiated).async { [weak self] in
                 self?.session.stopRunning()
             }
@@ -106,7 +106,7 @@ class CameraViewModel: NSObject, ObservableObject {
         
         // Prevent concurrent configuration
         guard !isConfiguring else {
-            print("Camera already configuring")
+            Log.shared.info("[INFO: CameraViewModel - setupCamera] Camera already configuring")
             return
         }
         
@@ -136,7 +136,7 @@ class CameraViewModel: NSObject, ObservableObject {
             else {
                 self.session.commitConfiguration()
                 self.isConfiguring = false
-                print("Failed to create camera input")
+                Log.shared.error("[ERROR: CameraViewModel - setupCamera] Failed to create camera input")
                 return
             }
 
@@ -180,9 +180,6 @@ class CameraViewModel: NSObject, ObservableObject {
             // Thread.sleep(forTimeInterval: 0.3)
 
             self.isConfiguring = false
-            print(
-                "Camera configured for \(position == .back ? "back" : "front") camera"
-            )
         }
     }
 }
@@ -230,7 +227,6 @@ extension CameraViewModel: AVCapturePhotoCaptureDelegate {
         willCapturePhotoFor resolvedSettings: AVCaptureResolvedPhotoSettings
     ) {
         // Optional: Add capture animation/sound here
-        print("Will capture photo")
     }
 
     func photoOutput(
@@ -238,6 +234,5 @@ extension CameraViewModel: AVCapturePhotoCaptureDelegate {
         didCapturePhotoFor resolvedSettings: AVCaptureResolvedPhotoSettings
     ) {
         // Optional: Photo was captured (shutter moment)
-        print("Did capture photo")
     }
 }
