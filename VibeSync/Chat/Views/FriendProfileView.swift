@@ -187,6 +187,17 @@ struct FriendProfileView: View {
                 }
             }
         }
+        .overlay {
+            if case .loading = reportManager.state {
+                ZStack {
+                    Color.black.opacity(0.3).ignoresSafeArea()
+                    ProgressView("please wait...")
+                        .padding()
+                        .background(.ultraThinMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+            }
+        }
         .alert("Report submitted", isPresented: $showSuccessAlert) {
             Button("OK", role: .cancel) {}
         } message: {
