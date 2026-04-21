@@ -38,8 +38,8 @@ struct K {
     let profileCachedImageFileName = "profile.jpg"
 
     // API END POINTS
-    let apiURL = "https://fe36-2001-1970-4c69-b400-8453-4aec-3e45-446.ngrok-free.app/api"
-//    let apiURL = "https://vibesync.ayyoub.io/api"
+//    let apiURL = "https://fe36-2001-1970-4c69-b400-8453-4aec-3e45-446.ngrok-free.app/api"
+    let apiURL = "https://vibesync.ayyoub.io/api"
     var signInWithAppleURL: String { apiURL + "/auth/apple" }
     var logingURL: String { apiURL + "/auth/login" }
     var registerURL: String { apiURL + "/auth/register" }
