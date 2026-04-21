@@ -145,6 +145,7 @@ struct FriendProfileView: View {
             
             Button("Permanently Delete", role: .destructive) {
                 Task {
+                    AppState.shared.needsFriendRefresh = true
                     await model.removeFriend()
                 }
             }

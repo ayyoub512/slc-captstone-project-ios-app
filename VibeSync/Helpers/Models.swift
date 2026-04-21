@@ -143,9 +143,9 @@ struct ScaleButtonStyle: ButtonStyle {
 
 
 extension Date {
-    func formattedRelative(to reference: Date) -> String {
+    var formattedRelative: String {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .abbreviated
-        return formatter.localizedString(for: self, relativeTo: reference)
+        return formatter.localizedString(for: self, relativeTo: Date.now)
     }
 }

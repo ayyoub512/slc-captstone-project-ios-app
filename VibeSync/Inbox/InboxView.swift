@@ -117,7 +117,7 @@ struct InboxView: View {
 
         }
     }
-
+    
     private func handleRefreshIfNeeded() async {
         if appState.needsFriendRefresh {
             appState.needsFriendRefresh = false
@@ -153,15 +153,15 @@ struct FriendRow: View {
                 Text(friend.name)
                     .font(.headline)
                     .fontWeight(friend.unreadCount > 0 ? .bold : .regular)
-                
-                TimelineView(.periodic(from: .now, by: 10)) { context in
-                    Text(
-                        friend.lastMessageAt?.formattedRelative(to: context.date)
-                            ?? "No messages yet",
-                    )
+
+                if let lastMessageDate = friend.lastMessageAt{
+                    RelativeDateText(date: lastMessageDate)
+                }else{
+                    Text("No messages yet")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 }
+                
 
             }
         }
