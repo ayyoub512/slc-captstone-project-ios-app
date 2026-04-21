@@ -75,6 +75,7 @@ class EditorData {
         self.controller = newController
         self.isControllerReady = true  //  Set flag
     }
+    
     private func makeController(_ rect: CGRect) {
         let newController = PaperMarkupViewController(
             supportedFeatureSet: .latest
@@ -91,9 +92,26 @@ class EditorData {
     }
 
     // markup editing methods
-
+    
     func insertText(_ text: NSAttributedString, rect: CGRect) {
         controller?.markup?.insertNewTextbox(attributedText: text, frame: rect)
+    }
+    
+    func modelCanUndo() -> Bool {
+        
+        return controller?.undoManager?.canUndo ?? false
+    }
+    
+    func modelCanRedo() -> Bool {
+        return controller?.undoManager?.canRedo ?? false
+    }
+    
+    func undo(){
+        controller?.undoManager?.undo()
+    }
+    
+    func redo(){
+        controller?.undoManager?.redo()
     }
 
     @MainActor
