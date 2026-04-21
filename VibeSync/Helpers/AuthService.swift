@@ -162,7 +162,7 @@ extension AuthService {
                 return
             }
 
-            Log.shared.info("[INFO: AuthService - signInWithApple] User logged in, saving token to keychain, token: \(authToken)")
+            Log.shared.info("[INFO: AuthService - signInWithApple] User logged in, saving token to keychain")
             KeyChainManager.shared.save(
                 key: K.shared.keyChainUserTokenKey,
                 value: authToken

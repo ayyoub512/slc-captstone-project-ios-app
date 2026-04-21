@@ -9,13 +9,15 @@ import SwiftData
 import SwiftUI
 
 struct InboxView: View {
-    @State var auth = AuthService.shared
-    @StateObject private var model = InboxViewModel()
-    @Environment(NavigationManager.self) var navManager
-
+    @State private var auth = AuthService.shared
+    @State private var model = InboxViewModel()
     @State private var showAddFriendSheet = false
+
+    @Environment(AppState.self) private var appState
+    @Environment(NavigationManager.self) private var navManager
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \FriendModel.id) private var friends: [FriendModel]
+    @Query(sort: \FriendModel.lastMessageAt, order: .reverse) private
+        var friends: [FriendModel]
 
     var body: some View {
         List {
@@ -38,6 +40,11 @@ struct InboxView: View {
             destination: { friend in
                 ChatView(friend: friend)
                     .environment(navManager)
+                    .task {
+                        // Mark as read when conversation opens
+                        await model.markAsRead(friendID: friend._id)
+                        friend.unreadCount = 0  // clear badge locally
+                    }
             }
         )
         .toolbar {
@@ -82,13 +89,19 @@ struct InboxView: View {
             }
         }
         .task {
-            if model.hasCacheExceededLimit() || friends.isEmpty {
-                Log.shared.debug("We have to refetch friends")
-                await model.fetchFriends(modelContext: self.modelContext)
-            } else {
-                Log.shared.debug(
-                    "[INFO: InboxView - InboxView] We dont have to refetch friends, friends: \(friends.count)"
-                )
+            Log.shared.debug(
+                "[INFO: InboxView - onChange] needsRefresh: \(appState.needsFriendRefresh)"
+            )
+            await handleRefreshIfNeeded()
+        }
+        .onChange(of: appState.needsFriendRefresh) { _, needsRefresh in
+            Log.shared.debug(
+                "[INFO: InboxView - onChange] needsFriendRefresh: \(needsRefresh)"
+            )
+            guard needsRefresh else { return }
+            appState.needsFriendRefresh = false  // reset immediately
+            Task {
+                await model.fetchFriends(modelContext: modelContext)
             }
         }
         .sheet(isPresented: $showAddFriendSheet) {
@@ -105,42 +118,78 @@ struct InboxView: View {
         }
     }
 
+    private func handleRefreshIfNeeded() async {
+        if appState.needsFriendRefresh {
+            appState.needsFriendRefresh = false
+            await model.fetchFriends(modelContext: modelContext)
+        } else if model.hasCacheExceededLimit() || friends.isEmpty {
+            await model.fetchFriends(modelContext: modelContext)
+        }
+    }
 }
 
 // A small sub-view to keep the code organized
 struct FriendRow: View {
     let friend: FriendModel
     var body: some View {
-        HStack {
-            if let imgURL = friend.resizedProfileImage,
-                let url = URL(string: imgURL)
-            {
-                AsyncImage(url: url) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                } placeholder: {
-                    Text(friend.name.prefix(1).uppercased())
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(.white)
-                        .frame(width: 44, height: 44)
-                        .background(Circle().fill(Color.orange.gradient))
+        HStack(spacing: 12) {
+            ZStack(alignment: .topTrailing) {
+                avatarView
+                if friend.unreadCount > 0 {
+                    Text(
+                        friend.unreadCount > 99
+                            ? "99+" : "\(friend.unreadCount)"
+                    )
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 2)
+                    .background(Capsule().fill(Color.red))
+                    .offset(x: 6, y: -4)
                 }
-                .frame(width: 44, height: 44)
-                .clipShape(Circle())
-            } else {
-                Text(friend.name.prefix(1).uppercased())
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.white)
-                    .frame(width: 44, height: 44)
-                    .background(Circle().fill(Color.orange.gradient))
             }
 
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(friend.name)
                     .font(.headline)
+                    .fontWeight(friend.unreadCount > 0 ? .bold : .regular)
+                
+                TimelineView(.periodic(from: .now, by: 10)) { context in
+                    Text(
+                        friend.lastMessageAt?.formattedRelative(to: context.date)
+                            ?? "No messages yet",
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                }
+
             }
         }
+    }
+
+    @ViewBuilder
+    private var avatarView: some View {
+        if let imgURLString = friend.resizedProfileImage,
+            let url = URL(string: imgURLString)
+        {
+            AsyncImage(url: url) { image in
+                image.resizable().scaledToFill()
+            } placeholder: {
+                initialsView
+            }
+            .frame(width: 44, height: 44)
+            .clipShape(Circle())
+        } else {
+            initialsView
+        }
+    }
+
+    private var initialsView: some View {
+        Text(friend.name.prefix(1).uppercased())
+            .font(.system(size: 20, weight: .bold))
+            .foregroundStyle(.white)
+            .frame(width: 44, height: 44)
+            .background(Circle().fill(Color.orange))
     }
 }
 

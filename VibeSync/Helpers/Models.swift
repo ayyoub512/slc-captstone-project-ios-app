@@ -28,21 +28,28 @@ class FriendModel: Codable {
     @Attribute(.unique)
     var _id: String
     var id: String { _id }  // Map MongoDB _id to SwiftUI id
-
     var name: String
     var resizedProfileImage: String?
+    var unreadCount: Int
+    var lastMessageAt: Date?
 
-    init(id: String, name: String, resizedProfileImage: String?) {
+    init(
+        id: String,
+        name: String,
+        resizedProfileImage: String? = nil,
+        unreadCount: Int = 0,
+        lastMessageAt: Date? = nil
+    ) {
         self._id = id
         self.name = name
         self.resizedProfileImage = resizedProfileImage
+        self.unreadCount = unreadCount
+        self.lastMessageAt = lastMessageAt
     }
 
     // Codable
     enum CodingKeys: String, CodingKey {
-        case _id
-        case name
-        case resizedProfileImage
+        case _id, name, resizedProfileImage, unreadCount, lastMessageAt
     }
 
     required init(from decoder: Decoder) throws {
@@ -53,6 +60,22 @@ class FriendModel: Codable {
             String.self,
             forKey: .resizedProfileImage
         )
+        unreadCount =
+            try container.decodeIfPresent(Int.self, forKey: .unreadCount) ?? 0
+
+        // Decode ISO8601 date string from MongoDB
+        if let dateString = try container.decodeIfPresent(
+            String.self,
+            forKey: .lastMessageAt
+        ) {
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [
+                .withInternetDateTime, .withFractionalSeconds,
+            ]
+            lastMessageAt = formatter.date(from: dateString)
+        } else {
+            lastMessageAt = nil
+        }
     }
 
     func encode(to encoder: Encoder) throws {
@@ -63,6 +86,9 @@ class FriendModel: Codable {
             resizedProfileImage,
             forKey: .resizedProfileImage
         )
+        try container.encode(unreadCount, forKey: .unreadCount)
+        try container.encodeIfPresent(lastMessageAt, forKey: .lastMessageAt)
+
     }
 
 }
@@ -112,5 +138,14 @@ struct ScaleButtonStyle: ButtonStyle {
             .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
             .opacity(configuration.isPressed ? 0.9 : 1.0)
             .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
+    }
+}
+
+
+extension Date {
+    func formattedRelative(to reference: Date) -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .abbreviated
+        return formatter.localizedString(for: self, relativeTo: reference)
     }
 }

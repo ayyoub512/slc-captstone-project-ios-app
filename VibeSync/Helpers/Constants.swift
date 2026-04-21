@@ -55,6 +55,7 @@ struct K {
     var reportURL: String { apiURL + "/report" }
     var getFriendshipProfileURL: String { apiURL + "/friendship-profile" }
     var removeFriendURL: String { apiURL + "/remove-friend" }
+    var markConversationReadURL: String{ apiURL + "/mark-conversation-read" }
 
     // Numbers
     var cachFriendsDurationSeconds: Double = 300

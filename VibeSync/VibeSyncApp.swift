@@ -17,11 +17,13 @@ struct VibeSyncApp: App {
     @UIApplicationDelegateAdaptor private var vibeSyncDelegate: VibeSyncDelegate
     @State private var authManager = AuthService.shared
     @StateObject private var notificationManager = APNSNotificationsManager()
-    
+    @State private var appState = AppState.shared
+
     var body: some Scene {
         WindowGroup {
             RootView()
                 .environment(authManager)
+                .environment(appState)
                 .environmentObject(notificationManager)
         }
         .modelContainer(for: [FriendModel.self])
@@ -44,6 +46,8 @@ class VibeSyncDelegate: NSObject, UIApplicationDelegate {
         // TODO: I must ensure that I get the authorization to send notification from user FIRST before doing this
         UIApplication.shared.registerForRemoteNotifications()
 
+        AppState.shared.triggerFriendRefresh() // trigger refresh on app launch
+        
         return true
     }
 
@@ -56,9 +60,6 @@ class VibeSyncDelegate: NSObject, UIApplicationDelegate {
             String(format: "%02.2hhx", data)
         }
         let token = tokenParts.joined()
-        Log.shared.info(
-            "[INFO: VibeSyncApp - VibeSyncDelegate] App didRegisterForRemoteNotificationsWithDeviceToken: \(token)"
-        )
 
         notificationManager.saveAPN(with: token)
     }
@@ -67,28 +68,32 @@ class VibeSyncDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         didFailToRegisterForRemoteNotificationsWithError error: any Error
     ) {
-        Log.shared.info(
+        Log.shared.error(
             "[ERROR: VibeSyncApp - VibeSyncDelegate] Error didFailToRegisterForRemoteNotificationsWithError : \(error)"
         )
     }
 }
 
 extension VibeSyncDelegate: UNUserNotificationCenterDelegate {
+    
+    // User taps on the notification (app was in the background or closed)
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse
     ) async {
-//        Log.shared.info("UNUserNotificationCenterDelegate didReceive")
-//        Log.shared.info("\(response.notification.request.content)")
+        AppState.shared.triggerFriendRefresh()
+        NavigationManager.shared.goToTab(id: 2)
     }
 
+    // App is in the foreground when the notification arrived
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
-//        Log.shared.info(
-//            "UNUserNotificationCenterDelegate userNotificationCenter"
-//        )
+        
+        // Trigger a refresh on notification
+        AppState.shared.triggerFriendRefresh()
+        
         return [.banner, .sound, .badge]
     }
 }
