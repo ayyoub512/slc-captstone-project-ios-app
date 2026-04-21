@@ -11,9 +11,9 @@ import UIKit
 struct AddFriendView: View {
     @State private var code: String = ""
     @StateObject var model = AddFriendViewModel()
-    
+
     @FocusState private var isCodeFocused: Bool
-    
+
     var body: some View {
 
         VStack(spacing: 30) {
@@ -64,9 +64,12 @@ struct AddFriendView: View {
                 .buttonStyle(ScaleButtonStyle())
 
                 if model.success == true {
-                    Label("Added successfully", systemImage: "checkmark.circle.fill")
-                        .font(.footnote)
-                        .foregroundStyle(.green)
+                    Label(
+                        "Added successfully",
+                        systemImage: "checkmark.circle.fill"
+                    )
+                    .font(.footnote)
+                    .foregroundStyle(.green)
                 }
 
                 if let error = model.errorMessage {
@@ -75,7 +78,6 @@ struct AddFriendView: View {
                         .foregroundStyle(.red)
                 }
             }
-
 
             // MARK: - Share Invite Code Card
             VStack(alignment: .leading, spacing: 10) {
@@ -100,19 +102,29 @@ struct AddFriendView: View {
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
-            
+
         }
         .contentShape(Rectangle())
         .onTapGesture {
             isCodeFocused = false
         }
-        
 
     }
 
     private func submitCode() {
         Task {
             await model.addFriend(with: code)
+            await MainActor.run {
+                // Clear the path first so the stack pops cleanly
+                NavigationManager.shared.inboxPath = NavigationPath()
+                NavigationManager.shared.profilePath = NavigationPath()
+                
+                AppState.shared.needsFriendRefresh = true
+                
+                // Then switch tab
+                NavigationManager.shared.goToTab(id: 2)
+            }
+            
         }
     }
 }
@@ -125,6 +137,9 @@ struct CopyableText: View {
     var body: some View {
         HStack(spacing: 12) {
             Text(text)
+                .font(.system(.body, design: .monospaced))
+                .fontWeight(.semibold)
+                .tracking(2)
                 .foregroundStyle(.primary)
                 .textSelection(.enabled)
 
@@ -158,7 +173,7 @@ struct CopyableText: View {
 }
 
 #Preview {
-    
+
     Form {
         AddFriendView()
     }

@@ -15,31 +15,62 @@ struct ContactBubble: View {
     var body: some View {
         VStack(spacing: 6) {
             ZStack(alignment: .bottomTrailing) {
-                Text(friend.name.prefix(1).uppercased())
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.white)
-                    .frame(width: 56, height: 56)
-                    .background(
-                        Circle().fill(isSelected ? Color.blue : Color.blue.opacity(0.3))
-                    )
+                avatarView
                     .overlay(
                         Circle()
-                            .stroke(isSelected ? Color.white : .clear, lineWidth: 3)
+                            .stroke(isSelected ? Color.accent : .clear, lineWidth: 2)
                     )
+                    .animation(.spring(response: 0.2), value: isSelected)
 
                 if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.white)
-                        .background(Circle().fill(Color.blue))
-                        .offset(x: 4, y: 4)
+                    ZStack {
+                        Circle()
+                            .fill(Color.accent)
+                            .frame(width: 18, height: 18)
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundStyle(.white)
+                    }
+                    .overlay(Circle().stroke(Color(.systemBackground), lineWidth: 2))
+                    .transition(.scale.combined(with: .opacity))
                 }
             }
+            .frame(width: 56, height: 56)
 
             Text(friend.name)
-                .font(.subheadline)
-                .foregroundColor(isSelected ? .blue : .primary)
+                .font(.system(size: 12))
+                .foregroundStyle(isSelected ? Color.accent : .secondary)
+                .fontWeight(isSelected ? .medium : .regular)
+                .lineLimit(1)
+                .animation(.easeInOut(duration: 0.15), value: isSelected)
         }
+        .padding(.vertical, 10)
+        .padding(.horizontal, 6)
         .contentShape(Rectangle())
-        .onTapGesture { onTap() }
+        .onTapGesture { withAnimation(.spring(response: 0.2)) { onTap() } }
+    }
+
+    @ViewBuilder
+    private var avatarView: some View {
+        if let imgURLString = friend.resizedProfileImage,
+           let url = URL(string: imgURLString) {
+            AsyncImage(url: url) { image in
+                image.resizable().scaledToFill()
+            } placeholder: {
+                initialsView
+            }
+            .frame(width: 56, height: 56)
+            .clipShape(Circle())
+        } else {
+            initialsView
+        }
+    }
+
+    private var initialsView: some View {
+        Text(friend.name.prefix(1).uppercased())
+            .font(.system(size: 20, weight: .medium))
+            .foregroundStyle(Color.accent)
+            .frame(width: 56, height: 56)
+            .background(Color.accent.opacity(0.12), in: Circle())
     }
 }
