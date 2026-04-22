@@ -61,6 +61,7 @@ class EditorData {
             return
         }
         canvaSizeRect = rect
+        viewSize = rect.size // keep both in sync
 
         let newController = PaperMarkupViewController(
             supportedFeatureSet: .latest
@@ -75,7 +76,7 @@ class EditorData {
         self.controller = newController
         self.isControllerReady = true  //  Set flag
     }
-    
+
     private func makeController(_ rect: CGRect) {
         let newController = PaperMarkupViewController(
             supportedFeatureSet: .latest
@@ -92,25 +93,25 @@ class EditorData {
     }
 
     // markup editing methods
-    
+
     func insertText(_ text: NSAttributedString, rect: CGRect) {
         controller?.markup?.insertNewTextbox(attributedText: text, frame: rect)
     }
-    
+
     func modelCanUndo() -> Bool {
-        
+
         return controller?.undoManager?.canUndo ?? false
     }
-    
+
     func modelCanRedo() -> Bool {
         return controller?.undoManager?.canRedo ?? false
     }
-    
-    func undo(){
+
+    func undo() {
         controller?.undoManager?.undo()
     }
-    
-    func redo(){
+
+    func redo() {
         controller?.undoManager?.redo()
     }
 
@@ -118,7 +119,9 @@ class EditorData {
     func waitForController() async {
         while controller == nil {
             try? await Task.sleep(nanoseconds: 20_000_000)
-            Log.shared.info("[WARNING: EditorData waitForController]  waitForController After sleep")
+            Log.shared.info(
+                "[WARNING: EditorData waitForController]  waitForController After sleep"
+            )
         }
     }
 
@@ -135,7 +138,9 @@ class EditorData {
             guard let normalizedImage = resizedImage.fixedOrientation(),
                 let cgImage = normalizedImage.cgImage
             else {
-                await Log.shared.error("F[WARNING: EditorData - insertBackground]  Failed to process image")
+                await Log.shared.error(
+                    "F[WARNING: EditorData - insertBackground]  Failed to process image"
+                )
                 return
             }
 
@@ -216,25 +221,78 @@ class EditorData {
     }
 
     // markup to Data/Image
+//    func exportAsImage(_ rect: CGRect, scale: CGFloat = 2) async -> UIImage? {
+//
+//        // 1. Dismiss any active tools so pending strokes are committed
+//        await MainActor.run {
+//            controller?.view.resignFirstResponder()
+//            toolPicker.setVisible(
+//                false,
+//                forFirstResponder: controller?.view ?? UIView()
+//            )
+//        }
+//
+//        // 2. Give PaperKit a tick to flush pending markup changes
+//        try? await Task.sleep(for: .milliseconds(150))
+//
+//        guard let context = makeCGContext(size: rect.size, scale: scale),
+//            let markup = controller?.markup
+//        else {
+//            Log.shared.error(
+//                "[ERROR: EditorData - exportAsImage]: guard let context = makeCGContext(size: rec "
+//            )
+//            return nil
+//        }
+//
+//        await markup.draw(in: context, frame: rect)
+//        guard let cgImage = context.makeImage() else {
+//            Log.shared.error(
+//                "[ERROR: EditorData - exportAsImage] - guard let cgImage = context.makeImage() else {"
+//            )
+//            return nil
+//        }
+//
+//        return UIImage(cgImage: cgImage)
+//    }
+    
+    @MainActor
     func exportAsImage(_ rect: CGRect, scale: CGFloat = 2) async -> UIImage? {
-        guard let context = makeCGContext(size: rect.size, scale: scale),
-            let markup = controller?.markup
-        else {
-            Log.shared.error(
-                "[WARNING: EditorData - exportAsImage]: guard let context = makeCGContext(size: rec "
-            )
-            return nil
-        }
+        guard let controller = controller else { return nil }
 
-        await markup.draw(in: context, frame: rect)
-        guard let cgImage = context.makeImage() else {
-            Log.shared.error(
-                "[WARNING: EditorData - exportAsImage] - guard let cgImage = context.makeImage() else {"
-            )
-            return nil
-        }
+        // Commit any active editing
+        controller.view.endEditing(true)
+        controller.view.resignFirstResponder()
+        toolPicker.setVisible(false, forFirstResponder: controller.view)
 
-        return UIImage(cgImage: cgImage)
+        
+        // Deselect any selected annotation to hide the selection UI - I found the solution is by setting isEditable false temporarily
+        controller.isEditable = false
+        
+        // Let PaperKit finish its render cycle
+        try? await Task.sleep(for: .milliseconds(200))
+
+        // Snapshot the live view — this captures EXACTLY what the user sees
+        let renderer = UIGraphicsImageRenderer(
+            size: rect.size,
+            format: {
+                let fmt = UIGraphicsImageRendererFormat()
+                fmt.scale = scale
+                fmt.opaque = true
+                return fmt
+            }()
+        )
+
+        let image = renderer.image { ctx in
+            // Fill white background first
+            UIColor.white.setFill()
+            ctx.fill(rect)
+            
+            // Render the controller's view hierarchy
+            controller.view.drawHierarchy(in: rect, afterScreenUpdates: true)
+        }
+        
+        controller.isEditable = true
+        return image
     }
 
     func exportAsData() async -> Data? {
@@ -326,7 +384,6 @@ extension UIImage {
         }
     }
 }
-
 
 extension NSAttributedString {
     func centerRect(in rect: CGRect) -> CGRect {

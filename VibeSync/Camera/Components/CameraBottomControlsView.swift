@@ -99,8 +99,8 @@ struct CameraBottomControlsView: View {
             HStack {
                 textButton
                 Spacer()
-                redoButton
                 undoButton
+                redoButton
                 Spacer()
                 showDrawToolsButton
             }
@@ -318,10 +318,9 @@ extension CameraBottomControlsView {
     private var saveAsImageButton: some View {
         Button {
             Task {
-                let rect = CGRect(
-                    origin: .zero,
-                    size: .init(width: 350, height: 670)
-                )
+                guard let size = editorData.viewSize else { return }
+                let rect = CGRect(origin: .zero, size: size) // use actual size
+
                 if let image = await editorData.exportAsImage(
                     rect,
                     scale: 2
