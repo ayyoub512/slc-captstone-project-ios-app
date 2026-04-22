@@ -10,9 +10,8 @@ import SwiftUI
 struct ChatView: View {
     let friend: FriendModel
     @State private var viewModel = ChatViewModel()
-    @State private var showLargeImageViewSheet = false
 
-    @Environment(NavigationManager.self) var navManager
+    @Environment(NavigationManager.self) private var navManager
 
     let myID: String = KeyChainManager.shared.get(
         key: K.shared.keychainUserIDKey
@@ -29,30 +28,45 @@ struct ChatView: View {
                             Button {
                                 viewModel.appendNextPageMessages()
                             } label: {
-                                Text("Load More")
-                                    .font(.headline)
-                                    .foregroundColor(.white)
-                                    .padding(.vertical, 20)
-                                    .padding(.horizontal, 10)
-                                    .background(.brandPrimary)
+                                Text("Load more")
+                                    .font(.subheadline.weight(.medium))
+                                    .foregroundStyle(.primary)
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 14)
+                                    .background(
+                                        Color(.secondarySystemBackground)
+                                    )
                                     .clipShape(Capsule())
+                                    .overlay(
+                                        Capsule()
+                                            .stroke(
+                                                Color(.separator),
+                                                lineWidth: 0.5
+                                            )
+                                    )
                             }
+                            .padding()
                         }
 
                         ForEach(viewModel.messages) { msg in
-                            Group {
-                                ChatBubbleView(
-                                    message: msg,
-                                    isFromMe: msg.senderID == myID
-                                )
-                                .id(msg.id)
+                            ChatBubbleView(
+                                message: msg,
+                                isFromMe: msg.senderID == myID
+                            )
+                            .id(msg.id)
 
-                            }
                         }
                     }.onAppear {
-                        guard viewModel.pageSize != viewModel.messages.count,
+                        // viewModel.pageSize != viewModel.messages.count,
+                        guard
+
                             let last = viewModel.messages.last
-                        else { return }
+                        else {
+                            Log.shared.debug(
+                                "[INFO: ChatView - body] No need to scroll to bottom"
+                            )
+                            return
+                        }
                         scrollToBottom(proxy: proxy, id: last.id)
 
                     }
@@ -64,7 +78,7 @@ struct ChatView: View {
                 Spacer()
 
                 if viewModel.isLoading {
-                    ProgressView("Getting messages...")
+                    ProgressView("")
                 }
 
                 if let error = viewModel.errorMessage {
@@ -94,15 +108,11 @@ struct ChatView: View {
             }
 
         }
-        .sheet(isPresented: $showLargeImageViewSheet) {
-            LargeImageView()
-                .presentationDetents([.large])
-        }
         .toolbar {
             ToolbarItem(placement: .principal) {
                 Text(friend.name).font(.title.bold())
             }
-            
+
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     openFriendProfile()
@@ -110,7 +120,7 @@ struct ChatView: View {
                     Image(systemName: "gearshape")
                 }
             }
-            
+
         }
         .task {
             await loadContent()
@@ -121,13 +131,13 @@ struct ChatView: View {
                 FriendProfileView(for: id)
             }
         }
-        
+
     }
 
     private func openFriendProfile() {
         navManager.inboxPath.append(InboxRoute.friendProfile(friend.id))
     }
-    
+
     private func loadContent() async {
         await viewModel.fetchMessages(friendID: friend.id)
     }

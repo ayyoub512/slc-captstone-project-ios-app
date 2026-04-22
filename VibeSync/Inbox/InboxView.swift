@@ -61,12 +61,9 @@ struct InboxView: View {
             }
 
             ToolbarItem(placement: .principal) {
-                if model.working {
-                    ProgressView()
-                } else {
-                    Text("Inbox")
-                        .font(.largeTitle.bold())
-                }
+                Text("Inbox")
+                    .font(.title.bold())
+                
             }
 
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -191,12 +188,4 @@ struct FriendRow: View {
             .frame(width: 44, height: 44)
             .background(Circle().fill(Color.orange))
     }
-}
-
-#Preview {
-    //    NavigationStack {
-    //        InboxView()
-    //            .environment(NavigationManager())  // If you use NavManager too
-    //            .modelContainer(for: [FriendModel.self])
-    //    }
 }

@@ -118,12 +118,7 @@ struct FriendProfileView: View {
                             }
                         }
                     )
-                    //                    ActionRow(
-                    //                        icon: "nosign",
-                    //                        label: "Block User",
-                    //                        color: .red,
-                    //                        action: {}
-                    //                    )
+
                     ActionRow(
                         icon: "person.badge.minus",
                         label: "Remove Friend",
@@ -145,15 +140,11 @@ struct FriendProfileView: View {
             Button("Permanently Delete", role: .destructive) {
                 Task {
                     await model.removeFriend()
-
+                    
                     await MainActor.run {
                         // Clear the path first so the stack pops cleanly
-                        NavigationManager.shared.inboxPath = NavigationPath()
-                        NavigationManager.shared.profilePath = NavigationPath()
-                        
+                        NavigationManager.shared.reset()
                         AppState.shared.needsFriendRefresh = true
-                        
-                        // Then switch tab
                         NavigationManager.shared.goToTab(id: 2)
                     }
                 }
@@ -207,74 +198,7 @@ struct FriendProfileView: View {
     }
 }
 
-// MARK: - Subviews
 
-private struct StatCard: View {
-    let icon: String
-    let iconColor: Color
-    let label: String
-    let value: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Image(systemName: icon)
-                .font(.system(size: 22))
-                .foregroundStyle(iconColor)
-
-            Text(label)
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-
-            Text(value)
-                .font(
-                    .system(
-                        size: label == "FRIEND SINCE" ? 18 : 26,
-                        weight: .bold
-                    )
-                )
-        }
-        .frame(
-            maxWidth: .infinity,
-            maxHeight: .infinity,
-            alignment: .topLeading
-        )
-        .padding(16)
-        .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 14))
-    }
-}
-
-private struct ActionRow: View {
-    let icon: String
-    let label: String
-    let color: Color
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack {
-                Image(systemName: icon)
-                    .frame(width: 24)
-                Text(label)
-                    .font(.system(size: 15, weight: .medium))
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(
-                        color == .primary
-                            ? Color(.tertiaryLabel) : color.opacity(0.6)
-                    )
-            }
-            .foregroundStyle(color == .primary ? Color.primary : color)
-            .padding(.horizontal, 18)
-            .padding(.vertical, 16)
-            .background(Color(.systemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 14))
-        }
-        .buttonStyle(.plain)
-    }
-}
 
 #Preview {
     FriendProfileView(for: "69e40d70de036a0af6561124")

@@ -18,12 +18,14 @@ struct VibeSyncApp: App {
     @State private var authManager = AuthService.shared
     @StateObject private var notificationManager = APNSNotificationsManager()
     @State private var appState = AppState.shared
+    @State private var networkMonitor = NetworkMonitor.shared
 
     var body: some Scene {
         WindowGroup {
             RootView()
                 .environment(authManager)
                 .environment(appState)
+                .environment(networkMonitor)
                 .environmentObject(notificationManager)
         }
         .modelContainer(for: [FriendModel.self])

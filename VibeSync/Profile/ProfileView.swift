@@ -104,6 +104,9 @@ struct ProfileView: View {
             .padding(.horizontal, 12)
             .animation(.easeInOut(duration: 0.2), value: viewModel.syncState)
         }
+        .refreshable{
+            await viewModel.fetchProfileFromServer()
+        }
         .scrollDismissesKeyboard(.interactively)
         .background(Color(.systemGroupedBackground).ignoresSafeArea())
         .onChange(of: selectedItem) { _, newItem in
@@ -126,12 +129,14 @@ struct ProfileView: View {
             }
             ToolbarItem(placement: .principal) {
                 Text("Profile")
-                    .font(.largeTitle.bold())
+                    .font(.title.bold())
             }
         }
         .onAppear {
+            
             viewModel.loadCachedProfile()
-            if viewModel.name == nil {
+            
+            if viewModel.name == nil || viewModel.profileImage == nil {
                 Task { await viewModel.fetchProfileFromServer() }
             }
         }
@@ -205,26 +210,18 @@ struct ProfileView: View {
     // MARK: - Buttons
 
     var deleteAccountBtn: some View {
+        
+        
         VStack(alignment: .leading, spacing: 10) {
-            Button(role: .destructive) {
-                viewModel.showDeleteConfirmation = true
-            } label: {
-                HStack(spacing: 12) {
-                    if viewModel.isDeleting {
-                        ProgressView().tint(.red)
-                    } else {
-                        Image(systemName: "person.crop.circle.badge.minus")
-                    }
-                    Text("Delete Account")
-                    Spacer()
+            ActionRow(
+                icon: "person.crop.circle.badge.minus",
+                label: "Delete account",
+                color: .red,
+                action: {
+                    viewModel.showDeleteConfirmation = true
                 }
-                .foregroundStyle(.red)
-                .padding()
-                .background(.thinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-            }
-            .disabled(viewModel.isDeleting)
-
+            )
+            
             if let error = viewModel.errorMessage {
                 Text(error)
                     .font(.caption)
@@ -240,19 +237,14 @@ struct ProfileView: View {
     }
 
     var signoutBtn: some View {
-        Button {
-            auth.logout(modelContext: modelContext)
-        } label: {
-            HStack(spacing: 12) {
-                Image(systemName: "arrow.backward.square")
-                Text("Sign out")
-                Spacer()
+        ActionRow(
+            icon: "rectangle.portrait.and.arrow.right",
+            label: "Sign out",
+            color: .red,
+            action: {
+                auth.logout(modelContext: modelContext)
             }
-            .foregroundStyle(.red)
-            .padding()
-            .background(.thinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-        }
+        )
     }
 }
 

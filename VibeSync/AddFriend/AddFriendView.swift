@@ -21,7 +21,7 @@ struct AddFriendView: View {
             // MARK: - Add Friend Card
             VStack(alignment: .leading, spacing: 14) {
 
-                Text("Enter Friend’s Invite Code")
+                Text("Enter friend’s invite code")
                     .font(.headline)
 
                 TextField("Enter invite code", text: $code)
@@ -41,7 +41,7 @@ struct AddFriendView: View {
                         if model.working {
                             ProgressView()
                         } else {
-                            Text("Add Friend")
+                            Text("Add friend")
                         }
 
                         Spacer()
@@ -80,27 +80,27 @@ struct AddFriendView: View {
             }
 
             // MARK: - Share Invite Code Card
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 14) {
 
-                Text("Share Your Invite Code")
+                Text("Share your invite code")
                     .font(.headline)
+
 
                 HStack {
                     Text("Your invite code")
-                        .foregroundStyle(.secondary)
-
+                        .foregroundStyle(.foreground)
                     Spacer()
 
                     let invite = KeyChainManager.shared.get(
                         key: K.shared.keychainInviteCodeKey
                     )
-
                     CopyableText(text: invite)
                 }
 
                 Text("Send this code to a friend to add you")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
+
             }
 
         }
@@ -114,19 +114,15 @@ struct AddFriendView: View {
     private func submitCode() {
         Task {
             await model.addFriend(with: code)
-            if  model.success ?? false {
+            if model.success ?? false {
                 await MainActor.run {
-                    // Clear the path first so the stack pops cleanly
-                    NavigationManager.shared.inboxPath = NavigationPath()
-                    NavigationManager.shared.profilePath = NavigationPath()
-                    
+                    // Clear the path so the stack pops cleanly
+                    NavigationManager.shared.reset()
                     AppState.shared.needsFriendRefresh = true
-                    
-                    // Then switch tab
                     NavigationManager.shared.goToTab(id: 2)
                 }
             }
-            
+
         }
     }
 }
@@ -147,7 +143,7 @@ struct CopyableText: View {
 
             Image(systemName: didCopy ? "checkmark.circle.fill" : "doc.on.doc")
                 .font(.body)
-                .foregroundStyle(didCopy ? .green : .secondary)
+                .foregroundStyle(didCopy ? .accent : .secondary)
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)

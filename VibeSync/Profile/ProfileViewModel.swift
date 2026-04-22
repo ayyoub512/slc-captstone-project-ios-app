@@ -37,13 +37,16 @@ class ProfileViewModel {
             let data = try? Data(contentsOf: url),
             let image = UIImage(data: data)
         {
+            Log.shared.info("[INFO: ProfileViewModel - loadCachedProfile] Setting the loaded cached profile image")
             self.profileImage = image
         }
     }
 
     func fetchProfileFromServer() async {
         guard let url = URL(string: K.shared.getProfileURL) else { return }
-
+        Log.shared.info(
+            "[INFO: ProfileViewModel - fetchProfileFromServer] : Fetching profile image from server"
+        )
         do {
             var request = URLRequest(url: url)
             request.httpMethod = "GET"

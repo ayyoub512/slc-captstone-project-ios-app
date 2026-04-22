@@ -48,6 +48,7 @@ class AuthService {
 
         self.clearCachedData(modelContext: modelContext)
         self.updateAuthStatus(isAuthenticated: false)
+        NavigationManager.shared.reset() // Reset the navigation so on login it doesnt go back to profile view
     }
 
     func clearCachedData(modelContext: ModelContext) {

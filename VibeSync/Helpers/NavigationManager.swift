@@ -33,6 +33,11 @@ class NavigationManager {
             selectedTab = id
         }
     }
+    
+    func reset() {
+        profilePath = NavigationPath()
+        inboxPath = NavigationPath()
+    }
 
     // Function to handle deep links (from Push Notifications)
     //    func openMessage(id: String) {
