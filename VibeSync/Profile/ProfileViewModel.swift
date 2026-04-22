@@ -18,7 +18,7 @@ class ProfileViewModel {
 
     var name: String?
     var profileImage: UIImage?
-    private let fileName = "profile.jpg"
+    private let fileName = K.shared.profileCachedImageFileName
 
     private let kc = KeyChainManager.shared
 
@@ -167,30 +167,33 @@ class ProfileViewModel {
         }
     }
 
+    
     func syncIfNeeded() async {
         let currentName = name
         let currentImageHash = imageHash(profileImage)
+        let currentImage = profileImage
 
         let hasNameChanged = currentName != lastSyncedName
         let hasImageChanged = currentImageHash != lastSyncedImageHash
 
         if !hasNameChanged && !hasImageChanged { return }
 
-        await MainActor.run { self.syncState = .loading }
+        syncState = .loading
 
         guard let url = URL(string: K.shared.updateProfileURL) else { return }
 
-        await Task.detached(priority: .userInitiated) { [weak self] in
-            guard let self else { return }
+        // Capture everything needed off-actor BEFORE detaching
+        let token = kc.get(key: K.shared.keyChainUserTokenKey)
+        let fileName = K.shared.profileCachedImageFileName
+
+        let result = await Task.detached(priority: .userInitiated) {
+            func toData(_ string: String) -> Data {
+                string.data(using: .utf8) ?? Data()
+            }
 
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
-
-            let token = self.kc.get(key: K.shared.keyChainUserTokenKey)
-            request.addValue(
-                "Bearer \(token)",
-                forHTTPHeaderField: "Authorization"
-            )
+            request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
             let boundary = UUID().uuidString
             request.setValue(
@@ -200,69 +203,48 @@ class ProfileViewModel {
 
             var body = Data()
 
-            if let name = self.name, hasNameChanged {
-                body.append("--\(boundary)\r\n")
-                body.append(
-                    "Content-Disposition: form-data; name=\"name\"\r\n\r\n"
-                )
-                body.append("\(name)\r\n")
+            if let name = currentName, hasNameChanged {
+                body.append(contentsOf: toData("--\(boundary)\r\n"))
+                body.append(contentsOf: toData("Content-Disposition: form-data; name=\"name\"\r\n\r\n"))
+                body.append(contentsOf: toData("\(name)\r\n"))
             }
 
-            if let image = self.profileImage,
-                hasImageChanged,
-                let data = image.resizedToFit(maxDimension: 1024).jpegData(
-                    compressionQuality: 0.8
-                )
+            if let image = currentImage,
+               hasImageChanged,
+               let data = image.resizedToFit(maxDimension: 1024).jpegData(compressionQuality: 0.8)
             {
-                body.append("--\(boundary)\r\n")
-                body.append(
-                    "Content-Disposition: form-data; name=\"image\"; filename=\"profile.jpg\"\r\n"
-                )
-                body.append("Content-Type: image/jpeg\r\n\r\n")
+                body.append(contentsOf: toData("--\(boundary)\r\n"))
+                body.append(contentsOf: toData("Content-Disposition: form-data; name=\"image\"; filename=\"\(fileName)\"\r\n"))
+                body.append(contentsOf: toData("Content-Type: image/jpeg\r\n\r\n"))
                 body.append(data)
-                body.append("\r\n")
+                body.append(contentsOf: toData("\r\n"))
             }
 
-            body.append("--\(boundary)--\r\n")
+            body.append(contentsOf: toData("--\(boundary)--\r\n"))
             request.httpBody = body
 
-            do {
-                let (_, response) = try await URLSession.shared.data(
-                    for: request
-                )
+            return try await URLSession.shared.data(for: request)
+        }.result
 
-                guard let http = response as? HTTPURLResponse,
-                    (200...299).contains(http.statusCode)
-                else {
-                    if let http = response as? HTTPURLResponse {
-                        Log.shared.error(
-                            "[ERROR: ProfileViewModel - syncIfNeeded] Status code \(http.statusCode)"
-                        )
-                    }
-                    await MainActor.run {
-                        self.syncState = .error("Failed to save changes")
-                    }
-                    self.resetSyncStateAfterDelay()
-                    return
-                }
-
-                await MainActor.run {
-                    self.lastSyncedName = currentName
-                    self.lastSyncedImageHash = currentImageHash
-                    self.syncState = .success
-                }
-                self.resetSyncStateAfterDelay()
-
-            } catch {
-                Log.shared.error(
-                    "[ERROR: ProfileViewModel - syncIfNeeded] : \(error)"
-                )
-                await MainActor.run {
-                    self.syncState = .error(error.localizedDescription)
-                }
-                self.resetSyncStateAfterDelay()
+        // Back on main actor — safe to update state
+        switch result {
+        case .success(let (_, response)):
+            guard let http = response as? HTTPURLResponse,
+                  (200...299).contains(http.statusCode) else {
+                syncState = .error("Failed to save changes")
+                resetSyncStateAfterDelay()
+                return
             }
-        }.value
+            lastSyncedName = currentName
+            lastSyncedImageHash = currentImageHash
+            syncState = .success
+            resetSyncStateAfterDelay()
+
+        case .failure(let error):
+            Log.shared.error("[ERROR: ProfileViewModel - syncIfNeeded] : \(error)")
+            syncState = .error(error.localizedDescription)
+            resetSyncStateAfterDelay()
+        }
     }
 
     private func resetSyncStateAfterDelay() {

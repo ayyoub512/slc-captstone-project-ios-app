@@ -114,15 +114,17 @@ struct AddFriendView: View {
     private func submitCode() {
         Task {
             await model.addFriend(with: code)
-            await MainActor.run {
-                // Clear the path first so the stack pops cleanly
-                NavigationManager.shared.inboxPath = NavigationPath()
-                NavigationManager.shared.profilePath = NavigationPath()
-                
-                AppState.shared.needsFriendRefresh = true
-                
-                // Then switch tab
-                NavigationManager.shared.goToTab(id: 2)
+            if  model.success ?? false {
+                await MainActor.run {
+                    // Clear the path first so the stack pops cleanly
+                    NavigationManager.shared.inboxPath = NavigationPath()
+                    NavigationManager.shared.profilePath = NavigationPath()
+                    
+                    AppState.shared.needsFriendRefresh = true
+                    
+                    // Then switch tab
+                    NavigationManager.shared.goToTab(id: 2)
+                }
             }
             
         }

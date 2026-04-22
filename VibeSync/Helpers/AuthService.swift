@@ -44,6 +44,8 @@ class AuthService {
         // This is wrong, the logout shouldn't be concerned with the modelContext
         // TODO: Change this code debt later on.
         Log.shared.debug("Logging out.")
+        // TODO: Think if i should reset the onboarding flag to prevent unkown name
+
         self.clearCachedData(modelContext: modelContext)
         self.updateAuthStatus(isAuthenticated: false)
     }
@@ -51,14 +53,33 @@ class AuthService {
     func clearCachedData(modelContext: ModelContext) {
         Log.shared.debug("Removing all cached data.")
         // Clearing key chain
-        kcManager.clearKeyChain()
         // Clear all cached data: friends list & image
         do {
             try modelContext.delete(model: FriendModel.self)
+
+            // Clear last fetch timestamp so next login fetches fresh
+            UserDefaults.standard.removeObject(forKey: "lastFetchedFriends")
+            kcManager.clearKeyChain()
+
+            // Clear profile image from disk
+            clearAllUserFiles()
+
             Log.shared.info("Deteted cached friends")
         } catch {
             Log.shared.error("Failed to clear FriendModel: \(error)")
         }
+    }
+
+    private func clearAllUserFiles() {
+        let appSupport = FileManager.default
+            .urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+
+        let filesToDelete = [
+            appSupport.appendingPathComponent(K.shared.profileCachedImageFileName)
+            // add more files here as your app grows
+        ]
+
+        filesToDelete.forEach { try? FileManager.default.removeItem(at: $0) }
     }
 
     // Sign in with apple
@@ -74,10 +95,12 @@ class AuthService {
         let provider = ASAuthorizationAppleIDProvider()
         provider.getCredentialState(forUserID: userId) { state, error in
             if let error = error {
-                Log.shared.error("[ERROR: AuthService - checkCredentialStatus] Credential state error: \(error)")
+                Log.shared.error(
+                    "[ERROR: AuthService - checkCredentialStatus] Credential state error: \(error)"
+                )
                 return
             }
-            
+
             DispatchQueue.main.async {
                 switch state {
                 case .authorized:
@@ -85,11 +108,15 @@ class AuthService {
 
                 case .revoked:
                     #if targetEnvironment(simulator)
-                    Log.shared.error("[ERROR: AuthService - checkCredentialStatus] User revoked access")
+                        Log.shared.error(
+                            "[ERROR: AuthService - checkCredentialStatus] User revoked access"
+                        )
                     #else
-                    Log.shared.error("[ERROR: AuthService - checkCredentialStatus] User revoked access")
-                    userId = ""
-                    self.logout(modelContext: modelContext)  // I am not sure if its right to do this.
+                        Log.shared.error(
+                            "[ERROR: AuthService - checkCredentialStatus] User revoked access"
+                        )
+                        userId = ""
+                        self.logout(modelContext: modelContext)  // I am not sure if its right to do this.
                     #endif
 
                 case .notFound:
@@ -99,7 +126,9 @@ class AuthService {
                     self.logout(modelContext: modelContext)
 
                 case .transferred:
-                    Log.shared.error("[ERROR: AuthService - checkCredentialStatus]  Credential transferred")
+                    Log.shared.error(
+                        "[ERROR: AuthService - checkCredentialStatus]  Credential transferred"
+                    )
                     self.logout(modelContext: modelContext)
 
                 @unknown default:
@@ -145,7 +174,9 @@ extension AuthService {
                 (200...299).contains(http.statusCode)
             else {
                 signInError = "Server error. Please try again"
-                Log.shared.error("[ERROR: AuthService - signInWithApple] Server statuc code error. Please try again")
+                Log.shared.error(
+                    "[ERROR: AuthService - signInWithApple] Server statuc code error. Please try again"
+                )
 
                 return
             }
@@ -157,12 +188,16 @@ extension AuthService {
 
             guard let authToken = decoded.token else {
                 signInError = "Auth token error. Please try again"
-                Log.shared.error("[ERROR: AuthService - signInWithApple] Auth token error. Please try again")
+                Log.shared.error(
+                    "[ERROR: AuthService - signInWithApple] Auth token error. Please try again"
+                )
 
                 return
             }
 
-            Log.shared.info("[INFO: AuthService - signInWithApple] User logged in, saving token to keychain")
+            Log.shared.info(
+                "[INFO: AuthService - signInWithApple] User logged in, saving token to keychain"
+            )
             KeyChainManager.shared.save(
                 key: K.shared.keyChainUserTokenKey,
                 value: authToken
@@ -170,7 +205,9 @@ extension AuthService {
 
             guard let inviteCode = decoded.inviteCode else {
                 signInError = "Invite code generation failed. Please try again"
-                Log.shared.error("[ERROR: AuthService - signInWithApple] Invite code generation failed. Please try again")
+                Log.shared.error(
+                    "[ERROR: AuthService - signInWithApple] Invite code generation failed. Please try again"
+                )
                 return
             }
             self.kcManager.save(
@@ -180,7 +217,9 @@ extension AuthService {
 
             guard let userID = decoded.userID else {
                 signInError = "User ID fetch error. Please try again"
-                Log.shared.error("[ERROR: AuthService - signInWithApple] User ID fetch error. Please try again")
+                Log.shared.error(
+                    "[ERROR: AuthService - signInWithApple] User ID fetch error. Please try again"
+                )
 
                 return
             }

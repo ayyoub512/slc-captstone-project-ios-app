@@ -152,7 +152,10 @@ struct ProfileView: View {
             Button("Delete My Account", role: .destructive) {
                 Task {
                     let success = await viewModel.deleteAccount()
-                    if success { auth.logout(modelContext: modelContext) }
+                    if success {
+                        auth.logout(modelContext: modelContext)
+                        UserDefaults.standard.set(false, forKey: K.shared.hasOnboarded)
+                    }
                 }
             }
             Button("Cancel", role: .cancel) {}

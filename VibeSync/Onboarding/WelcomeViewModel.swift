@@ -27,7 +27,7 @@ class WelcomeViewModel {
 
         let imageURL = FileManager.default
             .urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("onboarding_profile.jpg")
+            .appendingPathComponent(K.shared.profileCachedImageFileName)
 
         let image: UIImage?
         if FileManager.default.fileExists(atPath: imageURL.path),
@@ -107,7 +107,7 @@ class WelcomeViewModel {
 
                     body.append("--\(boundary)\r\n")
                     body.append(
-                        "Content-Disposition: form-data; name=\"image\"; filename=\"profile.jpg\"\r\n"
+                        "Content-Disposition: form-data; name=\"image\"; filename=\"\(K.shared.profileCachedImageFileName)\"\r\n"
                     )
                     body.append("Content-Type: image/jpeg\r\n\r\n")
                     body.append(data)

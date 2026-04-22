@@ -131,7 +131,7 @@ struct OnboardingImageStore {
 
         let url = FileManager.default
             .urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("onboarding_profile.jpg")
+            .appendingPathComponent(K.shared.profileCachedImageFileName)
 
         try data.write(to: url, options: .atomic)
         return url

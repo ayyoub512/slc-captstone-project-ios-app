@@ -28,7 +28,7 @@ class FriendModel: Codable {
     @Attribute(.unique)
     var _id: String
     var id: String { _id }  // Map MongoDB _id to SwiftUI id
-    var name: String
+    var name: String = "Unkown"
     var resizedProfileImage: String?
     var unreadCount: Int
     var lastMessageAt: Date?
@@ -55,7 +55,7 @@ class FriendModel: Codable {
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         _id = try container.decode(String.self, forKey: ._id)
-        name = try container.decode(String.self, forKey: .name)
+        name = try container.decodeIfPresent(String.self, forKey: .name) ?? "Unkown"
         resizedProfileImage = try container.decodeIfPresent(
             String.self,
             forKey: .resizedProfileImage
