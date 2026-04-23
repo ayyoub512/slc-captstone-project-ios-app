@@ -23,103 +23,143 @@ struct SendVibeSheetView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var showSuccessBanner = false
+    @State private var isSent = false
 
     var body: some View {
         ZStack {
+            Color(.systemBackground)
+                .ignoresSafeArea()
+
             VStack {
                 if friends.isEmpty {
                     NoFriendsYetView()
                 } else {
-                    VStack {
-                        ScrollView {
-                            LazyVGrid(columns: [
-                                GridItem(.adaptive(minimum: 100))
-                            ]) {
-                                if let error = model.errorMessage {
-                                    Text(error).foregroundColor(.red)
-                                } else {
-                                    ForEach(friends, id: \._id) { friend in
-                                        ContactBubble(
-                                            friend: friend,
-                                            isSelected:
-                                                selectedFriendIDs.contains(
-                                                    friend.id
+                    // MARK: - Success overlay
+                    if showSuccessBanner {
+                        SuccessBannerView(
+                            sentFriends: sentFriends,
+                            count: sentFriends.count
+                        )
+                        .transition(.opacity)
+                    } else if !isSent {
+                        VStack {
+                            ScrollView {
+                                LazyVGrid(columns: [
+                                    GridItem(.adaptive(minimum: 100))
+                                ]) {
+                                    if let error = model.errorMessage {
+                                        Text(error).foregroundColor(.red)
+                                    } else {
+                                        ForEach(friends, id: \._id) { friend in
+                                            ContactBubble(
+                                                friend: friend,
+                                                isSelected:
+                                                    selectedFriendIDs.contains(
+                                                        friend.id
+                                                    )
+                                            ) { toggle(friend.id) }
+                                        }
+                                    }
+                                }
+                                .padding(.top, 2)
+                            }
+                            
+                            Button {
+                                Task {
+                                    guard let size = editorData.viewSize else {
+                                        return
+                                    }
+                                    guard
+                                        let image = await editorData.exportAsImage(
+                                            CGRect(origin: .zero, size: size),
+                                            scale: 2
+                                        )
+                                    else { return }
+                                    
+                                    // Capture before clearing
+                                    sentFriends = friends.filter {
+                                        selectedFriendIDs.contains($0.id)
+                                    }
+                                    
+                                    await model.sendVibe(
+                                        to: Array(selectedFriendIDs),
+                                        image: image
+                                    )
+                                    
+                                    if model.success != nil {
+                                        withAnimation(.easeInOut(duration: 0.2)) {
+                                            isSent = true
+                                            showSuccessBanner = true
+                                        }
+                                        try? await Task.sleep(for: .seconds(2.2))
+                                        withAnimation(.easeInOut(duration: 0.2)) {
+                                            showSuccessBanner = false
+                                        }
+                                        try? await Task.sleep(
+                                            for: .milliseconds(200)
+                                        )
+                                        selectedFriendIDs.removeAll()
+                                        dismiss()
+                                    }
+                                }
+                            } label: {
+                                HStack {
+                                    Text(model.working ? "sending..." : "send vibe")
+                                        .font(.system(size: 17, weight: .medium))
+                                        .foregroundStyle(
+                                            selectedFriendIDs.isEmpty
+                                                ? Color(.tertiaryLabel)
+                                                : Color(hex: "#EEEDFE")
+                                        )
+
+                                    Spacer()
+
+                                    ZStack {
+                                        Circle()
+                                            .fill(
+                                                selectedFriendIDs.isEmpty
+                                                    ? Color(.quaternarySystemFill)
+                                                    : Color.white.opacity(0.15)
+                                            )
+                                            .frame(width: 32, height: 32)
+
+                                        if model.working {
+                                            ProgressView()
+                                                .progressViewStyle(.circular)
+                                                .tint(Color(hex: "#EEEDFE"))
+                                                .scaleEffect(0.7)
+                                        } else {
+                                            Image(systemName: "arrow.right")
+                                                .font(.system(size: 13, weight: .semibold))
+                                                .foregroundStyle(
+                                                    selectedFriendIDs.isEmpty
+                                                        ? Color(.tertiaryLabel)
+                                                        : Color(hex: "#EEEDFE")
                                                 )
-                                        ) { toggle(friend.id) }
+                                        }
                                     }
                                 }
-                            }
-                            .padding(.top, 2)
-                        }
-
-                        Button {
-                            Task {
-                                guard let size = editorData.viewSize else {
-                                    return
-                                }
-                                guard
-                                    let image = await editorData.exportAsImage(
-                                        CGRect(origin: .zero, size: size),
-                                        scale: 2
-                                    )
-                                else { return }
-
-                                // Capture before clearing
-                                sentFriends = friends.filter {
-                                    selectedFriendIDs.contains($0.id)
-                                }
-
-                                await model.sendVibe(
-                                    to: Array(selectedFriendIDs),
-                                    image: image
+                                .padding(.horizontal, 20)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 56)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .fill(
+                                            selectedFriendIDs.isEmpty
+                                                ? Color(.secondarySystemBackground)
+                                                : Color(hex: "#534AB7")
+                                        )
                                 )
-
-                                if model.success != nil {
-                                    withAnimation(.easeInOut(duration: 0.2)) {
-                                        showSuccessBanner = true
-                                    }
-                                    try? await Task.sleep(for: .seconds(2.2))
-                                    withAnimation(.easeInOut(duration: 0.2)) {
-                                        showSuccessBanner = false
-                                    }
-                                    try? await Task.sleep(
-                                        for: .milliseconds(200)
-                                    )
-                                    selectedFriendIDs.removeAll()
-                                    dismiss()  // ← sheet closes here after the banner fades out
-                                }
                             }
-                        } label: {
-                            HStack(spacing: 8) {
-                                Text("send vibe")
-                                if model.working {
-                                    ProgressView()
-                                } else {
-                                    Image(systemName: "chevron.right")
-                                }
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .fontWeight(.medium)
-                            .font(.system(size: 18))
+                            .buttonStyle(ScaleButtonStyle())
+                            .disabled(model.working || selectedFriendIDs.isEmpty)
                         }
-                        .buttonStyle(.glassProminent)
-                        .disabled(model.working || selectedFriendIDs.isEmpty)
+                        .padding()
                     }
-                    .padding()
                 }
             }
 
-            // MARK: - Success overlay
-            if showSuccessBanner {
-                SuccessBannerView(
-                    sentFriends: sentFriends,
-                    count: sentFriends.count
-                )
-                .transition(.opacity)
-            }
         }
-        .background(Color(.systemBackground))
         .task {
             if appState.needsFriendRefresh {
                 appState.needsFriendRefresh = false
