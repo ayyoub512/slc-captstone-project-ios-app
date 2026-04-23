@@ -51,6 +51,8 @@ class EditorData {
     var isControllerReady = false
 
     private let observer = MarkupObserver()
+    private let zoomRange: ClosedRange<CGFloat> = 0.8...1.6
+    
 
     func initializeController(_ rect: CGRect) {
         Log.shared.debug("initializeController rect: \(rect)")
@@ -67,7 +69,7 @@ class EditorData {
             supportedFeatureSet: .latest
         )
         newController.markup = PaperMarkup(bounds: rect)
-        newController.zoomRange = 0.8...1.5
+        newController.zoomRange = zoomRange
 
         newController.delegate = self.observer
         self.observer.onCanvasChanged = { [weak self] in
@@ -82,7 +84,7 @@ class EditorData {
             supportedFeatureSet: .latest
         )
         newController.markup = PaperMarkup(bounds: rect)
-        newController.zoomRange = 0.8...1.5
+        newController.zoomRange = zoomRange
 
         newController.delegate = observer
         observer.onCanvasChanged = { [weak self] in
@@ -124,6 +126,33 @@ class EditorData {
             )
         }
     }
+    
+    private func resetZoomAndPosition(animated: Bool = true) {
+        guard let controller = controller else { return }
+
+        // 1. Find the internal scroll view
+        if let scrollView = controller.view.subviews.first(where: { $0 is UIScrollView }) as? UIScrollView {
+            
+            // 2. Determine your 'default' scale.
+            // We use 1.0, but we clamp it to your range (0.8...1.6)
+            let targetScale = max(zoomRange.lowerBound, min(zoomRange.upperBound, 1.0))
+            
+            if animated {
+                UIView.animate(withDuration: 0.3) {
+                    scrollView.zoomScale = targetScale
+                    scrollView.contentOffset = .zero
+                }
+            } else {
+                scrollView.zoomScale = targetScale
+                scrollView.contentOffset = .zero
+            }
+        } else {
+            // Fallback if hierarchy differs
+            controller.setContentVisibleFrame(controller.markup?.bounds ?? .zero, animated: animated)
+        }
+    }
+
+    
 
     // Update EditorData.insertBackground
     func insertBackground(_ image: UIImage, rect: CGRect) {
@@ -219,41 +248,6 @@ class EditorData {
         // 4. Generate new reset ID to force SwiftUI recreation
         resetID = UUID()
     }
-
-    // markup to Data/Image
-//    func exportAsImage(_ rect: CGRect, scale: CGFloat = 2) async -> UIImage? {
-//
-//        // 1. Dismiss any active tools so pending strokes are committed
-//        await MainActor.run {
-//            controller?.view.resignFirstResponder()
-//            toolPicker.setVisible(
-//                false,
-//                forFirstResponder: controller?.view ?? UIView()
-//            )
-//        }
-//
-//        // 2. Give PaperKit a tick to flush pending markup changes
-//        try? await Task.sleep(for: .milliseconds(150))
-//
-//        guard let context = makeCGContext(size: rect.size, scale: scale),
-//            let markup = controller?.markup
-//        else {
-//            Log.shared.error(
-//                "[ERROR: EditorData - exportAsImage]: guard let context = makeCGContext(size: rec "
-//            )
-//            return nil
-//        }
-//
-//        await markup.draw(in: context, frame: rect)
-//        guard let cgImage = context.makeImage() else {
-//            Log.shared.error(
-//                "[ERROR: EditorData - exportAsImage] - guard let cgImage = context.makeImage() else {"
-//            )
-//            return nil
-//        }
-//
-//        return UIImage(cgImage: cgImage)
-//    }
     
     @MainActor
     func exportAsImage(_ rect: CGRect, scale: CGFloat = 2) async -> UIImage? {
@@ -264,12 +258,13 @@ class EditorData {
         controller.view.resignFirstResponder()
         toolPicker.setVisible(false, forFirstResponder: controller.view)
 
+        resetZoomAndPosition()
         
         // Deselect any selected annotation to hide the selection UI - I found the solution is by setting isEditable false temporarily
         controller.isEditable = false
         
         // Let PaperKit finish its render cycle
-        try? await Task.sleep(for: .milliseconds(200))
+        try? await Task.sleep(for: .milliseconds(100))
 
         // Snapshot the live view — this captures EXACTLY what the user sees
         let renderer = UIGraphicsImageRenderer(
@@ -292,6 +287,7 @@ class EditorData {
         }
         
         controller.isEditable = true
+//        controller.zoomRange = previousZoom
         return image
     }
 

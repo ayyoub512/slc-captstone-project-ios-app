@@ -8,6 +8,7 @@
 import SwiftData
 import SwiftUI
 
+
 struct SendVibeSheetView: View {
     @StateObject var model = SendVibeSheetViewModel()
     @Binding var selectedFriendIDs: Set<String>

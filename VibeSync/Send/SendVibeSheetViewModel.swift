@@ -9,12 +9,14 @@ import Combine
 import SwiftData
 import SwiftUI
 
+@MainActor
 class SendVibeSheetViewModel: ObservableObject {
     @Published var working = false
     @Published var errorMessage: String?
     @Published var success: Bool?
 
-    @AppStorage(K.shared.appStorageLastFetchedFriends) var lastTimeFetchedFriends: Double = Date
+    @AppStorage(K.shared.appStorageLastFetchedFriends)
+    var lastTimeFetchedFriends: Double = Date
         .now.timeIntervalSince1970
 
     let token: String = {
@@ -71,21 +73,26 @@ class SendVibeSheetViewModel: ObservableObject {
             }
 
             lastTimeFetchedFriends = Date.now.timeIntervalSince1970
-            Log.shared.info("[INFO: SendVibeSheetViewModel - fetchFriend] Fetched \(decodedResponse.friends.count) friends")
+            Log.shared.info(
+                "[INFO: SendVibeSheetViewModel - fetchFriend] Fetched \(decodedResponse.friends.count) friends"
+            )
 
         } catch let error {
-            Log.shared.error("[ERROR: SendVibeSheetViewModel - fetchFriend] Fetch Friends error: \(error)")
+            Log.shared.error(
+                "[ERROR: SendVibeSheetViewModel - fetchFriend] Fetch Friends error: \(error)"
+            )
         }
     }
-    
-    
+
     /// Send vibe to friends
     func sendVibe(
         to recipients: [String],
         image: UIImage
     ) async {
         guard let url = URL(string: K.shared.sendNotificatioURL) else {
-            Log.shared.error("[ERROR: SendVibeSheetViewModel - sendVibe] Invalid URL")
+            Log.shared.error(
+                "[ERROR: SendVibeSheetViewModel - sendVibe] Invalid URL"
+            )
             self.errorMessage = "Invalid server URL"
             self.working = false
             return
@@ -93,7 +100,7 @@ class SendVibeSheetViewModel: ObservableObject {
 
         self.working = true
         self.errorMessage = nil
-        
+
         do {
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
@@ -133,7 +140,9 @@ class SendVibeSheetViewModel: ObservableObject {
                     "[INFO: SendVibeSheetViewModel - sendVibe] Sending to \(recipients.count) recipients: \(recipients)"
                 )
             } catch {
-                Log.shared.error("[ERROR: SendVibeSheetViewModel - sendVibe] Failed to serialize receivers: \(error)")
+                Log.shared.error(
+                    "[ERROR: SendVibeSheetViewModel - sendVibe] Failed to serialize receivers: \(error)"
+                )
 
                 self.errorMessage = "Failed to prepare recipients data"
                 self.working = false
@@ -142,28 +151,30 @@ class SendVibeSheetViewModel: ObservableObject {
                 return
             }
 
-            // Add image
-            if let imageData = image.jpegData(compressionQuality: 0.8) {
-                bodyData.append("--\(boundary)\r\n".data(using: .utf8)!)
-                bodyData.append(
-                    "Content-Disposition: form-data; name=\"image\"; filename=\"vibe.jpg\"\r\n"
-                        .data(using: .utf8)!
-                )
-                bodyData.append(
-                    "Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!
-                )
-                bodyData.append(imageData)
-                bodyData.append("\r\n".data(using: .utf8)!)
+            let imageData = await Task.detached(priority: .userInitiated) {
+                image.jpegData(compressionQuality: 0.8)
+            }.value
 
-            } else {
-                Log.shared.error("[ERROR: SendVibeSheetViewModel - sendVibe] Failed to convert image to JPEG")
-                await MainActor.run {
-                    self.errorMessage = "Failed to process image"
-                    self.working = false
-                    self.success = false
-                }
+            guard let imageData else {
+                Log.shared.error(
+                    "[ERROR: SendVibeSheetViewModel - sendVibe] Failed to convert image to JPEG"
+                )
+                self.errorMessage = "Failed to process image"
+                self.working = false
+                self.success = false
                 return
             }
+
+            bodyData.append("--\(boundary)\r\n".data(using: .utf8)!)
+            bodyData.append(
+                "Content-Disposition: form-data; name=\"image\"; filename=\"vibe.jpg\"\r\n"
+                    .data(using: .utf8)!
+            )
+            bodyData.append(
+                "Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!
+            )
+            bodyData.append(imageData)
+            bodyData.append("\r\n".data(using: .utf8)!)
 
             // End boundary
             bodyData.append("--\(boundary)--\r\n".data(using: .utf8)!)
@@ -185,7 +196,9 @@ class SendVibeSheetViewModel: ObservableObject {
                     if let responseBody = try? JSONSerialization.jsonObject(
                         with: data
                     ) {
-                        Log.shared.error("[ERROR: SendVibeSheetViewModel - sendVibe] Error response: \(responseBody)")
+                        Log.shared.error(
+                            "[ERROR: SendVibeSheetViewModel - sendVibe] Error response: \(responseBody)"
+                        )
                     }
 
                     self.errorMessage =
@@ -197,7 +210,9 @@ class SendVibeSheetViewModel: ObservableObject {
             }
 
         } catch {
-            Log.shared.info("[ERROR: SendVibeSheetViewModel - sendVibe] Send vibe error: \(error)")
+            Log.shared.info(
+                "[ERROR: SendVibeSheetViewModel - sendVibe] Send vibe error: \(error)"
+            )
 
             self.errorMessage =
                 "Failed to send vibe: \(error.localizedDescription)"
@@ -208,8 +223,9 @@ class SendVibeSheetViewModel: ObservableObject {
     }
 
     func hasCacheExceededLimit() -> Bool {
-        let timeLimit: TimeInterval = K.shared.cachFriendsDurationSeconds 
-        return Date.now.timeIntervalSince1970 - lastTimeFetchedFriends >= timeLimit
+        let timeLimit: TimeInterval = K.shared.cachFriendsDurationSeconds
+        return Date.now.timeIntervalSince1970 - lastTimeFetchedFriends
+            >= timeLimit
     }
 
 }
