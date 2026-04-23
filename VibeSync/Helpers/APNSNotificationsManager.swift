@@ -50,6 +50,7 @@ class APNSNotificationsManager: ObservableObject {
     // TODO - Debug why this error happens
     // Where it says its saved but db doesnt have it for new users
     func saveAPN(with apn: String) {
+        Log.shared.info("[INFO: APNSNotificationsManager - Saving APNS]")
         self.sendDeviceTokenToServer(with: apn)
         keyChain.set(apn, forKey: K.shared.keychainAPNKey)
     }
@@ -60,6 +61,7 @@ class APNSNotificationsManager: ObservableObject {
     
     /// Send APNS token to server
     func sendDeviceTokenToServer(with token: String) {
+        Log.shared.info("[INFO: APNSNotificationsManager - sendDeviceTokenToServer] Attempting to send APNS to server")
         guard let url = URL(string: K.shared.registerDeviceURL)
         else { return }
 

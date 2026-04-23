@@ -7,14 +7,12 @@ struct CameraView: View {
     @StateObject private var viewModel = CameraViewModel()
     @Environment(NavigationManager.self) private var navManager
 
-    
     @State private var showNotificationPermissionPrompt = false
     @State private var showSendMessageSheet = false
     @State private var selectedFriendIDs: Set<String> = []
     @State private var editorData = EditorData()
     @State private var useCameraMode: Bool = true  // [Camera Mode Or Canvas Mode] - By default uses Camera mode
 
-    
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
@@ -23,7 +21,7 @@ struct CameraView: View {
                 .black
             )
             .ignoresSafeArea()
-            
+
             VStack {
                 Spacer()
                 ZStack {
@@ -42,9 +40,7 @@ struct CameraView: View {
                                         session: viewModel.session
                                     )
                                     .onTapGesture {
-                                        Task{
-                                            viewModel.flipCamera()
-                                        }
+                                        viewModel.flipCamera()
                                     }
                                 }
                             } else {
@@ -61,7 +57,7 @@ struct CameraView: View {
                     if viewModel.capturedImage == nil && useCameraMode {
                         VStack {
                             Spacer()
-                            
+
                             HStack {
                                 Spacer()
                                 flipCameraButton
@@ -90,7 +86,7 @@ struct CameraView: View {
                 Button {
                     navManager.goToTab(id: 0)
                 } label: {
-//                    Image(systemName: "chevron.left")
+                    //                    Image(systemName: "chevron.left")
                     Image(systemName: "person.circle")
 
                 }
@@ -123,7 +119,7 @@ struct CameraView: View {
                 showNotificationPermissionPrompt = !notificationManager
                     .hasPermission
 
-                if useCameraMode{
+                if useCameraMode {
                     viewModel.checkPermissions()  // will update viewModel.askForCameraPermision
                 }
             }
@@ -131,18 +127,18 @@ struct CameraView: View {
         .onDisappear {
             viewModel.stopSession()
         }
-        .onChange(of: scenePhase) {_, phase in
+        .onChange(of: scenePhase) { _, phase in
             if phase == .background || phase == .inactive {
                 viewModel.stopSession()
             }
         }
-        .onChange(of: useCameraMode) {_, newUseCameraMode in
+        .onChange(of: useCameraMode) { _, newUseCameraMode in
             if !newUseCameraMode {
                 viewModel.stopSession()
-                
+
                 navManager.forceSwipeEnabled = false
-            }else{
-                viewModel.checkPermissions() // I use this to start the camera session - tbh can do better by refactoring this
+            } else {
+                viewModel.checkPermissions()  // I use this to start the camera session - tbh can do better by refactoring this
             }
         }
         .alert(
@@ -183,7 +179,7 @@ struct CameraView: View {
 
     private var flipCameraButton: some View {
         Button {
-            Task{
+            Task {
                 viewModel.flipCamera()
             }
         } label: {

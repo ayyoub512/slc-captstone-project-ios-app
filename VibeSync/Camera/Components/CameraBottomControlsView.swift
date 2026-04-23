@@ -164,9 +164,7 @@ extension CameraBottomControlsView {
 
     private var captureButton: some View {
         Button {
-            withAnimation {
-                viewModel.capturePhoto()
-            }
+            viewModel.capturePhoto()
         } label: {
             Circle()
                 .strokeBorder(.cyan, lineWidth: 5)
@@ -219,10 +217,9 @@ extension CameraBottomControlsView {
 
     private var showDrawToolsButton: some View {
         Button {
-            withAnimation {
-                showTools.toggle()
-                editorData.showPencilKitTools(showTools)
-            }
+            showTools.toggle()
+            editorData.showPencilKitTools(showTools)
+
         } label: {
             HStack {
                 Text(showTools ? "done " : "draw tools")
@@ -261,9 +258,7 @@ extension CameraBottomControlsView {
 
     private var cameraModeButton: some View {
         Button {
-            withAnimation {
-                useCameraMode = true
-            }
+            useCameraMode = true
         } label: {
             Circle()
                 .fill(.white)
@@ -278,9 +273,8 @@ extension CameraBottomControlsView {
 
     private var canvasModeButton: some View {
         Button {
-            withAnimation {
-                useCameraMode = false
-            }
+            useCameraMode = false
+
         } label: {
             Circle()
                 .fill(.white)
@@ -295,10 +289,8 @@ extension CameraBottomControlsView {
 
     private var canvasCaptureButton: some View {
         Button {
-            withAnimation {
-                showTools = true
-                editorData.showPencilKitTools(showTools)
-            }
+            showTools = true
+            editorData.showPencilKitTools(showTools)
         } label: {
             Circle()
                 .strokeBorder(.cyan, lineWidth: 5)
@@ -319,7 +311,7 @@ extension CameraBottomControlsView {
         Button {
             Task {
                 guard let size = editorData.viewSize else { return }
-                let rect = CGRect(origin: .zero, size: size) // use actual size
+                let rect = CGRect(origin: .zero, size: size)  // use actual size
 
                 if let image = await editorData.exportAsImage(
                     rect,
@@ -357,11 +349,9 @@ extension CameraBottomControlsView {
 
     private var retakeButton: some View {
         Button {
-            withAnimation {
-                // TODO: Difference logic here depending on weather its canvas mode or camera mode
-                viewModel.retakePhoto()
-                editorData.reset()
-            }
+            // TODO: Difference logic here depending on weather its canvas mode or camera mode
+            viewModel.retakePhoto()
+            editorData.reset()
         } label: {
 
             HStack {

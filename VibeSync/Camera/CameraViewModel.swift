@@ -22,7 +22,6 @@ class CameraViewModel: NSObject, ObservableObject {
         super.init()
     }
 
-
     // MARK: - Public Methods
     func checkPermissions() {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
@@ -64,23 +63,32 @@ class CameraViewModel: NSObject, ObservableObject {
 
     func capturePhoto() {
         guard session.isRunning else {
-            Log.shared.error("[ERROR: CameraViewModel - flipCamera] capturePhoto - Session is not running. Returning")
+            Log.shared.error(
+                "[ERROR: CameraViewModel - flipCamera] capturePhoto - Session is not running. Returning"
+            )
             return
         }
         guard let connection = photoOutput.connection(with: .video),
             connection.isActive,
             connection.isEnabled
         else {
-            Log.shared.error("[ERROR: CameraViewModel - flipCamera] capturePhoto - Connection is not active .video")
+            Log.shared.error(
+                "[ERROR: CameraViewModel - flipCamera] capturePhoto - Connection is not active .video"
+            )
             return
         }
 
         let settings = AVCapturePhotoSettings()
         settings.photoQualityPrioritization = .speed
-        //        settings.photoQualityPrioritization =
-        //            photoOutput.maxPhotoQualityPrioritization
 
-        Log.shared.info("[INFO: CameraViewModel - flipCamera] Capturing photo...")
+        // Disabled flash explicitly — auto-flash detection adds latency
+        if photoOutput.supportedFlashModes.contains(.off) {
+            settings.flashMode = .off
+        }
+
+        Log.shared.info(
+            "[INFO: CameraViewModel - flipCamera] Capturing photo..."
+        )
         photoOutput.capturePhoto(with: settings, delegate: self)
     }
 
@@ -95,7 +103,9 @@ class CameraViewModel: NSObject, ObservableObject {
 
     func stopSession() {
         if session.isRunning {
-            Log.shared.info("[INFO: CameraViewModel - capturePhoto] Stopping Camera Session")
+            Log.shared.info(
+                "[INFO: CameraViewModel - capturePhoto] Stopping Camera Session"
+            )
             DispatchQueue.global(qos: .userInitiated).async { [weak self] in
                 self?.session.stopRunning()
             }
@@ -103,21 +113,19 @@ class CameraViewModel: NSObject, ObservableObject {
     }
 
     private func setupCamera(position: AVCaptureDevice.Position = .back) {
-        
         // Prevent concurrent configuration
         guard !isConfiguring else {
-            Log.shared.info("[INFO: CameraViewModel - setupCamera] Camera already configuring")
+            Log.shared.info(
+                "[INFO: CameraViewModel - setupCamera] Camera already configuring"
+            )
             return
         }
-        
-        
 
         isConfiguring = true
 
         // Configure on background thread
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
-
             self.session.beginConfiguration()
 
             // Remove existing input
@@ -136,7 +144,9 @@ class CameraViewModel: NSObject, ObservableObject {
             else {
                 self.session.commitConfiguration()
                 self.isConfiguring = false
-                Log.shared.error("[ERROR: CameraViewModel - setupCamera] Failed to create camera input")
+                Log.shared.error(
+                    "[ERROR: CameraViewModel - setupCamera] Failed to create camera input"
+                )
                 return
             }
 
@@ -165,8 +175,17 @@ class CameraViewModel: NSObject, ObservableObject {
             }
 
             // Configure session preset for quality
-            if self.session.canSetSessionPreset(.photo) {
-                self.session.sessionPreset = .photo
+            // [CHANGED] hd1920x1080 instead of .photo. faster to process, still high quality
+            if self.session.canSetSessionPreset(.hd1920x1080) {
+                self.session.sessionPreset = .hd1920x1080
+            }
+
+            // [CHANGED] Set speed priority on the output itself, not just per-capture settings
+            self.photoOutput.maxPhotoQualityPrioritization = .speed
+
+            // [CHANGED] Disable auto deferred delivery on iOS 17+ — reduces capture latency
+            if #available(iOS 17.0, *) {
+                self.photoOutput.isAutoDeferredPhotoDeliveryEnabled = false
             }
 
             self.session.commitConfiguration()
@@ -194,11 +213,33 @@ extension CameraViewModel: AVCapturePhotoCaptureDelegate {
 
         if let error = error {
             Log.shared.error(
-                "Error capturing photo: \(error.localizedDescription)"
+                "[ERROR: CameraViewModel - photoOutput] Error capturing photo: \(error.localizedDescription)"
             )
             return
         }
 
+        // [CHANGED] Stop session immediately before processing no wait
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            self?.session.stopRunning()
+        }
+
+//        // [CHANGED] Process image on background thread to avoid blocking main
+//        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+//            guard let data = photo.fileDataRepresentation(),
+//                let image = UIImage(data: data)
+//            else {
+//                Log.shared.error("Failed to process photo data")
+//                return
+//            }
+//
+//            // [CHANGED] Downscale immediately on background thread — full res not needed for display
+//            let displayImage = image.resizedToFit(maxDimension: 1920)
+//
+//            DispatchQueue.main.async {
+//                self?.capturedImage = displayImage
+//            }
+//        }
+        
         guard let data = photo.fileDataRepresentation(),
             let image = UIImage(data: data)
         else {
