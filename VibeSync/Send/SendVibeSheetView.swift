@@ -14,7 +14,7 @@ struct SendVibeSheetView: View {
     @Binding var selectedFriendIDs: Set<String>
     @Environment(AppState.self) private var appState
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \FriendModel._id) private var friends: [FriendModel] // sorting by the computer propert .id made a fatal crash when testing in TestFlight
+    @Query(sort: \FriendModel.lastMessageAt, order: .reverse) private var friends: [FriendModel] // sorting by the computed propert .id made a fatal crash when testing in TestFlight
 
     var editorData: EditorData
 
@@ -99,6 +99,9 @@ struct SendVibeSheetView: View {
                                             for: .milliseconds(200)
                                         )
                                         selectedFriendIDs.removeAll()
+                                        await MainActor.run {
+                                            AppState.shared.needsFriendRefresh = true
+                                        }
                                         dismiss()
                                     }
                                 }
