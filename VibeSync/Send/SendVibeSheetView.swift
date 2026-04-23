@@ -14,7 +14,7 @@ struct SendVibeSheetView: View {
     @Binding var selectedFriendIDs: Set<String>
     @Environment(AppState.self) private var appState
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \FriendModel.id) private var friends: [FriendModel]
+    @Query(sort: \FriendModel._id) private var friends: [FriendModel] // sorting by the computer propert .id made a fatal crash when testing in TestFlight
 
     var editorData: EditorData
 
